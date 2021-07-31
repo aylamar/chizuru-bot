@@ -6,7 +6,7 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 
 const fetch = require("node-fetch");
-const fs = require('fs')
+const getToken = require('./util/TwitchAuth')
 
 // Import configuration file with API key and twitch channels
 const { prefix, discordToken, channelID, twitchClientID, twitchClientSecret, twitchRedirectURL } = require('./config.json');
@@ -70,26 +70,6 @@ async function getChannel() {
     res = await res.json()
     console.log(res.data)
     return res.data[0]
-}
-
-// Fetch & return Twitch token
-async function getToken() {
-    let rawdata = fs.readFileSync('./tokens.json')
-    let data = await JSON.parse(rawdata)
-    
-    if (data.expire_time <= Date.now()) {
-        console.log('Fetching new token...')
-        var res = await fetch(`https://id.twitch.tv/oauth2/token?&client_id=${twitchClientID}&client_secret=${twitchClientSecret}&grant_type=client_credentials`, { method: 'POST' })
-        res = await res.json()
-
-        // Read data from "tokens.json", parse, then save
-        data.expire_time = await data.expires_in + Date.now()
-        fs.writeFileSync('./tokens.json', JSON.stringify(data))
-        return data.access_token
-    } else {
-        console.log('Token still valid, not fetching token.')
-        return data.access_token
-    }
 }
 
 //must be the last line:

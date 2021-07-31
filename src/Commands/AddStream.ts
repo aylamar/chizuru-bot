@@ -47,6 +47,7 @@ async function AddStream(streamer: string, channelID: string) {
             return false
         }
     } catch {
+        // If no streams.json file, create a new one
         console.log("No 'streams.json' file file...")
         let data: any = [
             {

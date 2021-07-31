@@ -4,7 +4,7 @@ const client = new Discord.Client();
 import { prefix, discordToken, twitchClientID } from './config.json';
 import TwitchToken from './util/TwitchToken'
 import getChannelStatus from './util/GetChannelStatus'
-import AddStream from './Commands/AddStream'
+import AddStream from './commands/AddStream'
 
 console.log('starting')
 

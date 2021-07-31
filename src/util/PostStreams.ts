@@ -1,12 +1,15 @@
 import fs from 'fs'
 import getChannelStatus from "./GetChannelStatus";
+import TwitchToken from './TwitchToken'
 
 async function postStreams(client: any) {
     let rawdata: any = fs.readFileSync('./streams.json')
     let data: any = await JSON.parse(rawdata)
 
+    var token: string = await TwitchToken()
+
     await data.map(async (e: any) => {
-        let msgGood = await getChannelStatus(e.streamer)
+        let msgGood = await getChannelStatus(e.streamer, token)
         e.channelID.map(async (cid: string) => {
             let channel = await client.channels.resolve(cid)
             if (channel.isText()) {

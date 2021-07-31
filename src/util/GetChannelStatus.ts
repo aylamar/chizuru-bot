@@ -1,9 +1,9 @@
 import fetch from 'node-fetch'
-import TwitchToken from './TwitchToken'
 import { twitchClientID } from '../config.json'
 import Discord from 'discord.js'
+import TwitchToken from './TwitchToken'
 
-async function getChannelStatus(channel_name: string) {
+async function getChannelStatus(channel_name: string, token?: string) {
     /*interface IsChannel { 
         [index: number]: {
             game_id: string
@@ -23,7 +23,11 @@ async function getChannelStatus(channel_name: string) {
         }
     }*/
 
-    var token: string = await TwitchToken()
+    if (typeof token == 'undefined') {
+        var token: string = await TwitchToken()
+    }
+
+    // Call Twitch API to get status of stream
     let res: any = await fetch(`https://api.twitch.tv/helix/streams?user_login=${channel_name}`, {
         method: 'GET',
         headers: { 'client-id': twitchClientID, 'Authorization': `Bearer ${token}` }
@@ -32,13 +36,16 @@ async function getChannelStatus(channel_name: string) {
     let data: any /*IsChannel*/ = resParsed.data
 
     if (data.length === 0) {
-        var msg: string = `${channel_name} is not live at the moment.`
-        return msg
+        const offlineEmbed = new Discord.MessageEmbed()
+            .setTitle(`${channel_name} has gone offline`)
+            .setColor(15158332)
+            .setTimestamp()
+        return offlineEmbed
     } else {
-        const embed = new Discord.MessageEmbed()
+        const liveEmbed = new Discord.MessageEmbed()
             .setAuthor(data[0].title, '', `https://twitch.tv/${data[0].user_login}`)
             .setTitle(data[0].user_name)
-            .setColor(0xff0000)
+            .setColor(3066993)
             .setDescription(`https://twitch.tv/${data[0].user_login}`)
             .setURL(`https://twitch.tv/${data[0].user_login}`)
             .addFields(
@@ -49,7 +56,7 @@ async function getChannelStatus(channel_name: string) {
             .setImage(`https://static-cdn.jtvnw.net/previews-ttv/live_user_${data[0].user_login}-620x360.jpg`)
             //.setImage('') // used for setting avatar
             .setTimestamp()
-        return embed;
+        return liveEmbed;
     }
 }
 

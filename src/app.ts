@@ -5,6 +5,7 @@ import { prefix, discordToken, twitchClientID } from './config.json';
 import TwitchToken from './util/TwitchToken'
 import getChannelStatus from './util/GetChannelStatus'
 import AddStream from './commands/AddStream'
+import PostStreams from './util/PostStreams'
 
 console.log('starting')
 
@@ -33,12 +34,7 @@ client.on('message', async message => {
             await message.channel.send(embed)
             break;
         case 'manualsend':
-            const channel = client.channels.resolve('295368291407364106')
-            if (channel.isText()) {
-                channel.send(`${channel.id} is a text based channel`)
-            } else {
-                console.log(`${channel.id} is not a text based channel`)
-            }
+            PostStreams(client)
             break;
         case 'gettoken':
             TwitchToken();
@@ -56,7 +52,6 @@ client.on('message', async message => {
             break;
     
     }
-
 })
 
 //must be the last line:

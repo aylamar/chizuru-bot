@@ -1,4 +1,4 @@
-import Discord from 'discord.js'
+import Discord, { Channel } from 'discord.js'
 const client = new Discord.Client();
 
 import { prefix, discordToken, twitchClientID } from './config.json';
@@ -31,6 +31,14 @@ client.on('message', async message => {
         case 'embed':
             let embed: any = await getChannelStatus(args[1]);
             await message.channel.send(embed)
+            break;
+        case 'manualsend':
+            const channel = client.channels.resolve('295368291407364106')
+            if (channel.isText()) {
+                channel.send(`${channel.id} is a text based channel`)
+            } else {
+                console.log(`${channel.id} is not a text based channel`)
+            }
             break;
         case 'gettoken':
             TwitchToken();

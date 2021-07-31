@@ -29,20 +29,7 @@ client.on('message', async message => {
             message.channel.send('pong');
             break;
         case 'embed':
-            var data = await getChannelStatus();
-            const embed = new Discord.MessageEmbed()
-                .setAuthor(data.title, '', `https://twitch.tv/${data.user_login}`)
-                .setTitle(data.user_name)
-                .setColor(0xff0000)
-                .setDescription(`https://twitch.tv/${data.user_login}`)
-                .setURL(`https://twitch.tv/${data.user_login}`)
-                .addFields(
-                    { name: 'Status', value: ':green_circle: Online', inline: true },
-                    { name: 'Streaming', value: data.game_name, inline: true },
-                )            
-                .setImage(`https://static-cdn.jtvnw.net/previews-ttv/live_user_${data.user_login}-620x360.jpg`)
-                //.setImage('')
-                .setTimestamp()
+            let embed: any = await getChannelStatus(args[1]);
             await message.channel.send(embed)
             break;
         case 'gettoken':

@@ -24,7 +24,7 @@ client.once('ready', () => {
 });
 
 // Listen for commands, then do things on new command
-client.on('message', message => {
+client.on('message', async message => {
   //if not in channel with channel ID, disregard
   //if (message.channel.id !== channelID) return;
   
@@ -39,10 +39,38 @@ client.on('message', message => {
         case 'ping':
             message.channel.send('pong');
             break;
-        case 'fetch':
+        case 'embed':
+            var data = await getChannel();
+            const embed = new Discord.MessageEmbed()
+                .setAuthor(data.title, '', `https://twitch.tv/${data.user_login}`)
+                .setTitle(data.user_name)
+                .setColor(0xff0000)
+                .setDescription(`https://twitch.tv/${data.user_login}`)
+                .setURL(`https://twitch.tv/${data.user_login}`)
+                .addFields(
+                    { name: 'Status', value: ':green_circle: Online', inline: true },
+                    { name: 'Streaming', value: data.game_name, inline: true },
+                )            
+                .setImage(`https://static-cdn.jtvnw.net/previews-ttv/live_user_${data.user_login}-620x360.jpg`)
+                //.setImage('')
+                .setTimestamp()
+            await message.channel.send(embed)
+            break;
+        case 'getToken':
             getToken();
             break;
 }});
+
+async function getChannel() {
+    var token = await getToken()
+    var res = await fetch('https://api.twitch.tv/helix/streams?user_login=MOONMOON', {
+        method: 'GET',
+        headers: { 'client-id': twitchClientID, 'Authorization': `Bearer ${token}` }
+    }) 
+    res = await res.json()
+    console.log(res.data)
+    return res.data[0]
+}
 
 // Fetch & return Twitch token
 async function getToken() {

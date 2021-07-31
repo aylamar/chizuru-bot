@@ -20,7 +20,6 @@ async function getChannelStatus() {
             user_login: string
             user_name: string
             viewer_count: number
-
         }
     }
 

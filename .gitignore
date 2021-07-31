@@ -1,6 +1,7 @@
 # Config Files
 config.json
 tokens.json
+streams.json
 
 # lib folder
 lib/

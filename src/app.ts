@@ -4,6 +4,7 @@ const client = new Discord.Client();
 import { prefix, discordToken, twitchClientID } from './config.json';
 import TwitchToken from './util/TwitchToken'
 import getChannelStatus from './util/GetChannelStatus'
+import AddStream from './Commands/AddStream'
 
 console.log('starting')
 
@@ -23,7 +24,7 @@ client.on('message', async message => {
     if(!message.content.startsWith(prefix)) return;
     if(!message.author.client) return;
 
-    switch(args[0]){
+    switch(args[0].toLowerCase()){
         case 'ping':
             message.channel.send('pong');
             break;
@@ -44,9 +45,18 @@ client.on('message', async message => {
                 .setTimestamp()
             await message.channel.send(embed)
             break;
-        case 'getToken':
+        case 'gettoken':
             TwitchToken();
             break;
+        case 'addstream':
+            let val: boolean = await AddStream(args[1].toLowerCase(), message.channel.id)
+            let msg: string = ""
+            if(val === true) {
+                msg = `${args[1]} is now being tracked in this channel`
+            } else {
+                msg = `Either this streamer is already being tracked or you broke something`
+            }
+            message.channel.send(msg)
         default:
             break;
     

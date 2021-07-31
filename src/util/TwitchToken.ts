@@ -20,7 +20,7 @@ async function TwitchToken() {
         res = await res.json()
 
         // Read data from "tokens.json", parse, then save
-        data.expire_time = await data.expires_in + Date.now()
+        data.expire_time = data.expires_in + Date.now()
         fs.writeFileSync('./tokens.json', JSON.stringify(data))
         return data.access_token
     } else {

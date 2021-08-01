@@ -23,7 +23,20 @@ async function initState() {
     await checkState()
 }
 
+async function deleteState(channel_name: string) {
+    console.log(`Removing ${channel_name} from state`)
+    let newState: any[] = [];
+    await state.map((e: any) => {
+        if(e.streamer === channel_name) { 
+        } else {
+            newState.push(e)
+        }
+    })
+    state = newState;
+}
+
 async function addState(channel_name: string) {
+    console.log(`Adding ${channel_name} to state`)
     let token = await getTwitchToken()
     let res: any = await getChannelStatus(channel_name, token)
 
@@ -49,10 +62,8 @@ async function checkState() {
             e.status = false
             let embed = await generateEmbed(data, e.streamer)
             postStreams(e.streamer, embed)
-        } /*else {
-            console.log("no status change")
-        }*/
+        }
     });
 }
 
-export default { initState, checkState, addState }
+export default { initState, checkState, addState, deleteState }

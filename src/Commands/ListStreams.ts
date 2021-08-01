@@ -1,6 +1,5 @@
 import Discord, { Channel } from 'discord.js'
 import fs from 'fs'
-import { client } from '../app'
 
 async function listStreams(curChannel: Channel) {
     let rawdata: any = fs.readFileSync('./streams.json')

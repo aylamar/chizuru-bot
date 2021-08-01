@@ -17,4 +17,4 @@ This is a Discord stream notification bot that *might* have additional features 
 3. ~~Check streams every minute and update states,~~ ✓
 4. ~~if state changes, post message.~~ ✓
 5. ~~Add way to list streams.~~ ✓
-6. Add way to delete streams.
+6. ~~Add way to delete streams.~~ ✓

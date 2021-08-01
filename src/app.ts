@@ -9,13 +9,15 @@ import generateEmbed from './util/GenerateEmbed'
 import state from './util/CheckState'
 import listStreams from './commands/ListStreams';
 
-console.log('starting')
+console.log('Chizuru bot is starting...')
 
 // Log to console when bot is started
 client.once('ready', () => {
     console.log('Chizuru Bot is running!');
     state.initState();
 });
+
+setInterval(state.checkState, 1000 * 60),
 
 client.on('message', async message => {
     //if not in channel with channel ID, disregard

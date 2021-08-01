@@ -24,7 +24,7 @@ async function getTwitchToken() {
         fs.writeFileSync('./tokens.json', JSON.stringify(data))
         return data.access_token
     } else {
-        console.log('Token still valid, not fetching token.')
+        //console.log('Token still valid, not fetching token.')
         return data.access_token
     }
 }

@@ -7,6 +7,7 @@ import getChannelStatus from './util/GetChannelStatus'
 import AddStream from './commands/AddStream'
 import generateEmbed from './util/GenerateEmbed'
 import state from './util/CheckState'
+import listStreams from './commands/ListStreams';
 
 console.log('starting')
 
@@ -36,6 +37,8 @@ client.on('message', async message => {
             let embed = await generateEmbed(data, args[1])
             await message.channel.send(embed)
             break;
+        case 'liststreams':
+            listStreams(message.channel)
         case 'gettoken':
             getTwitchToken();
             break;
@@ -54,8 +57,8 @@ client.on('message', async message => {
     }
 })
 
-
+// Export client so messages can be sent without passing around client
 export { client }
 
-//must be the last line:
+// Must be the last line
 client.login(discordToken);

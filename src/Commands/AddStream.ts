@@ -17,6 +17,8 @@ async function AddStream(streamer: string, channelID: string) {
         let data: any = await JSON.parse(rawdata)
         let exists = false
 
+        streamer = streamer.toLowerCase()
+
         // Map through data & add if streamer exists & channelID hasn't already been added
         data.map((e: any) => {
             if (e.streamer === streamer) {

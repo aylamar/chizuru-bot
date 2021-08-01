@@ -1,5 +1,6 @@
 import fs from 'fs'
 import state from '../util/CheckState'
+import Discord from 'discord.js'
 
 async function AddStream(streamer: string, channelID: string) {
     try {
@@ -24,7 +25,7 @@ async function AddStream(streamer: string, channelID: string) {
                     e.channelID.push(channelID)
                     state.addState(streamer)
                     writeData(data)
-                    return true
+                    return addStreamEmbedGen(streamer, true)
                 }
             }
         })
@@ -37,9 +38,9 @@ async function AddStream(streamer: string, channelID: string) {
             })
             state.addState(streamer)
             writeData(data)
-            return true
+            return addStreamEmbedGen(streamer, true)
         } else {
-            return false
+            return addStreamEmbedGen(streamer, false)
         }
     } catch {
         // If no streams.json file, create a new one
@@ -52,10 +53,21 @@ async function AddStream(streamer: string, channelID: string) {
         ]
         state.addState(streamer)
         writeData(data)
-        return true;
+        return addStreamEmbedGen(streamer, true);
     }
 }
 
+function addStreamEmbedGen(streamer: string, status: boolean) {
+    let embed = new Discord.MessageEmbed()
+    if (status === true) {
+        embed.setTitle(`${streamer} is now being followed in this channel.`)
+    } else {
+        embed.setTitle(`It looks like ${streamer} is already being followed in this channel.`)
+    }
+    return embed
+}
+
+// Used for writing data back to drive
 async function writeData(data: object) {
     fs.writeFileSync('./streams.json', JSON.stringify(data))
 }

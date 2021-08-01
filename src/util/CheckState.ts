@@ -26,6 +26,7 @@ async function initState() {
 async function deleteState(channel_name: string) {
     console.log(`Removing ${channel_name} from state`)
     let newState: any[] = [];
+    
     await state.map((e: any) => {
         if(e.streamer === channel_name) { 
         } else {
@@ -63,6 +64,7 @@ async function checkState() {
             let embed = await generateEmbed(data, e.streamer)
             postStreams(e.streamer, embed)
         }
+        // Do nothing if no status change
     });
 }
 

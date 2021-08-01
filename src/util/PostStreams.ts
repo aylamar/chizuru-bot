@@ -10,7 +10,7 @@ async function postStreams(streamer: string, embed: MessageEmbed) {
     await data.map(async (e: any) => {
         if(e.streamer === streamer){
             e.channelID.map(async (cid: string) => {
-                let channel = await client.channels.resolve(cid)
+                let channel = client.channels.resolve(cid)
                 if (channel.isText()) {
                     channel.send(embed)
                 } else {

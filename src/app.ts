@@ -7,12 +7,14 @@ import getChannelStatus from './util/GetChannelStatus'
 import AddStream from './commands/AddStream'
 import PostStreams from './util/PostStreams'
 import generateEmbed from './util/GenerateEmbed'
+import state from './util/CheckState'
 
 console.log('starting')
 
 // Log to console when bot is started
 client.once('ready', () => {
     console.log('Chizuru Bot is running!');
+    state.initState();
 });
 
 client.on('message', async message => {

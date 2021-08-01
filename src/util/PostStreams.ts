@@ -1,13 +1,13 @@
 import fs from 'fs'
 import getChannelStatus from "./GetChannelStatus";
-import TwitchToken from './TwitchToken'
+import getTwitchToken from './GetTwitchToken'
 import generateEmbed from './GenerateEmbed';
 
 async function postStreams(client: any) {
     let rawdata: any = fs.readFileSync('./streams.json')
     let data: any = await JSON.parse(rawdata)
 
-    var token: string = await TwitchToken()
+    var token: string = await getTwitchToken()
 
     await data.map(async (e: any) => {
         let data = await getChannelStatus(e.streamer, token)

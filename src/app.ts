@@ -1,12 +1,12 @@
 import Discord, { Channel } from 'discord.js'
 const client = new Discord.Client();
 
-import { prefix, discordToken, twitchClientID } from './config.json';
-import TwitchToken from './util/TwitchToken'
+import { prefix, discordToken, twitchClientID } from './config.json'
+import getTwitchToken from './util/GetTwitchToken'
 import getChannelStatus from './util/GetChannelStatus'
 import AddStream from './commands/AddStream'
 import PostStreams from './util/PostStreams'
-import generateEmbed from './util/GenerateEmbed';
+import generateEmbed from './util/GenerateEmbed'
 
 console.log('starting')
 
@@ -39,7 +39,7 @@ client.on('message', async message => {
             PostStreams(client)
             break;
         case 'gettoken':
-            TwitchToken();
+            getTwitchToken();
             break;
         case 'addstream':
             let val: boolean = await AddStream(args[1].toLowerCase(), message.channel.id)

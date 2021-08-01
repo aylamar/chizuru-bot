@@ -3,7 +3,7 @@ import fetch from 'node-fetch'
 import { twitchClientID, twitchClientSecret } from '../config.json'
 
 // Fetch & return Twitch token
-async function TwitchToken() {
+async function getTwitchToken() {
     interface IsToken {
         access_token: string
         expire_time: number
@@ -29,4 +29,4 @@ async function TwitchToken() {
     }
 }
 
-export default TwitchToken
+export default getTwitchToken

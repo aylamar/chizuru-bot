@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 import { twitchClientID } from '../config.json'
-import TwitchToken from './TwitchToken'
+import getTwitchToken from './GetTwitchToken'
 
 async function getChannelStatus(channel_name: string, token?: string) {
     /*interface IsChannel { 
@@ -23,7 +23,7 @@ async function getChannelStatus(channel_name: string, token?: string) {
     }*/
 
     if (typeof token == 'undefined') {
-        var token: string = await TwitchToken()
+        var token: string = await getTwitchToken()
     }
 
     // Call Twitch API to get status of stream

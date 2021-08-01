@@ -6,6 +6,7 @@ import TwitchToken from './util/TwitchToken'
 import getChannelStatus from './util/GetChannelStatus'
 import AddStream from './commands/AddStream'
 import PostStreams from './util/PostStreams'
+import generateEmbed from './util/GenerateEmbed';
 
 console.log('starting')
 
@@ -30,10 +31,11 @@ client.on('message', async message => {
             message.channel.send('pong');
             break;
         case 'embed':
-            let embed: any = await getChannelStatus(args[1]);
+            let data = await getChannelStatus(args[1]);
+            let embed = await generateEmbed(data, args[1])
             await message.channel.send(embed)
             break;
-        case 'manualsend':
+        case 'poststreams':
             PostStreams(client)
             break;
         case 'gettoken':

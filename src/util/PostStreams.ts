@@ -1,6 +1,7 @@
 import fs from 'fs'
 import getChannelStatus from "./GetChannelStatus";
 import TwitchToken from './TwitchToken'
+import generateEmbed from './GenerateEmbed';
 
 async function postStreams(client: any) {
     let rawdata: any = fs.readFileSync('./streams.json')
@@ -9,11 +10,12 @@ async function postStreams(client: any) {
     var token: string = await TwitchToken()
 
     await data.map(async (e: any) => {
-        let msgGood = await getChannelStatus(e.streamer, token)
+        let data = await getChannelStatus(e.streamer, token)
+        let embed = await generateEmbed(data, e.streamer)
         e.channelID.map(async (cid: string) => {
             let channel = await client.channels.resolve(cid)
             if (channel.isText()) {
-                channel.send(msgGood)
+                channel.send(embed)
             } else {
                 console.log(`${channel.id} is not a text based channel`)
             }

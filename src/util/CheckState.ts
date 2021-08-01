@@ -35,11 +35,9 @@ async function checkState() {
     let token = await getTwitchToken()
     state.forEach(async (e: any) => {
         let data: any = await getChannelStatus(e.streamer, token)
-        // If offline and previously offline
         if(await data.length === 0 && e.status === false) {
             // Do nothing, previously offline and still offline
             //console.log('offline', e.streamer, data.length)
-        // Streamer is still online
         } else if (data.length !==0 && e.status === true) {
             // Do nothing, previously online and still online
             // console.log('streamer is still online', e.streamer, data.length)
@@ -52,7 +50,7 @@ async function checkState() {
             // console.log('streamer has come online', e.streamer, data.length)
             e.status = true
         } else {
-            console.log("this shouldn't have happened")
+            console.error("this shouldn't have happened")
         }
     });
 }

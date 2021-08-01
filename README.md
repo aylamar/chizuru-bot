@@ -14,7 +14,7 @@ This is a Discord stream notification bot that *might* have additional features 
 
 1. ~~Move embed out of GetChannelStatus.ts and use seperate thing.~~ ✓
 2. ~~Create state state system that checks all streams with GetChannelStatus.ts and stores current states during startup.~~ ✓
-3. ~~Check streams every minute and update states,~~ ✓i
-4. if state changes, post message.
+3. ~~Check streams every minute and update states,~~ ✓
+4. ~~if state changes, post message.~~ ✓
 5. Add way to list streams.
 6. Add way to delete streams.

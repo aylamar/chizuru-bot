@@ -1,25 +1,23 @@
 import fs from 'fs'
-import getChannelStatus from "./GetChannelStatus";
-import getTwitchToken from './GetTwitchToken'
-import generateEmbed from './GenerateEmbed';
+import { client } from '../app'
+import { MessageEmbed } from 'discord.js';
 
-async function postStreams(client: any) {
+
+async function postStreams(streamer: string, embed: MessageEmbed) {
     let rawdata: any = fs.readFileSync('./streams.json')
     let data: any = await JSON.parse(rawdata)
 
-    var token: string = await getTwitchToken()
-
     await data.map(async (e: any) => {
-        let data = await getChannelStatus(e.streamer, token)
-        let embed = await generateEmbed(data, e.streamer)
-        e.channelID.map(async (cid: string) => {
-            let channel = await client.channels.resolve(cid)
-            if (channel.isText()) {
-                channel.send(embed)
-            } else {
-                console.log(`${channel.id} is not a text based channel`)
-            }
-        })
+        if(e.streamer === streamer){
+            e.channelID.map(async (cid: string) => {
+                let channel = await client.channels.resolve(cid)
+                if (channel.isText()) {
+                    channel.send(embed)
+                } else {
+                    console.log(`${channel.id} is not a text based channel`)
+                }    
+            })
+        }
     })
 }
 

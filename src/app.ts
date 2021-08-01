@@ -5,7 +5,6 @@ import { prefix, discordToken, twitchClientID } from './config.json'
 import getTwitchToken from './util/GetTwitchToken'
 import getChannelStatus from './util/GetChannelStatus'
 import AddStream from './commands/AddStream'
-import PostStreams from './util/PostStreams'
 import generateEmbed from './util/GenerateEmbed'
 import state from './util/CheckState'
 
@@ -37,9 +36,6 @@ client.on('message', async message => {
             let embed = await generateEmbed(data, args[1])
             await message.channel.send(embed)
             break;
-        case 'poststreams':
-            PostStreams(client)
-            break;
         case 'gettoken':
             getTwitchToken();
             break;
@@ -57,6 +53,9 @@ client.on('message', async message => {
     
     }
 })
+
+
+export { client }
 
 //must be the last line:
 client.login(discordToken);

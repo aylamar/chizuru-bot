@@ -1,14 +1,5 @@
 import fs from 'fs'
-
-    /* future interface
-
-    interface IsStreamerList {
-        [index: number]: {
-            streamer: string
-            channelID: string
-        }
-    } */
-
+import state from '../util/CheckState'
 
 async function AddStream(streamer: string, channelID: string) {
     try {
@@ -31,6 +22,7 @@ async function AddStream(streamer: string, channelID: string) {
                 })
                 if (existsCID === false) {
                     e.channelID.push(channelID)
+                    state.addState(streamer)
                     writeData(data)
                     return true
                 }
@@ -43,6 +35,7 @@ async function AddStream(streamer: string, channelID: string) {
                 streamer: streamer,
                 channelID: [channelID]
             })
+            state.addState(streamer)
             writeData(data)
             return true
         } else {
@@ -57,6 +50,7 @@ async function AddStream(streamer: string, channelID: string) {
                 channelID: [channelID]
             }
         ]
+        state.addState(streamer)
         writeData(data)
         return true;
     }

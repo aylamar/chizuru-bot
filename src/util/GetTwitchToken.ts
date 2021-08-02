@@ -18,6 +18,7 @@ async function getTwitchToken() {
         console.log('Fetching new token...')
         var res: any = await fetch(`https://id.twitch.tv/oauth2/token?&client_id=${twitchClientID}&client_secret=${twitchClientSecret}&grant_type=client_credentials`, { method: 'POST' })
         res = await res.json()
+        data["access_token"] = res.access_token
 
         // Read data from "tokens.json", parse, then save
         data.expire_time = data.expires_in + Date.now()

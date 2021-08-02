@@ -12,6 +12,7 @@ const mongoose = require('mongoose')
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((result: any) => {
         console.log('Connected with Mongoose')
+        ChannelMgr.getChannelByStreamer("moonmoon")
     })
     .catch((err: any) => console.error(err))
 

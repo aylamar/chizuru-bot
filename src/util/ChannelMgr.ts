@@ -67,4 +67,15 @@ ChannelMgr.delStream = function(id: string, stream: string) {
     // TODO: Check if streamer exists in any other channels, if not, delete streamer 
 }
 
+ChannelMgr.getChannelByStreamer = function(stream: string) {
+    console.log(`Fetching channels watching ${stream}`)
+    Channel.find({ followed_channels: {$in: stream} }).then((res: any) => {
+        let idArr: String[] = []
+        res.map((e: any) => {
+            idArr.push(e._id)
+        })
+        return idArr
+    })
+}
+
 export default ChannelMgr

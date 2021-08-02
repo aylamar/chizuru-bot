@@ -7,7 +7,8 @@ Chizuru Bot is a Twitch notification bot that notifies Discord channels on statu
 1. Download a copy of the repository and unzip it somewhere.
 2. Navigate to the `src` folder and rename `config.default.json` to `config.json`.
 3. Fill out the `config.json` file.
-4. run `npm run start` to launch the bot.
+4. Run `npm i` to install all dependencies.
+5. Run `npm run start` to launch the bot.
 
 ## Configuration
 

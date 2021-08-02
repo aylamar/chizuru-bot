@@ -16,6 +16,6 @@ const discordChannelSchema = new Schema({
     }
 }, { timestamps: true })
 
-const DiscChannel: Model<discordChannel> = model('discChannel', discordChannelSchema)
+const DiscChannel: Model<discordChannel> = model('discordChannel', discordChannelSchema)
 
 module.exports = DiscChannel

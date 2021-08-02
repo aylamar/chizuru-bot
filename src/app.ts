@@ -25,8 +25,8 @@ client.on('message', async message => {
     let args = message.content.substring(prefix.length).split(" ")
   
     // Skip strings without prefix & skip messages from bot.
-    if(!message.content.startsWith(prefix)) return;
-    if(!message.author.client) return;
+    if (!message.content.startsWith(prefix)) return;
+    if (!message.author.client) return;
 
     switch(args[0].toLowerCase()){
         case 'ping':

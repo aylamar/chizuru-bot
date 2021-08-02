@@ -41,7 +41,7 @@ async function addState(channel_name: string) {
     let token = await getTwitchToken()
     let res: any = await getChannelStatus(channel_name, token)
 
-    if(res.length == 0) {
+    if (res.length == 0) {
         state.push({ streamer: channel_name, status: false })
     } else {
         state.push({ streamer: channel_name, status: true })

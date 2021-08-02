@@ -1,11 +1,20 @@
 import Discord, { Channel, MessageEmbed } from 'discord.js'
 const client = new Discord.Client();
 
-import { prefix, discordToken, twitchClientID } from './config.json'
+import { prefix, discordToken, mongoURI } from './config.json'
 import AddStream from './commands/AddStream'
 import state from './util/CheckState'
 import listStreams from './commands/ListStreams'
-import deleteStream from './commands/DeleteStream';
+import deleteStream from './commands/DeleteStream'
+import ChannelMgr from './util/ChannelMgr'
+
+const mongoose = require('mongoose')
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then((result: any) => {
+        console.log('Connected with Mongoose')
+    })
+    .catch((err: any) => console.error(err))
+
 
 console.log('Chizuru bot is starting...')
 

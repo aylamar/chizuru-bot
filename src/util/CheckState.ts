@@ -55,12 +55,12 @@ async function checkState() {
         let data: any = await getChannelStatus(e.streamer, token)
         if (data.length === 0 && e.status === true) {
             // Streamer went offline, post message
-            e.status = true
+            e.status = false
             let embed = await generateEmbed(data, e.streamer)
             postStreams(e.streamer, embed)
         } else if (data.length !== 0 && e.status === false) {
             // Streamer went online, post message
-            e.status = false
+            e.status = true
             let embed = await generateEmbed(data, e.streamer)
             postStreams(e.streamer, embed)
         }

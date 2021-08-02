@@ -3,6 +3,5 @@
     "prefix": "!",
     "channelID": "",
     "twitchClientID": "",
-    "twitchClientSecret": "",
-    "twitchRedirectURL": ""
+    "twitchClientSecret": ""
 }

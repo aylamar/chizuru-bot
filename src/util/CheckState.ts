@@ -24,7 +24,7 @@ async function initState() {
 }
 
 async function deleteState(channel_name: string) {
-    console.log(`Removing ${channel_name} from state`)
+    console.log(`No longer monitoring ${channel_name}'s state`)
     let newState: any[] = [];
     
     await state.map((e: any) => {
@@ -37,7 +37,7 @@ async function deleteState(channel_name: string) {
 }
 
 async function addState(channel_name: string) {
-    console.log(`Adding ${channel_name} to state`)
+    console.log(`Now monitoring ${channel_name}'s state`)
     let token = await getTwitchToken()
     let res: any = await getChannelStatus(channel_name, token)
 

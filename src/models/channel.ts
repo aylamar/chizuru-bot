@@ -1,7 +1,11 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import { model, Schema, Model, Document } from 'mongoose'
 
-const discChannelSchema = new Schema({
+interface discordChannel extends Document {
+    _id: string,
+    followed_channels: string[]
+}
+
+const discordChannelSchema = new Schema({
     _id: {
         type: String,
         required: true
@@ -12,6 +16,6 @@ const discChannelSchema = new Schema({
     }
 }, { timestamps: true })
 
-const DiscChannel = mongoose.model('discChannel', discChannelSchema)
+const DiscChannel: Model<discordChannel> = model('discChannel', discordChannelSchema)
 
 module.exports = DiscChannel

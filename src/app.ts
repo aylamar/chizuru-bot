@@ -7,12 +7,12 @@ import state from './util/CheckState'
 import listStreams from './commands/ListStreams'
 import deleteStream from './commands/DeleteStream'
 import ChannelMgr from './util/ChannelMgr'
+import mongoose from "mongoose";
 
-const mongoose = require('mongoose')
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((result: any) => {
         console.log('Connected with Mongoose')
-        ChannelMgr.getChannelByStreamer("moonmoon")
+        ChannelMgr.addStream('870926128636919838', "moonmoon")
     })
     .catch((err: any) => console.error(err))
 

@@ -22,7 +22,7 @@ async function getTwitchToken() {
             data["access_token"] = res.access_token
 
             // Read data from "tokens.json", parse, then save
-            data.expire_time = data.expires_in + Date.now()
+            data.expire_time = (data.expires_in * 999) + Date.now()
             fs.writeFileSync('./token.json', JSON.stringify(data))
             return data.access_token
         } else {
@@ -32,7 +32,7 @@ async function getTwitchToken() {
     } catch {
         var res: any = await fetch(`https://id.twitch.tv/oauth2/token?&client_id=${twitchClientID}&client_secret=${twitchClientSecret}&grant_type=client_credentials`, { method: 'POST' })
         let data = await res.json()
-        data.expire_time = data.expires_in + Date.now()
+        data.expire_time = (data.expires_in * 999) + Date.now()
         fs.writeFileSync('./token.json', JSON.stringify(data))
     }
 }

@@ -4,17 +4,7 @@ This is a Discord stream notification bot that *might* have additional features 
 
 ## Installation
 
-1. Download, extract & build
-2. Rename `tokens.default.json` to `tokens.json`.
-3. Rename `config.default.json` to `config.json`.
-4. Fill out the `config.json` file.
-5. run `npm run start`.
-
-## TODO
-
-1. ~~Move embed out of GetChannelStatus.ts and use seperate thing.~~ ✓
-2. ~~Create state state system that checks all streams with GetChannelStatus.ts and stores current states during startup.~~ ✓
-3. ~~Check streams every minute and update states,~~ ✓
-4. ~~if state changes, post message.~~ ✓
-5. ~~Add way to list streams.~~ ✓
-6. ~~Add way to delete streams.~~ ✓
+1. Download a copy of the repository and unzip it somewhere.
+2. Rename `config.default.json` to `config.json`.
+3. Fill out the `config.json` file.
+4. run `npm run start`.

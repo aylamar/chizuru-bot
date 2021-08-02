@@ -4,7 +4,11 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc -p tsconfig.json",
+    "launch": "node lib/app.js",
+    "clean": "rm -r lib",
+    "rebuild": "npm run clean && npm run build",
+    "start": "npm run build && npm run launch"
   },
   "keywords": [],
   "author": "",

@@ -18,6 +18,7 @@ async function listStreams(curChannel: Channel) {
 
     const embed = new Discord.MessageEmbed()
         .setTitle("Streams you're following:")
+        .setColor(10181046)
         .setTimestamp()
 
     // Add field for each streamer in current channel

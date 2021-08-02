@@ -41,7 +41,7 @@ client.on('message', async message => {
             message.channel.send(addMsg)
             break;
         case 'deletestream':
-            let delMsg: MessageEmbed = await deleteStream(args[1], message.channel.id)
+            let delMsg: MessageEmbed = await deleteStream(args[1], message.channel.id, message.member.user.tag)
             message.channel.send(delMsg)
             break;
         default:

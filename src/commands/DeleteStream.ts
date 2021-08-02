@@ -2,7 +2,7 @@ import fs from 'fs'
 import state from '../util/CheckState'
 import Discord, { MessageEmbed } from 'discord.js'
 
-async function deleteStream(streamer: string, channelID: string){
+async function deleteStream(streamer: string, channelID: string, tag: any){
     try {
         let rawdata: any = fs.readFileSync('./streams.json')
         let data: any = await JSON.parse(rawdata)
@@ -29,9 +29,8 @@ async function deleteStream(streamer: string, channelID: string){
         writeData(newData)
 
         const msg: MessageEmbed = new Discord.MessageEmbed()
-            .setTitle(`Alerts for ${streamer} will no longer appear here.`)
+            .setDescription(`**${tag}** removed alerts for **${streamer}**.`)
             .setColor(15158332)
-            .setTimestamp()
         return msg
 
     } catch {
@@ -39,7 +38,6 @@ async function deleteStream(streamer: string, channelID: string){
         const msg: MessageEmbed = new Discord.MessageEmbed()
             .setDescription(`It looks like this bot doesn't follow any streamers.`)
             .setColor(15158332)
-            .setTimestamp()
         return msg
     }
 }

@@ -59,10 +59,11 @@ async function AddStream(streamer: string, channelID: string) {
 
 function addStreamEmbedGen(streamer: string, status: boolean) {
     let embed = new Discord.MessageEmbed()
+        .setColor(3066993)
     if (status === true) {
-        embed.setTitle(`${streamer} is now being followed in this channel.`)
+        embed.setDescription(`You'll be notified when **${streamer}** comes online.`)
     } else {
-        embed.setTitle(`It looks like ${streamer} is already being followed in this channel.`)
+        embed.setDescription(`**${streamer}** is already being followed.`)
     }
     return embed
 }

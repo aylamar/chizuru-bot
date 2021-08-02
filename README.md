@@ -1,6 +1,6 @@
 # Chizuru Bot
 
-This is a Discord stream notification bot that *might* have additional features added over time.
+Chizuru Bot is a Twitch notification bot that notifies Discord channels on status changes, which *might* have additional features added over time.
 
 ## Installation
 

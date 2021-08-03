@@ -83,12 +83,12 @@ TwitchMgr.checkStream = async function (channel_name: string, token?: string) {
     }
 
     try {
-        fetch(`https://api.twitch.tv/helix/streams?user_login=${channel_name}`, {
+        let res: any = await fetch(`https://api.twitch.tv/helix/streams?user_login=${channel_name}`, {
             method: 'GET',
             headers: { 'client-id': twitchClientID, 'Authorization': `Bearer ${token}` }
-        }).then((res: any) => res.json().then((res:any) => {
-            return res.data[0]
-        }))
+        })
+        let parsedRes: any = await res.json()
+        return parsedRes.data[0]
     } catch {
         console.log(`Error, something went wrong checking on ${channel_name}`)
     }

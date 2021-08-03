@@ -8,11 +8,11 @@ import listStreams from './commands/ListStreams'
 import ChannelMgr from './util/ChannelMgr'
 import mongoose from "mongoose";
 import TwitchMgr from './util/TwitchMgr'
+import StreamMgr from './util/StreamMgr'
 
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((result: any) => {
         console.log('Connected with Mongoose')
-        ChannelMgr.addStream('id', "stream")
     })
     .catch((err: any) => console.error(err))
 
@@ -22,7 +22,8 @@ console.log('Chizuru bot is starting...')
 // Log to console when bot is started
 client.once('ready', () => {
     console.log('Chizuru Bot is running!')
-    TwitchMgr.checkStream("moonmoon")
+    //TwitchMgr.getProfile("moonmoon")
+    StreamMgr.addStreamer("moonmoon")
 });
 
 client.on('message', async message => {

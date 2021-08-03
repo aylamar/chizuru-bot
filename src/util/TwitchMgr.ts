@@ -61,17 +61,17 @@ TwitchMgr.getProfile = async function (channel_name: string, token?: string) {
     }
 
     try {
-        fetch(`https://api.twitch.tv/helix/search/channels?query=${channel_name}`, {
+        let res: any = await fetch(`https://api.twitch.tv/helix/search/channels?query=${channel_name}`, {
             method: 'GET',
             headers: { 'client-id': twitchClientID, 'Authorization': `Bearer ${token}` }
-        }).then((res: any) => {
-            res.json().then((res: any) => {
-                let data = res.data.filter((e: any) => e['broadcaster_login'] === channel_name)
-
-                // returns id, display_name, thumbnail_irl (profile picture), is_live (true/false)
-                return data[0]
-            })
         })
+
+        let parsedRes: any = await res.json()
+        let data = await parsedRes.data.filter((e: any) => e['broadcaster_login'] === channel_name)
+
+        // returns id, display_name, thumbnail_irl (profile picture), is_live (true/false)
+        return data[0]
+        
     } catch {
         console.log(`Error, something went wrong locating ${channel_name}'s profile`)
     }

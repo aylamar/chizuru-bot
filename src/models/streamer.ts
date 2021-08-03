@@ -4,7 +4,6 @@ interface streamer extends Document {
     _id: string,
     channel_id: string,
     profile_picture: string,
-    offline_image: string,
     current_state: Boolean
 }
 
@@ -21,12 +20,8 @@ const streamerSchema = new Schema({
         type: String,
         required: true
     },
-    offline_image: {
-        type: String,
-        required: true
-    },
     current_state: {
-        tyle: Boolean,
+        type: Boolean,
         required: true
     }
 

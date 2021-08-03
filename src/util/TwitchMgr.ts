@@ -77,6 +77,7 @@ TwitchMgr.getProfile = async function (channel_name: string, token?: string) {
         }
     } catch {
         console.log(`Error, something went wrong locating ${channel_name}'s profile`)
+        return 'Unable to locate'
     }
 }
 

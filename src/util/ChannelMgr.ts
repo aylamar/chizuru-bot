@@ -23,7 +23,7 @@ ChannelMgr.addStream = async function(streamer_name: string, id: string) {
                     }
                 case 'Unable to locate':
                     return 'Unable to locate'
-                case 'Failures':
+                case 'Failure':
                     return 'Failure'
             }
         }
@@ -45,7 +45,7 @@ ChannelMgr.addStream = async function(streamer_name: string, id: string) {
                 }
             case 'Unable to locate':
                 return 'Unable to locate'
-            case 'Failures':
+            case 'Failure':
                 return 'Failure'
         }
     }

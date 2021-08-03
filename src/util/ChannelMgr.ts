@@ -52,20 +52,31 @@ ChannelMgr.addStream = async function(streamer_name: string, id: string) {
 }
 
 ChannelMgr.delStream = async function(streamer_name: string, id: string) {
+
     let res = await Channel.find({_id: id, followed_channels: {$in: streamer_name}})
         // If no result found
     if (res.length === 0) {
         return "Doesn't Exist"
     } else if (res[0].followed_channels.length === 1 && res[0].followed_channels[0] == streamer_name) {
         await Channel.findOneAndDelete({_id: id})
+
+        let channelList = await Channel.find({followed_channels: {$in: streamer_name}})
+        if (channelList.length === 0) {
+            console.log('hit')
+            StreamMgr.delStreamer(streamer_name)
+        }
         return 'Success'
     } else {
         res[0].followed_channels = await res[0].followed_channels.filter((strm: string) => strm !== streamer_name)
         await res[0].save()
+
+        let channelList = await Channel.find({followed_channels: {$in: streamer_name}})
+        if (channelList.length === 0) {
+            console.log('hit')
+            StreamMgr.delStreamer(streamer_name)
+        }
         return 'Success'
     }
-    // TODO: Check if streamer exists in any other channels, if not, delete streamer 
-    //StreamMgr.delStreamer(streamer_name)
 }
 
 ChannelMgr.getChannelByStreamer = async function(streamer_name: string) {

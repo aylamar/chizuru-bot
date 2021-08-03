@@ -68,6 +68,7 @@ ChannelMgr.delStream = function(id: string, streamer_name: string) {
         }
     })
     // TODO: Check if streamer exists in any other channels, if not, delete streamer 
+    //StreamMgr.delStreamer(streamer_name)
 }
 
 ChannelMgr.getChannelByStreamer = function(streamer_name: string) {

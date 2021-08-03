@@ -22,8 +22,9 @@ console.log('Chizuru bot is starting...')
 // Log to console when bot is started
 client.once('ready', () => {
     console.log('Chizuru Bot is running!')
-    //TwitchMgr.getProfile("moonmoon")
-    StreamMgr.addStreamer("moonmoon")
+    //StreamMgr.addStreamer("moonmoon")
+    //ChannelMgr.addStream("1238971324", "moonmoon")
+    //StreamMgr.delStreamer("moonmoon")
 });
 
 client.on('message', async message => {

@@ -14,6 +14,11 @@ async function addStream(streamer: string, channelID: string) {
                 .setDescription(`You'll be notified when **${streamer}** goes online.`)
                 .setColor(3066993)
             return successEmbed
+        case 'Unable to locate':
+            let unableEmbed = new Discord.MessageEmbed()
+                .setDescription(`Unable to locate **${streamer}** for some reason`)
+                .setColor(15158332)
+            return unableEmbed
     }
 }
 

@@ -69,9 +69,12 @@ TwitchMgr.getProfile = async function (channel_name: string, token?: string) {
         let parsedRes: any = await res.json()
         let data = await parsedRes.data.filter((e: any) => e['broadcaster_login'] === channel_name)
 
-        // returns id, display_name, thumbnail_irl (profile picture), is_live (true/false)
-        return data[0]
-        
+        if (await data[0].display_name.toLowerCase() === channel_name) {
+            // returns id, display_name, thumbnail_irl (profile picture), is_live (true/false)
+            return data[0]
+        } else {
+            return 'Unable to locate'
+        }
     } catch {
         console.log(`Error, something went wrong locating ${channel_name}'s profile`)
     }

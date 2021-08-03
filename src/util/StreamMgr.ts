@@ -11,18 +11,26 @@ StreamMgr.addStreamer = async function(channel_name: string) {
     let streamDB = await Stream.findById(channel_name)
     if (streamDB == null){
         let res = await TwitchMgr.getProfile(channel_name);
-        const streamer = await new Stream({
-            _id: channel_name,
-            channel_id: res.id,
-            profile_picture: res.thumbnail_url,
-            current_state: res.is_live
-        })
-        await streamer.save()
-        console.log(`${channel_name} was added to the database`)
-        return true
+        if (await res === 'Unable to locate') {
+            try {
+                const streamer = await new Stream({
+                    _id: channel_name,
+                    channel_id: res.id,
+                    profile_picture: res.thumbnail_url,
+                    current_state: res.is_live
+                })
+                await streamer.save()
+                console.log(`${channel_name} was added to the database`)
+                return 'Success' 
+            } catch {
+                return 'Failure'
+            }
+        } else {
+            return 'Unable to locate'
+        }
     } else {
         console.log(`It looks like ${channel_name} was already in the database`)
-        return false
+        return 'Success'
     }
 }
 
@@ -43,6 +51,7 @@ StreamMgr.delStreamer = async function(channel_name: string) {
     }
 }
 
+// Used to set state during startup to prevent spam
 StreamMgr.initState = async function() {
     console.log('Setting intial state...')
     let token = await TwitchMgr.getToken()
@@ -65,6 +74,7 @@ StreamMgr.initState = async function() {
     })
 }
 
+// Used for comparing current state to previous state
 StreamMgr.updateState = async function() {
     console.log('Checking monitored streams...')
     let token = await TwitchMgr.getToken()

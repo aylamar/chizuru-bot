@@ -11,20 +11,43 @@ ChannelMgr.addStream = async function(streamer_name: string, id: string) {
         if (channel.followed_channels.includes(streamer_name)) {
             return 'Already Exists'
         } else {
-            await channel.followed_channels.push(streamer_name)
-            await channel.save()
-            StreamMgr.addStreamer(streamer_name)
-            return 'Success'   
+            let res = await StreamMgr.addStreamer(streamer_name)
+            switch (res) {
+                case 'Success':
+                    try {
+                        await channel.followed_channels.push(streamer_name)
+                        await channel.save()        
+                        return'Success'
+                    } catch {
+                        return 'Failure'
+                    }
+                case 'Unable to locate':
+                    return 'Unable to locate'
+                case 'Failures':
+                    return 'Failure'
+            }
         }
     } else {
         // If channel does not exist, create new channel with stream
-        const channel = new Channel({
-            _id: id,
-            followed_channels: streamer_name
-        })
-        channel.save()
-        StreamMgr.addStreamer(streamer_name)
-        return 'Success'
+        let res = await StreamMgr.addStreamer(streamer_name)
+        switch (res) {
+            case 'Success':
+                try {
+                    const channel = new Channel({
+                        _id: id,
+                        followed_channels: streamer_name
+                    })
+                    channel.save()
+                    StreamMgr.addStreamer(streamer_name)
+                    return 'Success'
+                            } catch {
+                    return 'Failure'
+                }
+            case 'Unable to locate':
+                return 'Unable to locate'
+            case 'Failures':
+                return 'Failure'
+        }
     }
 }
 
@@ -46,7 +69,7 @@ ChannelMgr.delStream = async function(streamer_name: string, id: string) {
 }
 
 ChannelMgr.getChannelByStreamer = async function(streamer_name: string) {
-    console.log(`Fetching channels watching ${streamer_name}`)
+    console.log(`${streamer_name} status changed, fetching channels watching ${streamer_name}`)
     let res = await Channel.find({ followed_channels: {$in: streamer_name} })
     let idArr: String[] = []
     await res.map((e: any) => {

@@ -1,5 +1,6 @@
+import ChannelMgr from './ChannelMgr'
+import Discord, { MessageEmbed } from 'discord.js'
 import TwitchMgr from './TwitchMgr'
-import Discord from 'discord.js'
 import { client } from '../app'
 
 const Stream = require('../models/streamer')
@@ -58,22 +59,19 @@ StreamMgr.updateState = async function() {
                     stream.save()
 
                     console.log(`${stream._id} went offline`)
-                    let channel = client.channels.resolve("295368291407364106")
 
-                    if (channel.isText()) {
-                        channel.send(genGoOfflineEmbed(stream))
-                    }
+                    let offlineEmbed = genGoOfflineEmbed(stream)
+                    postStreams(stream._id, offlineEmbed)
+
                 } else if (res != undefined && stream.current_state === false) {
                     // should be set to false, set to true for testing
                     stream.current_state = true
                     stream.save()
 
                     console.log(`${stream._id} has come online`)
-                    let channel = client.channels.resolve("295368291407364106")
 
-                    if (channel.isText()) {
-                        channel.send(genGoLiveEmbed(stream.profile_picture, res))
-                    }
+                    let onlineEmbed = genGoLiveEmbed(stream.profile_picture, res)
+                    postStreams(stream._id, onlineEmbed)
                 } else {
                     console.log(`No change in ${stream._id}`)
                 }
@@ -82,8 +80,17 @@ StreamMgr.updateState = async function() {
     })
 }
 
-StreamMgr.postStreams = function() {
-    
+async function postStreams(channel_name: string, embed: MessageEmbed) {
+    let arr = await ChannelMgr.getChannelByStreamer(channel_name)
+    await arr.map(async (channelID: string) => {
+        let channel = client.channels.resolve(channelID)
+        if (channel.isText()) {
+            channel.send(embed)
+        } else {
+            console.log(`${channel.id} is not a text based channel`)
+        }    
+    })
+
 }
 
 function genGoLiveEmbed(pfp: string, data: any) {

@@ -71,15 +71,18 @@ ChannelMgr.delStream = function(id: string, streamer_name: string) {
     //StreamMgr.delStreamer(streamer_name)
 }
 
-ChannelMgr.getChannelByStreamer = function(streamer_name: string) {
+ChannelMgr.getChannelByStreamer = async function(streamer_name: string) {
     console.log(`Fetching channels watching ${streamer_name}`)
-    Channel.find({ followed_channels: {$in: streamer_name} }).then((res: any) => {
-        let idArr: String[] = []
-        res.map((e: any) => {
-            idArr.push(e._id)
-        })
-        return idArr
+    let res = await Channel.find({ followed_channels: {$in: streamer_name} })
+    let idArr: String[] = []
+    await res.map((e: any) => {
+        idArr.push(e._id)
     })
+    return idArr
+}
+
+ChannelMgr.getStreamersByChannel = function () {
+    // TODO
 }
 
 export default ChannelMgr

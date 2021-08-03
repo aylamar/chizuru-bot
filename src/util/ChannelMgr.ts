@@ -89,8 +89,9 @@ ChannelMgr.getChannelByStreamer = async function(streamer_name: string) {
     return idArr
 }
 
-ChannelMgr.getStreamersByChannel = function () {
-    // TODO
+ChannelMgr.getStreamersByChannel = async function (channel_id: string) {
+    let res = await Channel.find({_id: channel_id})
+    return await res[0].followed_channels
 }
 
 export default ChannelMgr

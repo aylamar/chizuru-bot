@@ -3,7 +3,7 @@ const client = new Discord.Client();
 
 import { prefix, discordToken, mongoURI } from './config.json'
 import AddStream from './commands/addStream'
-import listStreams from './commands/ListStreams'
+import listStreams from './commands/listStreams'
 import delStream from './commands/delStream'
 import mongoose from "mongoose";
 import StreamMgr from './util/StreamMgr'

@@ -1,8 +1,8 @@
 {
     "mongoURI": "<url here>",
-    "discordToken": "",
+    "discordToken": "<Discord Bot Token",
     "prefix": "!",
-    "channelID": "",
-    "twitchClientID": "",
-    "twitchClientSecret": ""
+    "channelID": "<not used at the moment>",
+    "twitchClientID": "<Twitch API client ID>",
+    "twitchClientSecret": "<Twitch API client secret>"
 }

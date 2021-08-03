@@ -2,12 +2,12 @@ import Discord, { Channel, MessageEmbed } from 'discord.js'
 const client = new Discord.Client();
 
 import { prefix, discordToken, mongoURI } from './config.json'
-import AddStream from './commands/AddStream'
-import state from './util/CheckState'
+//import AddStream from './commands/AddStream'
 import listStreams from './commands/ListStreams'
-import deleteStream from './commands/DeleteStream'
+//import deleteStream from './commands/DeleteStream'
 import ChannelMgr from './util/ChannelMgr'
 import mongoose from "mongoose";
+import TwitchMgr from './util/TwitchMgr'
 
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((result: any) => {
@@ -22,10 +22,8 @@ console.log('Chizuru bot is starting...')
 // Log to console when bot is started
 client.once('ready', () => {
     console.log('Chizuru Bot is running!')
-    state.initState();
+    TwitchMgr.checkStream("moonmoon")
 });
-
-setInterval(state.checkState, 1000 * 60),
 
 client.on('message', async message => {
     // If not in channel with channel ID, disregard
@@ -47,12 +45,12 @@ client.on('message', async message => {
             message.channel.send(listMsg)
             break;
         case 'addstream':
-            let addMsg: MessageEmbed = await AddStream(args[1].toLowerCase(), message.channel.id)
-            message.channel.send(addMsg)
+            //let addMsg: MessageEmbed = await AddStream(args[1].toLowerCase(), message.channel.id)
+            //message.channel.send(addMsg)
             break;
         case 'deletestream':
-            let delMsg: MessageEmbed = await deleteStream(args[1], message.channel.id, message.member.user.tag)
-            message.channel.send(delMsg)
+            //let delMsg: MessageEmbed = await deleteStream(args[1], message.channel.id, message.member.user.tag)
+            //message.channel.send(delMsg)
             break;
         default:
             break;

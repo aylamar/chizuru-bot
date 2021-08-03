@@ -2,6 +2,7 @@ import { model, Schema, Model, Document } from 'mongoose'
 
 interface streamer extends Document {
     _id: string,
+    channel_id: string,
     profile_picture: string,
     offline_image: string,
     current_state: Boolean
@@ -9,6 +10,10 @@ interface streamer extends Document {
 
 const streamerSchema = new Schema({
     _id: {
+        type: String,
+        required: true
+    },
+    channel_id: {
         type: String,
         required: true
     },

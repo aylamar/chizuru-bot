@@ -4,7 +4,7 @@ import { twitchClientID, twitchClientSecret } from '../config.json'
 
 const TwitchMgr: any = {}
 
-async function getToken() {
+TwitchMgr.getToken = async function() {
     interface IsToken {
         access_token: string
         expire_time: number
@@ -39,23 +39,59 @@ async function getToken() {
     }
 }
 
-function addStreamer() {
+TwitchMgr.getChannelStatus = async function (channel_name: string, token?: string) {
+    if (typeof token == 'undefined') {
+        var token: string = await TwitchMgr.getToken()
+    }
 
+    // Call Twitch API to get status of stream
+    let res: any = await fetch(`https://api.twitch.tv/helix/streams?user_login=${channel_name}`, {
+        method: 'GET',
+        headers: { 'client-id': twitchClientID, 'Authorization': `Bearer ${token}` }
+    })
+    let resParsed: any = await res.json()
+    let data: any /*IsChannel*/ = resParsed.data
+
+    return data;
 }
 
-function delStreamer() {
+TwitchMgr.getProfile = async function (channel_name: string, token?: string) {
+    if (typeof token == 'undefined') {
+        var token: string = await TwitchMgr.getToken()
+    }
 
+    try {
+        fetch(`https://api.twitch.tv/helix/search/channels?query=${channel_name}`, {
+            method: 'GET',
+            headers: { 'client-id': twitchClientID, 'Authorization': `Bearer ${token}` }
+        }).then((res: any) => {
+            res.json().then((res: any) => {
+                let data = res.data.filter((e: any) => e['broadcaster_login'] === channel_name)
+
+                // returns id, display_name, thumbnail_irl (profile picture), is_live (true/false)
+                return data[0]
+            })
+        })
+    } catch {
+        console.log(`Error, something went wrong locating ${channel_name}'s profile`)
+    }
 }
 
-function updateState() {
+TwitchMgr.checkStream = async function (channel_name: string, token?: string) {
+    if (typeof token == 'undefined') {
+        var token: string = await TwitchMgr.getToken()
+    }
 
-}
-
-function postStreams() {
-    
-}
-
-function generateStreamEmbed() {
+    try {
+        fetch(`https://api.twitch.tv/helix/streams?user_login=${channel_name}`, {
+            method: 'GET',
+            headers: { 'client-id': twitchClientID, 'Authorization': `Bearer ${token}` }
+        }).then((res: any) => res.json().then((res:any) => {
+            return res.data[0]
+        }))
+    } catch {
+        console.log(`Error, something went wrong checking on ${channel_name}`)
+    }
 
 }
 

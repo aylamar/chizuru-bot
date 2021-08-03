@@ -1,3 +1,4 @@
+/*
 import fs from 'fs'
 import state from '../util/CheckState'
 import Discord from 'discord.js'
@@ -74,3 +75,4 @@ async function writeData(data: object) {
 }
 
 export default AddStream
+*/

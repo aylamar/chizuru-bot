@@ -1,3 +1,4 @@
+/*
 import fs from 'fs'
 import getTwitchToken from "./GetTwitchToken"
 import getChannelStatus from "./GetChannelStatus"
@@ -69,3 +70,4 @@ async function checkState() {
 }
 
 export default { initState, checkState, addState, deleteState }
+*/

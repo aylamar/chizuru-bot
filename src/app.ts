@@ -40,7 +40,6 @@ client.on('message', async message => {
             await message.channel.send(addMsg)
             break;
         case 'delstream':
-            console.log('hit')
             let delMsg: any = await delStream(args[1].toLowerCase(), message.channel.id, /*message.member.user.tag*/)
             message.channel.send(delMsg)
             break;
@@ -52,7 +51,8 @@ client.on('message', async message => {
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((result: any) => {
         console.log('Connected with Mongoose')
-        StreamMgr.initState()
+        //StreamMgr.initState()
+        setInterval(StreamMgr.updateState, 1000 * 60),
 
         // Must be the last line
         client.login(discordToken);

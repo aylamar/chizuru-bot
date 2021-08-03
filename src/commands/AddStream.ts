@@ -1,7 +1,7 @@
 import Discord from 'discord.js'
 import ChannelMgr from '../util/ChannelMgr'
 
-async function AddStream(streamer: string, channelID: string) {
+async function addStream(streamer: string, channelID: string) {
     let res = await ChannelMgr.addStream(streamer, channelID)
     switch(res) {
         case 'Already Exists':
@@ -11,10 +11,10 @@ async function AddStream(streamer: string, channelID: string) {
             return alreadyExistEmbed
         case 'Success':
             let successEmbed = new Discord.MessageEmbed()
-                .setDescription(`You'll be notified when **${streamer}** comes online.`)
+                .setDescription(`You'll be notified when **${streamer}** goes online.`)
                 .setColor(3066993)
             return successEmbed
     }
 }
 
-export default AddStream
+export default addStream

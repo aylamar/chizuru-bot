@@ -2,12 +2,10 @@ import Discord, { Channel, MessageEmbed } from 'discord.js'
 const client = new Discord.Client();
 
 import { prefix, discordToken, mongoURI } from './config.json'
-import AddStream from './commands/AddStream'
+import AddStream from './commands/addStream'
 import listStreams from './commands/ListStreams'
-//import deleteStream from './commands/DeleteStream'
-import ChannelMgr from './util/ChannelMgr'
+import delStream from './commands/delStream'
 import mongoose from "mongoose";
-import TwitchMgr from './util/TwitchMgr'
 import StreamMgr from './util/StreamMgr'
 
 
@@ -38,12 +36,13 @@ client.on('message', async message => {
             message.channel.send(listMsg)
             break;
         case 'addstream':
-            let addMsg: any = await AddStream(args[1].toLowerCase(), message.channel.id)
+            let addMsg: MessageEmbed = await AddStream(args[1].toLowerCase(), message.channel.id)
             await message.channel.send(addMsg)
             break;
-        case 'deletestream':
-            //let delMsg: MessageEmbed = await deleteStream(args[1], message.channel.id, message.member.user.tag)
-            //message.channel.send(delMsg)
+        case 'delstream':
+            console.log('hit')
+            let delMsg: any = await delStream(args[1].toLowerCase(), message.channel.id, /*message.member.user.tag*/)
+            message.channel.send(delMsg)
             break;
         default:
             break;

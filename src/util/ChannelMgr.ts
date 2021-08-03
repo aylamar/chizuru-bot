@@ -32,31 +32,21 @@ ChannelMgr.addStream = async function(streamer_name: string, id: string) {
     }
 }
 
-ChannelMgr.delStream = function(id: string, streamer_name: string) {
-    Channel.find({_id: id, followed_channels: {$in: streamer_name}}).then((res: any) => {
+ChannelMgr.delStream = async function(streamer_name: string, id: string) {
+    let res = await Channel.find({_id: id, followed_channels: {$in: streamer_name}})
         // If no result found
-        if (res.length === 0) {
-            console.log(`${streamer_name} does not exist in this channel`)
-        } else if (res[0].followed_channels.length === 1 && res[0].followed_channels[0] == streamer_name) {
-            Channel.findOneAndDelete({_id: id}, function(err: any, result: any) {
-                if (err) {
-                    console.log(err)
-                } else {
-                    console.log(`Successfully removed ${streamer_name} from #${id} & cleared from db`)
-                }
-            })
-        } else {
-            res[0].followed_channels = res[0].followed_channels.filter((strm: string) => strm !== streamer_name)
-            res[0].save(function(err: any, result: any) {
-                if (err) {
-                    console.log(err)
-                } else {
-                    console.log(`Successfully removed ${streamer_name} from #${id}`)
-                }
-            })
-            console.log(`Removed ${streamer_name} from ${id}`)
-        }
-    })
+    if (res.length === 0) {
+        return "Doesn't Exist"
+    } else if (res[0].followed_channels.length === 1 && res[0].followed_channels[0] == streamer_name) {
+        console.log('hiiiiiiiiit')
+        await Channel.findOneAndDelete({_id: id})
+        return 'Success'
+    } else {
+        console.log('missssssssss')
+        res[0].followed_channels = await res[0].followed_channels.filter((strm: string) => strm !== streamer_name)
+        await res[0].save()
+        return 'Success'
+    }
     // TODO: Check if streamer exists in any other channels, if not, delete streamer 
     //StreamMgr.delStreamer(streamer_name)
 }

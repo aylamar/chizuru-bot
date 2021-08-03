@@ -10,21 +10,12 @@ import mongoose from "mongoose";
 import TwitchMgr from './util/TwitchMgr'
 import StreamMgr from './util/StreamMgr'
 
-mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then((result: any) => {
-        console.log('Connected with Mongoose')
-    })
-    .catch((err: any) => console.error(err))
-
 
 console.log('Chizuru bot is starting...')
 
 // Log to console when bot is started
-client.once('ready', () => {
+client.once('ready', async () => {
     console.log('Chizuru Bot is running!')
-    //StreamMgr.addStreamer("moonmoon")
-    //ChannelMgr.addStream("1238971324", "moonmoon")
-    //StreamMgr.delStreamer("moonmoon")
 });
 
 client.on('message', async message => {
@@ -59,8 +50,15 @@ client.on('message', async message => {
     }
 })
 
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then((result: any) => {
+        console.log('Connected with Mongoose')
+        StreamMgr.initState()
+
+        // Must be the last line
+        client.login(discordToken);
+    })
+    .catch((err: any) => console.error(err))
+
 // Export client so messages can be sent without passing around client
 export { client }
-
-// Must be the last line
-client.login(discordToken);

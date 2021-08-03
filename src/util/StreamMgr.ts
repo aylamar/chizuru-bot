@@ -44,6 +44,28 @@ StreamMgr.delStreamer = async function(channel_name: string) {
     }
 }
 
+StreamMgr.initState = async function() {
+    console.log('Setting intial state...')
+    let token = await TwitchMgr.getToken()
+
+    Stream.find({}, (err: any, streams: any) => {
+        if(err) {
+            console.log(err)
+        } else {
+            streams.map(async (stream: any) => {
+                let res = await TwitchMgr.checkStream(stream._id, token)
+                if (res == undefined) {
+                    stream.current_state = false
+                    stream.save()
+                } else if (res != undefined) {
+                    stream.current_state = true
+                    stream.save()
+                }
+            })
+        }
+    })
+}
+
 StreamMgr.updateState = async function() {
     console.log('Checking monitored streams...')
     let token = await TwitchMgr.getToken()

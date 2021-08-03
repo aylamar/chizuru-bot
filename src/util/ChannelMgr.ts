@@ -3,43 +3,33 @@ import StreamMgr from "./StreamMgr"
 const Channel = require('../models/channel')
 const ChannelMgr: any = {}
 
-ChannelMgr.addStream = function(id: string, streamer_name: string) {
-    Channel.exists({_id: id}).then((res: any) => {
-        if (res === true) {
-            // If channel exists, check to see if ID has already been added
-            Channel.findById(id).then((res: any) => {
-                if (res.followed_channels.includes(streamer_name)) {
-                    console.log('Streamer already exists!')
-                    return
-                } else {
-                    res.followed_channels.push(streamer_name)
-                }
-                res.save(function(err: any, result: any) {
-                    if (err) {
-                        console.log(err)
-                    } else {
-                        StreamMgr.addStreamer(streamer_name)
-                        console.log(`Successfully added ${streamer_name} for #${id}`)
-                    }
-                })
-                console.log('Streamer added to channel!')
-            })
+ChannelMgr.addStream = async function(streamer_name: string, id: string) {
+    let res = await Channel.exists({_id: id})
+    console.log(res)
+    if (res === true) {
+        // If channel exists, check to see if ID has already been added
+        let channel = await Channel.findById(id)
+        if (channel.followed_channels.includes(streamer_name)) {
+            console.log('Streamer already exists!')
+            return 'Already Exists'
         } else {
-            // If channel does not exist, create new channel with stream
-            const channel = new Channel({
-                _id: id,
-                followed_channels: streamer_name
-            })
-            channel.save(function(err: any, result: any) {
-                if (err) {
-                    console.log(err)
-                } else {
-                    StreamMgr.addStreamer(streamer_name)
-                    console.log(`Successfully added ${streamer_name} for #${id}`)
-                }
-            })
+            await channel.followed_channels.push(streamer_name)
+            await channel.save()
+            StreamMgr.addStreamer(streamer_name)
+            console.log(`Successfully added ${streamer_name} for #${id}`)
+            return 'Success'   
         }
-    })
+    } else {
+        // If channel does not exist, create new channel with stream
+        const channel = new Channel({
+            _id: id,
+            followed_channels: streamer_name
+        })
+        channel.save()
+        StreamMgr.addStreamer(streamer_name)
+        console.log(`Successfully added ${streamer_name} for #${id}`)
+        return 'Success'
+    }
 }
 
 ChannelMgr.delStream = function(id: string, streamer_name: string) {

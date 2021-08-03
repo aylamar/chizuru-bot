@@ -5,18 +5,15 @@ const ChannelMgr: any = {}
 
 ChannelMgr.addStream = async function(streamer_name: string, id: string) {
     let res = await Channel.exists({_id: id})
-    console.log(res)
     if (res === true) {
         // If channel exists, check to see if ID has already been added
         let channel = await Channel.findById(id)
         if (channel.followed_channels.includes(streamer_name)) {
-            console.log('Streamer already exists!')
             return 'Already Exists'
         } else {
             await channel.followed_channels.push(streamer_name)
             await channel.save()
             StreamMgr.addStreamer(streamer_name)
-            console.log(`Successfully added ${streamer_name} for #${id}`)
             return 'Success'   
         }
     } else {
@@ -27,7 +24,6 @@ ChannelMgr.addStream = async function(streamer_name: string, id: string) {
         })
         channel.save()
         StreamMgr.addStreamer(streamer_name)
-        console.log(`Successfully added ${streamer_name} for #${id}`)
         return 'Success'
     }
 }
@@ -38,11 +34,9 @@ ChannelMgr.delStream = async function(streamer_name: string, id: string) {
     if (res.length === 0) {
         return "Doesn't Exist"
     } else if (res[0].followed_channels.length === 1 && res[0].followed_channels[0] == streamer_name) {
-        console.log('hiiiiiiiiit')
         await Channel.findOneAndDelete({_id: id})
         return 'Success'
     } else {
-        console.log('missssssssss')
         res[0].followed_channels = await res[0].followed_channels.filter((strm: string) => strm !== streamer_name)
         await res[0].save()
         return 'Success'

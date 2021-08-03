@@ -76,27 +76,23 @@ StreamMgr.updateState = async function() {
             streams.map(async (stream: any) => {
                 let res = await TwitchMgr.checkStream(stream._id, token)
                 if (res == undefined && stream.current_state === true) {
+                    // if streamer goes offline
                     // should be set to true, set to false for testing
                     stream.current_state = false
                     stream.save()
-
-                    console.log(`${stream._id} went offline`)
 
                     let offlineEmbed = genGoOfflineEmbed(stream)
                     postStreams(stream._id, offlineEmbed)
 
                 } else if (res != undefined && stream.current_state === false) {
+                    // if streamer comes online
                     // should be set to false, set to true for testing
                     stream.current_state = true
                     stream.save()
 
-                    console.log(`${stream._id} has come online`)
-
                     let onlineEmbed = genGoLiveEmbed(stream.profile_picture, res)
                     postStreams(stream._id, onlineEmbed)
-                } else {
-                    console.log(`No change in ${stream._id}`)
-                }
+                } 
             })
         }
     })

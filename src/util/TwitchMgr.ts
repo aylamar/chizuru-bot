@@ -69,7 +69,7 @@ TwitchMgr.getProfile = async function (channel_name: string, token?: string) {
         let parsedRes: any = await res.json()
         let data = await parsedRes.data.filter((e: any) => e['broadcaster_login'] === channel_name)
 
-        if (await data[0].display_name.toLowerCase() === channel_name) {
+        if (data[0].broadcaster_login == channel_name) {
             // returns id, display_name, thumbnail_irl (profile picture), is_live (true/false)
             return data[0]
         } else {

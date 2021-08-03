@@ -11,7 +11,7 @@ StreamMgr.addStreamer = async function(channel_name: string) {
     let streamDB = await Stream.findById(channel_name)
     if (streamDB == null){
         let res = await TwitchMgr.getProfile(channel_name);
-        if (await res === 'Unable to locate') {
+        if (await res !== 'Unable to locate') {
             try {
                 const streamer = await new Stream({
                     _id: channel_name,

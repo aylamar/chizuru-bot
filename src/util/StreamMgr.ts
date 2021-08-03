@@ -21,7 +21,6 @@ StreamMgr.addStreamer = async function(channel_name: string) {
         console.log(`${channel_name} was added to the database`)
         return true
     } else {
-        console.log(streamDB)
         console.log(`It looks like ${channel_name} was already in the database`)
         return false
     }

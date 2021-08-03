@@ -1,3 +1,5 @@
+import StreamMgr from "./StreamMgr"
+
 const Channel = require('../models/channel')
 const ChannelMgr: any = {}
 
@@ -16,6 +18,7 @@ ChannelMgr.addStream = function(id: string, streamer_name: string) {
                     if (err) {
                         console.log(err)
                     } else {
+                        StreamMgr.addStreamer(streamer_name)
                         console.log(`Successfully added ${streamer_name} for #${id}`)
                     }
                 })
@@ -31,12 +34,12 @@ ChannelMgr.addStream = function(id: string, streamer_name: string) {
                 if (err) {
                     console.log(err)
                 } else {
+                    StreamMgr.addStreamer(streamer_name)
                     console.log(`Successfully added ${streamer_name} for #${id}`)
                 }
             })
         }
     })
-    // TODO: Check if streamer exists in streamer db, if not, add to db
 }
 
 ChannelMgr.delStream = function(id: string, streamer_name: string) {

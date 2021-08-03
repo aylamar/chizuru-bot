@@ -27,6 +27,6 @@ const streamerSchema = new Schema({
 
 }, { timestamps: true })
 
-const streamer: Model<streamer> = model('streamer', streamerSchema)
+const Streamer: Model<streamer> = model('streamer', streamerSchema)
 
-module.exports = streamer
+module.exports = Streamer

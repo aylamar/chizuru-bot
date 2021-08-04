@@ -1,5 +1,5 @@
 // Import Discord.js
-import { MessageEmbed, Client, Intents } from 'discord.js'
+import { MessageEmbed, Client, Intents, GuildStickerManager, Guild, DiscordAPIError } from 'discord.js'
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
 // Import dependencies
@@ -11,9 +11,12 @@ import StreamMgr from './util/StreamMgr'
 import addStream from './commands/addStream'
 import listStreams from './commands/listStreams'
 import delStream from './commands/delStream'
-import help from './commands/help';
+import help from './commands/help'
+import stats from './commands/stats'
 
 console.log('Chizuru bot is starting...')
+
+let commandsRun = 0
 
 // Once started, start doing stuff
 client.once('ready', async () => {
@@ -26,7 +29,7 @@ client.once('ready', async () => {
     // When slash command is executed, run command
     client.on('interactionCreate', async interaction => {
         if (!interaction.isCommand()) return;
-    
+        commandsRun++
         switch (interaction.commandName) {
             case 'ping':
                 await interaction.reply('Pong!');
@@ -46,6 +49,10 @@ client.once('ready', async () => {
             case 'help':
                 let helpMsg: MessageEmbed = await help()
                 await interaction.reply({embeds: [helpMsg]})
+                break
+            case 'stats':
+                let statsMsg: MessageEmbed = await stats(commandsRun)                    
+                await interaction.reply({embeds: [statsMsg]})
                 break
             default:
                 console.error('Somehow the default case was triggered')
@@ -88,6 +95,10 @@ client.on('messageCreate', async message => {
             description: 'Lists all streams followed in this server',
         },
         {
+            name: 'stats',
+            description: 'Displays information about Chizuru Bot',
+        },
+        {
             name: 'help',
             description: 'List all avaiable commands',
         },
@@ -95,9 +106,9 @@ client.on('messageCreate', async message => {
 
     // If message is from bot owner, allow deploy test commands
     if (message.content.toLowerCase() === '!testdeploy' && message.author.id === client.application?.owner.id) {
-        const commands = await client.application?.commands.set([])
+        //const commands = await client.application?.commands.set([])
         const commandsTest = await client.guilds.cache.get(guildID)?.commands.set(commandData)
-        console.log('Global commands', commands)
+        //console.log('Global commands', commands)
         console.log('Test commands', commandsTest)
     }
 

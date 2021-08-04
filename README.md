@@ -36,6 +36,10 @@ Configuration option definitions:
 
 ## Commands
 
+### /help
+
+Lists all of the avaiable commands
+
 ### /addstream [stream]
 
 Begins monitoring mentioned stream in the channel that the command was executed in.
@@ -47,3 +51,7 @@ Stops tracking the mentioned stream in the channel that the command was executed
 ### /liststream [stream]
 
 Lists all streams that are currently being monitored in this channel.
+
+### /stats
+
+Displays stats about the Chizuru Bot

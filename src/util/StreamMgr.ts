@@ -112,7 +112,7 @@ async function postStreams(channel_name: string, embed: MessageEmbed) {
     await arr.map(async (channelID: string) => {
         let channel = client.channels.resolve(channelID)
         if (channel.isText()) {
-            channel.send(embed)
+            channel.send({embeds: [embed]})
         } else {
             console.log(`${channel.id} is not a text based channel`)
         }    

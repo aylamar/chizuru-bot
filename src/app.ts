@@ -1,5 +1,6 @@
-import Discord, { Channel, MessageEmbed } from 'discord.js'
-const client = new Discord.Client();
+import { MessageEmbed, Client, Intents } from 'discord.js'
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+
 
 import { prefix, discordToken, mongoURI } from './config.json'
 import AddStream from './commands/addStream'
@@ -15,8 +16,6 @@ console.log('Chizuru bot is starting...')
 client.once('ready', async () => {
       console.log('Chizuru Bot is running!')
       client.user.setActivity('!addstream', { type: 'WATCHING' })
-        .then(presence => console.log(`Activity set to ${presence.activities[0].name}`))
-        .catch(console.error);
 });
 
 client.on('message', async message => {
@@ -35,16 +34,16 @@ client.on('message', async message => {
             message.channel.send('pong')
             break;
         case 'liststreams':
-            let listMsg: MessageEmbed = await listStreams(message.channel)
-            message.channel.send(listMsg)
+            let listMsg: MessageEmbed = await listStreams(message.channel.id)
+            message.channel.send({embeds: [listMsg]})
             break;
         case 'addstream':
             let addMsg: MessageEmbed = await AddStream(args[1].toLowerCase(), message.channel.id)
-            await message.channel.send(addMsg)
+            await message.channel.send({embeds: [addMsg]})
             break;
         case 'delstream':
             let delMsg: any = await delStream(args[1].toLowerCase(), message.channel.id, /*message.member.user.tag*/)
-            message.channel.send(delMsg)
+            message.channel.send({embeds: [delMsg]})
             break;
         default:
             break;

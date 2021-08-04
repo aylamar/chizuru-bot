@@ -16,10 +16,9 @@ To configure this bot, rename the included `config.default.json` file to `config
 
 ```json
 {
+    "guildID": "",
     "mongoURI": "",
     "discordToken": "",
-    "prefix": "!",
-    "channelID": "",
     "twitchClientID": "",
     "twitchClientSecret": "",
 }
@@ -29,23 +28,22 @@ Configuration option definitions:
 
 | Key                | Description                                         | Required |
 |--------------------|-----------------------------------------------------|----------|
+| guildID            | The guild ID of your test server                    | ☑️       |
 | discordToken       | Your bot token from the Discord developer portal    | ☑️       |
-| prefix             | The prefix for any of this bot's commands           | ☑️       |
-| channelID          | Channel ID to restrict the bot to                   | ❌       |
 | mongoURI           | URL for mongoDB server with username & password     | ☑️       |
 | twitchClientID     | Your client ID from the Twitch developer portal     | ☑️       |
 | twitchClientSecret | Your client secret from the Twitch developer portal | ☑️       |
 
 ## Commands
 
-### !addstream [stream]
+### /addstream [stream]
 
 Begins monitoring mentioned stream in the channel that the command was executed in.
 
-### !deletestream [stream]
+### /deletestream [stream]
 
 Stops tracking the mentioned stream in the channel that the command was executed in.
 
-### !liststream [stream]
+### /liststream [stream]
 
 Lists all streams that are currently being monitored in this channel.

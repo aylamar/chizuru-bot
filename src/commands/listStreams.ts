@@ -1,4 +1,4 @@
-import Discord, { Channel } from 'discord.js'
+import Discord from 'discord.js'
 import ChannelMgr from '../util/ChannelMgr'
 
 async function listStreams(channel_id: string) {

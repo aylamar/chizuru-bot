@@ -127,11 +127,9 @@ function genGoLiveEmbed(pfp: string, data: any) {
         .setColor(3066993)
         .setDescription(`https://twitch.tv/${data.user_login}`)
         .setURL(`https://twitch.tv/${data.user_login}`)
-        .addFields(
-            { name: 'Status', value: ':green_circle: Online', inline: true },
-            { name: 'Viewers', value: data.viewer_count, inline: true },
-            { name: 'Streaming', value: data.game_name, inline: true },
-        )
+        .addFields({name: 'Status', value: ':green_circle: Online', inline: true})
+        .addFields({ name: 'Viewers', value: data.viewer_count.toString(), inline: true })
+        .addFields({ name: 'Streaming', value: data.game_name, inline: true })
         .setImage(`https://static-cdn.jtvnw.net/previews-ttv/live_user_${data.user_login}-620x360.jpg`)
         .setThumbnail(pfp)
         .setTimestamp()

@@ -13,7 +13,10 @@ console.log('Chizuru bot is starting...')
 
 // Log to console when bot is started
 client.once('ready', async () => {
-    console.log('Chizuru Bot is running!')
+      console.log('Chizuru Bot is running!')
+      client.user.setActivity('!addstream', { type: 'WATCHING' })
+        .then(presence => console.log(`Activity set to ${presence.activities[0].name}`))
+        .catch(console.error);
 });
 
 client.on('message', async message => {

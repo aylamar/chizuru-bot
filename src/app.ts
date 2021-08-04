@@ -51,11 +51,11 @@ client.on('message', async message => {
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((result: any) => {
         console.log('Connected with Mongoose')
-        //StreamMgr.initState()
+        StreamMgr.initState()
         setInterval(StreamMgr.updateState, 1000 * 60),
 
         // Must be the last line
-        client.login(discordToken);
+        client.login(discordToken)
     })
     .catch((err: any) => console.error(err))
 

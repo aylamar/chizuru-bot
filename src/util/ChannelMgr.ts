@@ -17,7 +17,7 @@ ChannelMgr.addStream = async function(streamer_name: string, id: string) {
                     try {
                         await channel.followed_channels.push(streamer_name)
                         await channel.save()        
-                        return'Success'
+                        return 'Success'
                     } catch {
                         return 'Failure'
                     }
@@ -62,7 +62,6 @@ ChannelMgr.delStream = async function(streamer_name: string, id: string) {
 
         let channelList = await Channel.find({followed_channels: {$in: streamer_name}})
         if (channelList.length === 0) {
-            console.log('hit')
             StreamMgr.delStreamer(streamer_name)
         }
         return 'Success'
@@ -72,7 +71,6 @@ ChannelMgr.delStream = async function(streamer_name: string, id: string) {
 
         let channelList = await Channel.find({followed_channels: {$in: streamer_name}})
         if (channelList.length === 0) {
-            console.log('hit')
             StreamMgr.delStreamer(streamer_name)
         }
         return 'Success'

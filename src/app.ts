@@ -21,7 +21,7 @@ client.once('ready', async () => {
 client.on('message', async message => {
     // If not in channel with channel ID, disregard
     //if (message.channel.id !== channelID) return;
-    
+
     // Split string string into array after prefix
     let args = message.content.substring(prefix.length).split(" ")
   

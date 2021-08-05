@@ -42,7 +42,7 @@ client.once('ready', async () => {
                 await delStream(interaction.options.getString('streamer'), interaction)
                 break
             case 'liststreams':
-                let listMsg: MessageEmbed = await listStreams(interaction.channelId)
+                let listMsg: MessageEmbed = await listStreams(interaction.guildId)
                 await interaction.reply({embeds: [listMsg]})
                 break
             case 'help':

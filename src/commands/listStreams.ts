@@ -1,17 +1,18 @@
 import Discord from 'discord.js'
 import ChannelMgr from '../util/ChannelMgr'
 
-async function listStreams(channel_id: string) {
-    let streamList: string[] = []
-
-    streamList = await ChannelMgr.getStreamersByChannel(channel_id)
+async function listStreams(guild_id: string) {
+    let res = await ChannelMgr.getChannelByGuild(guild_id)
 
     const embed = new Discord.MessageEmbed()
-        .setTitle("Streams you're following:")
+        .setTitle("Streams followed on this server:")
         .setColor(10181046)
-        .setTimestamp()
 
-    streamList.forEach(e => embed.addFields({name: `${e}`, value: `<#${channel_id}>`, inline: true}))
+    await res.map((e: any) => {
+        e.followed_channels.map((f: any) => {
+            embed.addFields({name: `${f}`, value: `<#${e._id}>`, inline: true})
+        })
+    })
 
     return embed
 }

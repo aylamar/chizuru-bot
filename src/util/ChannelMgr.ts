@@ -92,4 +92,10 @@ ChannelMgr.getStreamersByChannel = async function (channel_id: string) {
     return await res[0].followed_channels
 }
 
+ChannelMgr.getChannelByGuild = async function(guild_id: string) {
+    // find guild_id with .lean() for read only + easy conversion
+    let res = await Channel.find({guild_id}).lean()
+    return res;
+}
+
 export default ChannelMgr

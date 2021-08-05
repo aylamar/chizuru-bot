@@ -2,11 +2,16 @@ import { model, Schema, Model, Document } from 'mongoose'
 
 interface discordChannel extends Document {
     _id: string,
+    guildID: string,
     followed_channels: string[]
 }
 
 const discordChannelSchema = new Schema({
     _id: {
+        type: String,
+        required: true
+    },
+    guild_id: {
         type: String,
         required: true
     },

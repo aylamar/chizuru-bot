@@ -1,5 +1,4 @@
 import Discord, { Guild } from 'discord.js'
-import { author } from '../config.json'
 import { client } from '../app'
 
 async function stats(commandsRun: number) {
@@ -11,7 +10,7 @@ async function stats(commandsRun: number) {
     const embed = new Discord.MessageEmbed()
         .setAuthor("ChizuruBot", 'https://i.imgur.com/3kTVxnq.jpg')
         .addFields(
-                {name: 'Author', value: `${author}`, inline: true},
+                {name: 'Author', value: `aylamar#0001`, inline: true},
                 {name: 'Commands ran', value: `${commandsRun}`, inline: true},
                 {name: 'Memory Usage', value: `${Math.round(memUsed * 100) / 100} MB`, inline: true},
                 {name: 'Something', value: 'Something eventually', inline: true},

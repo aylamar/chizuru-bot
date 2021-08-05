@@ -1,8 +1,7 @@
-import Discord, { Guild } from 'discord.js'
+import Discord from 'discord.js'
 import { client } from '../app'
 
 async function stats(commandsRun: number) {
-    let streamList: string[] = []
     const memUsed = process.memoryUsage().heapUsed / 1024 / 1024
     let uptime = formatTime(process.uptime())
     let presence = formatPresence()

@@ -1,5 +1,6 @@
 // Import Discord.js
-import { MessageEmbed, Client, Intents, GuildStickerManager, Guild, DiscordAPIError } from 'discord.js'
+import { MessageEmbed, Client, Intents, Permissions, Interaction } from 'discord.js'
+
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
 // Import dependencies
@@ -23,20 +24,21 @@ client.once('ready', async () => {
     console.log('Chizuru Bot is running!')
     client.user.setActivity('/addstream', { type: 'WATCHING' })
 
-    // List of application command option types can be found here:
-    // https://discord.com/developers/docs/interactions/slash-commands#application-command-object-application-command-option-type
-
     // When slash command is executed, run command
     client.on('interactionCreate', async interaction => {
+        // Needed for switch statement to work
         if (!interaction.isCommand()) return;
+
+        // +1 command for stats, then process the command
         commandsRun++
         switch (interaction.commandName) {
             case 'ping':
                 await interaction.reply('Pong!');
                 break
             case 'addstream':
-                let addMsg: MessageEmbed = await addStream(interaction.options.getString('streamer'), interaction.channelId)
-                await interaction.reply({embeds: [addMsg]});
+                await addStream(interaction.options.getString('streamer'), interaction)
+                //let addMsg: MessageEmbed = await addStream(interaction.options.getString('streamer'), interaction)
+                //await interaction.reply({embeds: [addMsg]});
                 break
             case 'delstream':
                 let delMsg: MessageEmbed = await delStream(interaction.options.getString('streamer'), interaction.channelId)
@@ -63,6 +65,10 @@ client.once('ready', async () => {
 
 client.on('messageCreate', async message => {
 	if (!client.application?.owner) await client.application?.fetch();
+
+    // List of application command option types can be found here:
+    // https://discord.com/developers/docs/interactions/slash-commands#application-command-object-application-command-option-type
+
 
     // Command data for all commands
     const commandData = [ 

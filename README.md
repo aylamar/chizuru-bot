@@ -42,7 +42,7 @@ Lists all of the avaiable commands
 
 ### /addstream [stream]
 
-Begins monitoring mentioned stream in the channel that the command was executed in.
+Requires: the MANAGE_CHANNELS permission, and begins monitoring mentioned stream in the channel that the command was executed in.
 
 ### /deletestream [stream]
 

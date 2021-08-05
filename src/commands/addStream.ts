@@ -3,8 +3,8 @@ import ChannelMgr from '../util/ChannelMgr'
 import { noPermission, somethingWrong } from '../util/CommonReplies'
 
 async function addStream(streamer: string, interaction: Interaction) {
-    // Needed 
-    if (!interaction.isCommand()) return;
+    // Needed for the ability to reply
+    if (!interaction.isCommand()) return
 
     if (typeof interaction.member.permissions === "string") {
         await somethingWrong(interaction)
@@ -16,19 +16,19 @@ async function addStream(streamer: string, interaction: Interaction) {
                 let alreadyExistEmbed = new Discord.MessageEmbed()
                     .setDescription(`You already get notifications for **${streamer}** here.`)
                     .setColor(3066993)
-                await interaction.reply({embeds: [alreadyExistEmbed]});
+                await interaction.reply({embeds: [alreadyExistEmbed]})
                 break
             case 'Success':
                 let successEmbed = new Discord.MessageEmbed()
                     .setDescription(`You'll be notified when **${streamer}** goes online.`)
                     .setColor(3066993)
-                await interaction.reply({embeds: [successEmbed]});
+                await interaction.reply({embeds: [successEmbed]})
                 break
             case 'Unable to locate':
                 let unableEmbed = new Discord.MessageEmbed()
                     .setDescription(`Unable to locate **${streamer}** for some reason, is this the right channel name?`)
                     .setColor(15158332)
-                await interaction.reply({embeds: [unableEmbed]});
+                await interaction.reply({embeds: [unableEmbed]})
                 break
         }
         return

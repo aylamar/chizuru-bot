@@ -4,7 +4,7 @@ import { noPermission, somethingWrong } from '../util/CommonReplies'
 
 async function delStream(streamer: string, interaction: Interaction) {
     // Needed for the ability to reply
-    if (!interaction.isCommand()) return;
+    if (!interaction.isCommand()) return
 
     if (typeof interaction.member.permissions === "string") {
         await somethingWrong(interaction)

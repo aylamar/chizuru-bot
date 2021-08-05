@@ -4,7 +4,7 @@ import { client } from '../app'
 
 async function stats(commandsRun: number) {
     let streamList: string[] = []
-    const memUsed = process.memoryUsage().heapUsed / 1024 / 1024;
+    const memUsed = process.memoryUsage().heapUsed / 1024 / 1024
     let uptime = formatTime(process.uptime())
     let presence = formatPresence()
 
@@ -23,7 +23,7 @@ async function stats(commandsRun: number) {
 }
 
 function formatPresence() {
-    let serverCount = client.guilds.cache.size;
+    let serverCount = client.guilds.cache.size
     
     //let channels = bot.channels.cache.size
     let data = {
@@ -33,11 +33,11 @@ function formatPresence() {
 }
 
 function formatTime(seconds: number) {
-    seconds = Number(seconds);
-    var d = Math.floor(seconds / (3600*24));
-    var h = Math.floor(seconds % (3600*24) / 3600);
-    var m = Math.floor(seconds % 3600 / 60);
-    var s = Math.floor(seconds % 60);
+    seconds = Number(seconds)
+    var d = Math.floor(seconds / (3600*24))
+    var h = Math.floor(seconds % (3600*24) / 3600)
+    var m = Math.floor(seconds % 3600 / 60)
+    var s = Math.floor(seconds % 60)
     
     let data = {
         day: d > 0 ? d + (d == 1 ? " day" : " days") : "0 days",
@@ -46,7 +46,7 @@ function formatTime(seconds: number) {
         second: s > 0 ? s + (s == 1 ? " second" : " seconds") : "0 seconds",
     }
 
-    return data;
+    return data
 }
 
 

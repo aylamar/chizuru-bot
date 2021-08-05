@@ -1,11 +1,11 @@
 // Import Discord.js
 import { MessageEmbed, Client, Intents, Permissions, Interaction } from 'discord.js'
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] })
 
 // Import dependencies
 import { guildID, discordToken, mongoURI } from './config.json'
-import mongoose from "mongoose";
+import mongoose from "mongoose"
 import StreamMgr from './util/StreamMgr'
 
 // Import commands
@@ -27,13 +27,13 @@ client.once('ready', async () => {
     // When slash command is executed, run command
     client.on('interactionCreate', async interaction => {
         // Needed for switch statement to work
-        if (!interaction.isCommand()) return;
+        if (!interaction.isCommand()) return
 
         // +1 command for stats, then process the command
         commandsRun++
         switch (interaction.commandName) {
             case 'ping':
-                await interaction.reply('Pong!');
+                await interaction.reply('Pong!')
                 break
             case 'addstream':
                 await addStream(interaction.options.getString('streamer'), interaction)
@@ -57,11 +57,11 @@ client.once('ready', async () => {
                 console.error('Somehow the default case was triggered')
                 break
         }
-    });    
-});
+    })
+})
 
 client.on('messageCreate', async message => {
-	if (!client.application?.owner) await client.application?.fetch();
+	if (!client.application?.owner) await client.application?.fetch()
 
     // List of application command option types can be found here:
     // https://discord.com/developers/docs/interactions/slash-commands#application-command-object-application-command-option-type
@@ -122,7 +122,7 @@ client.on('messageCreate', async message => {
         console.log('Global commands', commands)
         console.log('Test commands', commandsTest)
     }
-});
+})
 
 // Connect to MongoDB with mongoose
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })

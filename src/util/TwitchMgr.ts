@@ -52,7 +52,7 @@ TwitchMgr.getChannelStatus = async function (channel_name: string, token?: strin
     let resParsed: any = await res.json()
     let data: any /*IsChannel*/ = resParsed.data
 
-    return data;
+    return data
 }
 
 TwitchMgr.getProfile = async function (channel_name: string, token?: string) {

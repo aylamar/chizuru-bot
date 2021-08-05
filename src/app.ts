@@ -37,12 +37,9 @@ client.once('ready', async () => {
                 break
             case 'addstream':
                 await addStream(interaction.options.getString('streamer'), interaction)
-                //let addMsg: MessageEmbed = await addStream(interaction.options.getString('streamer'), interaction)
-                //await interaction.reply({embeds: [addMsg]});
                 break
             case 'delstream':
-                let delMsg: MessageEmbed = await delStream(interaction.options.getString('streamer'), interaction.channelId)
-                await interaction.reply({embeds: [delMsg]});
+                await delStream(interaction.options.getString('streamer'), interaction)
                 break
             case 'liststreams':
                 let listMsg: MessageEmbed = await listStreams(interaction.channelId)

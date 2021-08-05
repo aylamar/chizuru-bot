@@ -46,7 +46,7 @@ Requires: the MANAGE_CHANNELS permission, and begins monitoring mentioned stream
 
 ### /deletestream [stream]
 
-Stops tracking the mentioned stream in the channel that the command was executed in.
+Requires: the MANAGE_CHANNELS permission, and stops tracking the mentioned stream in the channel that the command was executed in.
 
 ### /liststream [stream]
 

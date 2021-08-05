@@ -1,12 +1,13 @@
 import Discord, { Interaction, Permissions } from 'discord.js'
 import ChannelMgr from '../util/ChannelMgr'
+import { noPermission, somethingWrong } from '../util/CommonReplies'
 
 async function addStream(streamer: string, interaction: Interaction) {
     // Needed 
     if (!interaction.isCommand()) return;
 
     if (typeof interaction.member.permissions === "string") {
-        await interaction.reply({ content: "Something went wrong, try again?", ephemeral: true })
+        await somethingWrong(interaction)
         return
     } else if (interaction.member.permissions.has(Permissions.FLAGS.MANAGE_CHANNELS)) {
         let res = await ChannelMgr.addStream(streamer, interaction.channelId)
@@ -32,7 +33,7 @@ async function addStream(streamer: string, interaction: Interaction) {
         }
         return
     } else {
-        await interaction.reply({ content: "You don't have permission for this.", ephemeral: true })
+        await noPermission(interaction)
         return
     }
 }

@@ -3,11 +3,11 @@ import StreamMgr from "./StreamMgr"
 const Channel = require('../models/channel')
 const ChannelMgr: any = {}
 
-ChannelMgr.addStream = async function(streamer_name: string, id: string) {
-    let res = await Channel.exists({_id: id})
+ChannelMgr.addStream = async function(streamer_name: string, channel_id: string, guild_id: string) {
+    let res = await Channel.exists({_id: channel_id})
     if (res === true) {
         // If channel exists, check to see if ID has already been added
-        let channel = await Channel.findById(id)
+        let channel = await Channel.findById(channel_id)
         if (channel.followed_channels.includes(streamer_name)) {
             return 'Already Exists'
         } else {
@@ -34,13 +34,14 @@ ChannelMgr.addStream = async function(streamer_name: string, id: string) {
             case 'Success':
                 try {
                     const channel = new Channel({
-                        _id: id,
+                        _id: channel_id,
+                        guild_id: guild_id,
                         followed_channels: streamer_name
                     })
                     channel.save()
                     StreamMgr.addStreamer(streamer_name)
                     return 'Success'
-                            } catch {
+                } catch {
                     return 'Failure'
                 }
             case 'Unable to locate':

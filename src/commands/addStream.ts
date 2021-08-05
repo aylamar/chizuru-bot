@@ -10,7 +10,7 @@ async function addStream(streamer: string, interaction: Interaction) {
         await somethingWrong(interaction)
         return
     } else if (interaction.member.permissions.has(Permissions.FLAGS.MANAGE_CHANNELS)) {
-        let res = await ChannelMgr.addStream(streamer, interaction.channelId)
+        let res = await ChannelMgr.addStream(streamer, interaction.channelId, interaction.guildId)
         switch(res) {
             case 'Already Exists':
                 let alreadyExistEmbed = new Discord.MessageEmbed()

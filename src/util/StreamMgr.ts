@@ -112,7 +112,12 @@ async function postStreams(channel_name: string, embed: MessageEmbed) {
     await arr.map(async (channelID: string) => {
         let channel = client.channels.resolve(channelID)
         if (channel.isText()) {
-            channel.send({embeds: [embed]})
+            // Errors seen so far "Missing Permissions": no post perms in channel
+            try {
+                channel.send({embeds: [embed]})
+            } catch (err) {
+                console.error(err)
+            }
         } else {
             console.log(`${channel.id} is not a text based channel`)
         }    
@@ -120,7 +125,7 @@ async function postStreams(channel_name: string, embed: MessageEmbed) {
 
 }
 
-function genGoLiveEmbed(pfp: string, data: any) {
+function genGoLiveEmbed(profile_picture: string, data: any) {
     const liveEmbed = new Discord.MessageEmbed()
         .setAuthor(data.title, '', `https://twitch.tv/${data.user_login}`)
         .setTitle(data.user_name)
@@ -131,7 +136,7 @@ function genGoLiveEmbed(pfp: string, data: any) {
         .addFields({ name: 'Viewers', value: data.viewer_count.toString(), inline: true })
         .addFields({ name: 'Streaming', value: data.game_name, inline: true })
         .setImage(`https://static-cdn.jtvnw.net/previews-ttv/live_user_${data.user_login}-620x360.jpg`)
-        .setThumbnail(pfp)
+        .setThumbnail(profile_picture)
         .setTimestamp()
     return liveEmbed
 }

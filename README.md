@@ -41,7 +41,7 @@ To invite Chiziru Bot to your server and have slash commands work, you'll need t
 If you want to be lazy, you're welcome to use the following link. You'll just want to make sure to replace `<YOUR_BOT_CLIENT_id_here>` with your bot's client ID.
 
 ```bash
-https://discord.com/oauth2/authorize?client_id=<YOUR_BOT_CLIENT_ID_HERE>&scope=bot+applications.commands&permissions=259846043712
+https://discord.com/oauth2/authorize?client_id=<YOUR_BOT_CLIENT_ID_HERE>&scope=bot+applications.commands&permissions=259846039632
 ```
 
 ## Commands

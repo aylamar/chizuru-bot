@@ -15,7 +15,7 @@ TwitchMgr.getToken = async function() {
     try {
         let rawdata: any = fs.readFileSync('./token.json')
         let data: IsToken = await JSON.parse(rawdata)
-        
+
         if (data.expire_time <= Date.now()) {
             console.log('Fetching new token...')
             var res: any = await fetch(`https://id.twitch.tv/oauth2/token?&client_id=${twitchClientID}&client_secret=${twitchClientSecret}&grant_type=client_credentials`, { method: 'POST' })
@@ -93,10 +93,9 @@ TwitchMgr.checkStream = async function (channel_name: string, token?: string) {
         })
         let parsedRes: any = await res.json()
         return parsedRes.data[0]
-    } catch {
-        console.log(`Error, something went wrong checking on ${channel_name}`)
+    } catch (err) {
+        console.log(`Error, something went wrong checking on ${channel_name}\n${err}`)
     }
-
 }
 
 export default TwitchMgr

@@ -22,7 +22,8 @@ StreamMgr.addStreamer = async function(channel_name: string) {
                 await streamer.save()
                 console.log(`${channel_name} was added to the database`)
                 return 'Success' 
-            } catch {
+            } catch (err) {
+                console.error(`Something went wrong adding ${channel_name} to the streamers database`)
                 return 'Failure'
             }
         } else {
@@ -41,13 +42,12 @@ StreamMgr.delStreamer = async function(channel_name: string) {
         console.log(`It doesn't look like ${channel_name} was in the database`)
         return false
     } else {
-        Stream.findOneAndDelete({_id: channel_name}, function(err: any, result: any) {
-            if (err) {
-                console.log(err)
-            } else {
-                console.log(`Successfully removed ${channel_name} from the database`)
-            }
-        })
+        try {
+            Stream.findOneAndDelete({_id: channel_name})
+            console.log(`Successfully removed ${channel_name} from the database`)
+        } catch (err) {
+            console.error(`Something went wrong deleting ${channel_name}\n${err}`)
+        }
     }
 }
 
@@ -55,23 +55,35 @@ StreamMgr.delStreamer = async function(channel_name: string) {
 StreamMgr.initState = async function() {
     console.log('Setting intial state...')
     let token = await TwitchMgr.getToken()
-
-    Stream.find({}, (err: any, streams: any) => {
-        if(err) {
-            console.log(err)
-        } else {
-            streams.map(async (stream: any) => {
-                let res = await TwitchMgr.checkStream(stream._id, token)
-                if (res == undefined) {
-                    stream.current_state = false
-                    stream.save()
-                } else if (res != undefined) {
-                    stream.current_state = true
-                    stream.save()
-                }
-            })
-        }
-    })
+    
+    try {
+        Stream.find({}, (err: any, streams: any) => {
+            if (err) {
+                console.log(err)
+            } else {
+                streams.map(async (stream: any) => {
+                    try {
+                        let res = await TwitchMgr.checkStream(stream._id, token)
+                        try {
+                            if (res == undefined) {
+                                stream.current_state = false
+                                stream.save()
+                            } else if (res != undefined) {
+                                stream.current_state = true
+                                stream.save()
+                            }
+                        } catch (err) {
+                            console.error(`Unable to save new state for ${stream._id}\n${err}`)
+                        }
+                    } catch (err) {
+                        console.error(`Unable to to check ${stream._id}'s status \n${err}`)
+                    }
+                })
+            }
+        })
+    } catch (err) {
+        console.error(`Something went wrong during the initialization phase, most likely connection issues\n${err}`)
+    }
 }
 
 // Used for comparing current state to previous state
@@ -79,7 +91,7 @@ StreamMgr.updateState = async function() {
     console.log('Checking monitored streams...')
     let token = await TwitchMgr.getToken()
     Stream.find({}, (err: any, streams: any) => {
-        if(err) {
+        if (err) {
             console.log(err)
         } else {
             streams.map(async (stream: any) => {

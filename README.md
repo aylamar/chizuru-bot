@@ -2,6 +2,9 @@
 
 Chizuru Bot is a Twitch notification bot that notifies Discord channels on status changes, which *might* have additional features added over time.
 
+NOTE: Running from source is not recommended. Treat running from source as a nightly build where things may or may not work properly.
+Releases *should* be stable and are reccommended to be used instead.
+
 ## Installation
 
 1. Download a release and unzip it somewhere on your computer.

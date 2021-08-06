@@ -11,29 +11,37 @@ async function addStream(streamer: string, interaction: Interaction) {
         return
     } else if (interaction.member.permissions.has(Permissions.FLAGS.MANAGE_CHANNELS)) {
         let res = await ChannelMgr.addStream(streamer, interaction.channelId, interaction.guildId)
-        switch(res) {
-            case 'Already Exists':
-                let alreadyExistEmbed = new Discord.MessageEmbed()
-                    .setDescription(`You already get notifications for **${streamer}** here.`)
-                    .setColor(3066993)
-                await interaction.reply({embeds: [alreadyExistEmbed]})
-                break
-            case 'Success':
-                let successEmbed = new Discord.MessageEmbed()
-                    .setDescription(`You'll be notified when **${streamer}** goes online.`)
-                    .setColor(3066993)
-                await interaction.reply({embeds: [successEmbed]})
-                break
-            case 'Unable to locate':
-                let unableEmbed = new Discord.MessageEmbed()
-                    .setDescription(`Unable to locate **${streamer}** for some reason, is this the right channel name?`)
-                    .setColor(15158332)
-                await interaction.reply({embeds: [unableEmbed]})
-                break
+        try {
+            switch(res) {
+                case 'Already Exists':
+                    let alreadyExistEmbed = new Discord.MessageEmbed()
+                        .setDescription(`You already get notifications for **${streamer}** here.`)
+                        .setColor(3066993)
+                    await interaction.reply({embeds: [alreadyExistEmbed]})
+                    break
+                case 'Success':
+                    let successEmbed = new Discord.MessageEmbed()
+                        .setDescription(`You'll be notified when **${streamer}** goes online.`)
+                        .setColor(3066993)
+                    await interaction.reply({embeds: [successEmbed]})
+                    break
+                case 'Unable to locate':
+                    let unableEmbed = new Discord.MessageEmbed()
+                        .setDescription(`Unable to locate **${streamer}** for some reason, is this the right channel name?`)
+                        .setColor(15158332)
+                    await interaction.reply({embeds: [unableEmbed]})
+                    break
+            }
+        } catch (err) {
+            console.error(`Error sending addStream response in ${interaction.channelId}\n${err}`)
         }
         return
     } else {
-        await noPermission(interaction)
+        try {
+            await noPermission(interaction)
+        } catch (err) {
+            console.error(`Error sending addStream response in ${interaction.channelId}\n${err}`)
+        }
         return
     }
 }

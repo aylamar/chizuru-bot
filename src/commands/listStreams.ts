@@ -1,8 +1,9 @@
-import Discord from 'discord.js'
+import Discord, { Interaction } from 'discord.js'
 import ChannelMgr from '../util/ChannelMgr'
 
-async function listStreams(guild_id: string) {
-    let res = await ChannelMgr.getChannelByGuild(guild_id)
+async function listStreams(interaction: Interaction) {
+    if (!interaction.isCommand()) return
+    let res = await ChannelMgr.getChannelByGuild(interaction.guildId)
 
     const embed = new Discord.MessageEmbed()
         .setTitle("Streams followed on this server:")
@@ -14,7 +15,11 @@ async function listStreams(guild_id: string) {
         })
     })
 
-    return embed
+    try {
+        interaction.reply({embeds: [embed]})
+    } catch (err) {
+        console.error(`Error sending list streams response in ${interaction.channelId}\n${err}`)
+    }
 }
 
 export default listStreams

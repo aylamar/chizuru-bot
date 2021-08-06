@@ -19,7 +19,8 @@ ChannelMgr.addStream = async function(streamer_name: string, channel_id: string,
                             await channel.followed_channels.push(streamer_name)
                             await channel.save()        
                             return 'Success'
-                        } catch {
+                        } catch (err) {
+                            console.error(`Error adding ${streamer_name} to ${channel_id}\n${err}`)
                             return 'Failure'
                         }
                     case 'Unable to locate':
@@ -42,7 +43,8 @@ ChannelMgr.addStream = async function(streamer_name: string, channel_id: string,
                         channel.save()
                         StreamMgr.addStreamer(streamer_name)
                         return 'Success'
-                    } catch {
+                    } catch (err) {
+                        console.error(`Error creating new channel entry for ${channel_id}\n${err}`)
                         return 'Failure'
                     }
                 case 'Unable to locate':

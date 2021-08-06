@@ -42,16 +42,13 @@ client.once('ready', async () => {
                 await delStream(interaction.options.getString('streamer'), interaction)
                 break
             case 'liststreams':
-                let listMsg: MessageEmbed = await listStreams(interaction.guildId)
-                await interaction.reply({embeds: [listMsg]})
+                await listStreams(interaction)
                 break
             case 'help':
-                let helpMsg: MessageEmbed = await help()
-                await interaction.reply({embeds: [helpMsg]})
+                await help(interaction)
                 break
             case 'stats':
-                let statsMsg: MessageEmbed = await stats(commandsRun)                    
-                await interaction.reply({embeds: [statsMsg]})
+                await stats(commandsRun, interaction)                    
                 break
             default:
                 console.error('Somehow the default case was triggered')

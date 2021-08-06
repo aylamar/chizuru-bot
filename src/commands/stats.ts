@@ -1,7 +1,8 @@
-import Discord from 'discord.js'
+import Discord, { Interaction } from 'discord.js'
 import { client } from '../app'
 
-async function stats(commandsRun: number) {
+async function stats(commandsRun: number, interaction: Interaction) {
+    if (!interaction.isCommand()) return
     const memUsed = process.memoryUsage().heapUsed / 1024 / 1024
     let uptime = formatTime(process.uptime())
     let presence = formatPresence()
@@ -17,7 +18,11 @@ async function stats(commandsRun: number) {
                 {name: 'Uptime', value: `${uptime.day}\n${uptime.hour}\n${uptime.minute}`, inline: true}
             )
         .setColor(10181046)
-    return embed
+    try {
+        await interaction.reply({embeds: [embed]})
+    } catch (err) {
+        console.error(`Error sending stats response in ${interaction.channelId}\n${err}`)
+    }
 }
 
 function formatPresence() {

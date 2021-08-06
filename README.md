@@ -34,6 +34,16 @@ Configuration option definitions:
 | twitchClientID     | Your client ID from the Twitch developer portal     | ☑️       |
 | twitchClientSecret | Your client secret from the Twitch developer portal | ☑️       |
 
+## Inviting Chizuru Bot
+
+To invite Chiziru Bot to your server and have slash commands work, you'll need to ensure that the `applications.commands` scope is something that your Chizuru Bot has access to. Without it, slash commands will not appear on the server or work properly. You'll also want to make sure that `bot` is there as well, otherwise, Chizuru bot won't be in the server and will be unable to send messages back.
+
+If you want to be lazy, you're welcome to use the following link. You'll just want to make sure to replace `<YOUR_BOT_CLIENT_id_here>` with your bot's client ID.
+
+```bash
+https://discord.com/oauth2/authorize?client_id=<YOUR_BOT_CLIENT_ID_HERE>&scope=bot+applications.commands&permissions=259846043712
+```
+
 ## Commands
 
 ### /help

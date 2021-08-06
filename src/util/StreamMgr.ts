@@ -116,7 +116,7 @@ async function postStreams(channel_name: string, embed: MessageEmbed) {
             try {
                 channel.send({embeds: [embed]})
             } catch (err) {
-                console.error(err)
+                console.error(`Encountered error in channel #${channelID}\n${err}`)
             }
         } else {
             console.log(`${channel.id} is not a text based channel`)

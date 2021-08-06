@@ -86,7 +86,7 @@ StreamMgr.updateState = async function() {
                 let res = await TwitchMgr.checkStream(stream._id, token)
                 if (res == undefined && stream.current_state === true) {
                     // if streamer goes offline
-                    // should be set to true, set to false for testing
+                    // should be set to false, set to true for testing
                     stream.current_state = false
                     stream.save()
 
@@ -95,7 +95,7 @@ StreamMgr.updateState = async function() {
 
                 } else if (res != undefined && stream.current_state === false) {
                     // if streamer comes online
-                    // should be set to false, set to true for testing
+                    // should be set to true, set to false for testing
                     stream.current_state = true
                     stream.save()
 

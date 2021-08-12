@@ -14,6 +14,7 @@ import listStreams from './commands/listStreams'
 import delStream from './commands/delStream'
 import help from './commands/help'
 import stats from './commands/stats'
+import kanye from './commands/whatWouldKanyeSay'
 
 console.log('Chizuru bot is starting...')
 
@@ -32,6 +33,9 @@ client.once('ready', async () => {
         // +1 command for stats, then process the command
         commandsRun++
         switch (interaction.commandName) {
+            case 'kanye':
+                await kanye(interaction)
+                break
             case 'ping':
                 await interaction.reply('Pong!')
                 break
@@ -89,6 +93,10 @@ client.on('messageCreate', async message => {
                 description: "The username of the streamer you'd like to unfollow",
                 required: true,
             }]
+        },
+        {
+            name: 'kanye',
+            description: 'Need some words of wisdom from Kanye?',
         },
         {
             name: 'liststreams',

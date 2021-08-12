@@ -68,3 +68,7 @@ Lists all streams that are currently being monitored in this channel.
 ### /stats
 
 Displays stats about the Chizuru Bot
+
+### /kanye
+
+Makes a call to [kanye.rest](https://kanye.rest/) to deliver a random Kanye quote.

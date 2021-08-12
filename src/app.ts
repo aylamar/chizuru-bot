@@ -1,5 +1,5 @@
 // Import Discord.js
-import { MessageEmbed, Client, Intents, Permissions, Interaction } from 'discord.js'
+import { Client, Intents } from 'discord.js'
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] })
 
@@ -48,7 +48,7 @@ client.once('ready', async () => {
                 await help(interaction)
                 break
             case 'stats':
-                await stats(commandsRun, interaction)                    
+                await stats(commandsRun, interaction)
                 break
             default:
                 console.error('Somehow the default case was triggered')

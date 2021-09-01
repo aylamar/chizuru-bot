@@ -15,6 +15,7 @@ import delStream from './commands/delStream'
 import help from './commands/help'
 import stats from './commands/stats'
 import kanye from './commands/whatWouldKanyeSay'
+import lookup from './commands/lookup'
 
 console.log('Chizuru bot is starting...')
 
@@ -50,6 +51,9 @@ client.once('ready', async () => {
                 break
             case 'help':
                 await help(interaction)
+                break
+            case 'lookup':
+                await lookup(interaction)
                 break
             case 'stats':
                 await stats(commandsRun, interaction)
@@ -109,6 +113,32 @@ client.on('messageCreate', async message => {
         {
             name: 'help',
             description: 'List all avaiable commands',
+        },
+        {
+            name: 'lookup',
+            description: 'Look up information on an anime or manga',
+            options:[{
+                name: 'type',
+                type: 3,
+                description: 'Do you want to look up an anime or manga?',
+                required: true,
+                choices: [
+                    {
+                        name: 'Anime',
+                        value: 'anime'
+                    },
+                    {
+                        name: 'Manga',
+                        value: 'manga',
+                    }
+                ]
+            },
+            {
+                name: 'series',
+                type: 3,
+                required: true,
+                description: 'The name of the manga or anime to lookup',
+            }]
         },
     ]
 

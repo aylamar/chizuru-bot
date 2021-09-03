@@ -24,7 +24,7 @@ class Bot extends Client {
         this.config = config
         this.login(config.discordToken)
 
-        mongoose.connect(config.mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+        mongoose.connect(config.mongoURI)
         .then((result: any) => {
         this.logger.success('Connected with Mongoose')
         StreamMgr.run(this)

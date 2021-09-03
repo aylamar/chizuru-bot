@@ -1,10 +1,16 @@
 import ChannelMgr from './ChannelMgr'
 import Discord, { MessageEmbed } from 'discord.js'
 import TwitchMgr from './TwitchMgr'
-import { client } from '../app'
+import { Bot } from '../client/client'
+import consola from 'consola'
 
 const Stream = require('../models/streamer')
 const StreamMgr: any = {}
+
+StreamMgr.run = async function(client: Bot) {
+    StreamMgr.initState().then(client.logger.success('Done setting initial stream state'))
+    setInterval(StreamMgr.updateState, 1000 * 60, client)
+}
 
 StreamMgr.addStreamer = async function(channel_name: string) {
     channel_name = channel_name.toLocaleLowerCase()
@@ -20,17 +26,17 @@ StreamMgr.addStreamer = async function(channel_name: string) {
                     current_state: res.is_live
                 })
                 await streamer.save()
-                console.log(`${channel_name} was added to the database`)
+                consola.success(`${channel_name} was added to the database`)
                 return 'Success' 
             } catch (err) {
-                console.error(`Something went wrong adding ${channel_name} to the streamers database`)
+                consola.error(err)
                 return 'Failure'
             }
         } else {
             return 'Unable to locate'
         }
     } else {
-        console.log(`It looks like ${channel_name} was already in the database`)
+        consola.info(`It looks like ${channel_name} was already in the database`)
         return 'Success'
     }
 }
@@ -39,60 +45,62 @@ StreamMgr.delStreamer = async function(channel_name: string) {
     channel_name = channel_name.toLocaleLowerCase()
     let streamDB = await Stream.findById(channel_name)
     if (streamDB == null){
-        console.log(`It doesn't look like ${channel_name} was in the database`)
+        consola.info(`It doesn't look like ${channel_name} was in the database`)
         return false
     } else {
         try {
             Stream.findOneAndDelete({_id: channel_name})
-            console.log(`Successfully removed ${channel_name} from the database`)
+            consola.success(`Successfully removed ${channel_name} from the database`)
         } catch (err) {
-            console.error(`Something went wrong deleting ${channel_name}\n${err}`)
+            consola.error('err')
         }
     }
 }
 
 // Used to set state during startup to prevent spam
 StreamMgr.initState = async function() {
-    console.log('Setting intial state...')
+    consola.info('Setting intial state...')
     let token = await TwitchMgr.getToken()
     
     try {
         Stream.find({}, (err: any, streams: any) => {
             if (err) {
-                console.log(err)
+                consola.error(err)
             } else {
                 streams.map(async (stream: any) => {
                     try {
                         let res = await TwitchMgr.checkStream(stream._id, token)
                         try {
                             if (res == undefined) {
+                                // Should be false, set true for testing
                                 stream.current_state = false
                                 stream.save()
                             } else if (res != undefined) {
+                                // Should be true, set false for testing
                                 stream.current_state = true
                                 stream.save()
                             }
                         } catch (err) {
-                            console.error(`Unable to save new state for ${stream._id}\n${err}`)
+                            consola.error(err)
                         }
                     } catch (err) {
-                        console.error(`Unable to to check ${stream._id}'s status \n${err}`)
+                        consola.error(err)
                     }
                 })
             }
         })
     } catch (err) {
-        console.error(`Something went wrong during the initialization phase, most likely connection issues\n${err}`)
+        consola.error(err)
     }
 }
 
 // Used for comparing current state to previous state
-StreamMgr.updateState = async function() {
-    console.log('Checking monitored streams...')
+StreamMgr.updateState = async function(client: Bot) {
+    consola.info('Checking monitored streams...')
     let token = await TwitchMgr.getToken()
     Stream.find({}, (err: any, streams: any) => {
         if (err) {
-            console.log(err)
+            consola.error(err)
         } else {
             streams.map(async (stream: any) => {
                 let res = await TwitchMgr.checkStream(stream._id, token)
@@ -103,7 +111,7 @@ StreamMgr.updateState = async function() {
                     stream.save()
 
                     let offlineEmbed = genGoOfflineEmbed(stream)
-                    postStreams(stream._id, offlineEmbed)
+                    postStreams(stream._id, offlineEmbed, client)
 
                 } else if (res != undefined && stream.current_state === false) {
                     // if streamer comes online
@@ -112,14 +120,14 @@ StreamMgr.updateState = async function() {
                     stream.save()
 
                     let onlineEmbed = genGoLiveEmbed(stream.profile_picture, res)
-                    postStreams(stream._id, onlineEmbed)
+                    postStreams(stream._id, onlineEmbed, client)
                 } 
             })
         }
     })
 }
 
-async function postStreams(channel_name: string, embed: MessageEmbed) {
+async function postStreams(channel_name: string, embed: MessageEmbed, client: Bot) {
     let arr = await ChannelMgr.getChannelByStreamer(channel_name)
     await arr.map(async (channelID: string) => {
         let channel = client.channels.resolve(channelID)
@@ -128,10 +136,10 @@ async function postStreams(channel_name: string, embed: MessageEmbed) {
             try {
                 channel.send({embeds: [embed]})
             } catch (err) {
-                console.error(`Encountered error in channel #${channelID}\n${err}`)
+                consola.error(err)
             }
         } else {
-            console.log(`${channel.id} is not a text based channel`)
+            consola.error(`${channel.id} is not a text based channel`)
         }    
     })
 

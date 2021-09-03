@@ -1,11 +1,13 @@
-import Discord, { Interaction } from 'discord.js'
-import ChannelMgr from '../util/ChannelMgr'
+import { RunFunction } from '../../interfaces/Command'
+import ChannelMgr from '../../util/ChannelMgr'
+import { MessageEmbed } from 'discord.js'
+import consola from 'consola'
 
-async function listStreams(interaction: Interaction) {
+export const run: RunFunction = async (client, interaction) => {
     if (!interaction.isCommand()) return
     let res = await ChannelMgr.getChannelByGuild(interaction.guildId)
 
-    const embed = new Discord.MessageEmbed()
+    const embed = new MessageEmbed()
         .setTitle("Streams followed on this server:")
         .setColor(10181046)
 
@@ -18,8 +20,9 @@ async function listStreams(interaction: Interaction) {
     try {
         interaction.reply({embeds: [embed]})
     } catch (err) {
-        console.error(`Error sending list streams response in ${interaction.channelId}\n${err}`)
+        consola.error(err)
     }
 }
 
-export default listStreams
+export const name: string = 'liststreams'
+export const description: string = 'Lists all streams followed in this server'

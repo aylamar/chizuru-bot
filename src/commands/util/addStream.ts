@@ -1,11 +1,13 @@
-import Discord, { Interaction, Permissions } from 'discord.js'
-import ChannelMgr from '../util/ChannelMgr'
-import { noPermission, somethingWrong } from '../util/CommonReplies'
+import { noPermission, somethingWrong } from '../../util/CommonReplies'
+import { Permissions, MessageEmbed } from 'discord.js'
+import { RunFunction } from '../../interfaces/Command'
+import ChannelMgr from '../../util/ChannelMgr'
+import consola from 'consola'
 
-async function addStream(streamer: string, interaction: Interaction) {
-    // Needed for the ability to reply
+export const run: RunFunction = async (client, interaction) => {
     if (!interaction.isCommand()) return
-
+    let streamer = interaction.options.getString('streamer')
+  
     if (typeof interaction.member.permissions === "string") {
         await somethingWrong(interaction)
         return
@@ -14,36 +16,45 @@ async function addStream(streamer: string, interaction: Interaction) {
         try {
             switch(res) {
                 case 'Already Exists':
-                    let alreadyExistEmbed = new Discord.MessageEmbed()
+                    let alreadyExistEmbed = new MessageEmbed()
                         .setDescription(`You already get notifications for **${streamer}** here.`)
                         .setColor(3066993)
                     await interaction.reply({embeds: [alreadyExistEmbed]})
                     break
                 case 'Success':
-                    let successEmbed = new Discord.MessageEmbed()
+                    let successEmbed = new MessageEmbed()
                         .setDescription(`You'll be notified when **${streamer}** goes online.`)
                         .setColor(3066993)
                     await interaction.reply({embeds: [successEmbed]})
                     break
                 case 'Unable to locate':
-                    let unableEmbed = new Discord.MessageEmbed()
+                    let unableEmbed = new MessageEmbed()
                         .setDescription(`Unable to locate **${streamer}** for some reason, is this the right channel name?`)
                         .setColor(15158332)
                     await interaction.reply({embeds: [unableEmbed]})
                     break
             }
         } catch (err) {
-            console.error(`Error sending addStream response in ${interaction.channelId}\n${err}`)
+            consola.error(err)
         }
         return
     } else {
         try {
             await noPermission(interaction)
         } catch (err) {
-            console.error(`Error sending addStream response in ${interaction.channelId}\n${err}`)
+            consola.error(err)
         }
         return
     }
 }
 
-export default addStream
+export const name: string = 'addstream'
+export const description: string = 'Start following a stream in this channel'
+export const options: Array<Object> = [
+    {
+        name: 'streamer',
+        type: 3,
+        description: "The username of the streamer you'd like to follow",
+        required: true,
+    },
+]

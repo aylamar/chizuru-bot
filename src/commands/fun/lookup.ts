@@ -2,6 +2,7 @@ import { RunFunction } from '../../interfaces/Command'
 import { MessageEmbed } from 'discord.js'
 import anilist from 'anilist-node'
 import consola from 'consola'
+
 const Anilist = new anilist()
 
 export const run: RunFunction = async (client, interaction) => {
@@ -49,10 +50,7 @@ export const run: RunFunction = async (client, interaction) => {
             .setImage(`https://img.anili.st/media/${parsedRes.id}`)
             .setTimestamp(date)
             .setColor(4172286)
-            .setFooter(
-                `${type}`,
-                'https://anilist.co/img/icons/android-chrome-512x512.png'
-            )
+            .setFooter(`${type}`, 'https://anilist.co/img/icons/android-chrome-512x512.png')
 
         interaction.reply({ embeds: [embed] })
     } catch (err) {

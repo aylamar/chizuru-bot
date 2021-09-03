@@ -1,6 +1,6 @@
 {
   "name": "chizuru-bot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "app.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "anilist-node": "^1.9.1",
     "consola": "^2.15.3",
     "discord-api-types": "^0.22.0",
-    "discord.js": "^13.0.0",
+    "discord.js": "^13.1.0",
     "fs": "^0.0.1-security",
     "glob": "^7.1.7",
     "mongoose": "^6.0.4",

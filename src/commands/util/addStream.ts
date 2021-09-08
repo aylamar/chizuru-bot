@@ -1,5 +1,5 @@
+import { Permissions, PermissionString, MessageEmbed } from 'discord.js'
 import { noPermission, somethingWrong } from '../../util/CommonReplies'
-import { Permissions, MessageEmbed } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
 import ChannelMgr from '../../util/ChannelMgr'
 import consola from 'consola'
@@ -50,6 +50,7 @@ export const run: RunFunction = async (client, interaction) => {
 
 export const name: string = 'addstream'
 export const description: string = 'Start following a stream in this channel'
+export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
 export const options: Array<Object> = [
     {
         name: 'streamer',

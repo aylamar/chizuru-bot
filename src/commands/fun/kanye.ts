@@ -1,5 +1,5 @@
+import { MessageEmbed, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
-import { MessageEmbed } from 'discord.js'
 import fetch from 'node-fetch'
 
 export const run: RunFunction = async (client, interaction) => {
@@ -22,3 +22,4 @@ export const run: RunFunction = async (client, interaction) => {
 
 export const name: string = 'kanye'
 export const description: string = 'Need some words of wisdom from Kanye?'
+export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']

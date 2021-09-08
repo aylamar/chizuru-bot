@@ -1,6 +1,6 @@
+import { Permissions, PermissionString, MessageEmbed } from 'discord.js'
 import { noPermission, somethingWrong } from '../../util/CommonReplies'
 import { RunFunction } from '../../interfaces/Command'
-import { Permissions, MessageEmbed } from 'discord.js'
 import ChannelMgr from '../../util/ChannelMgr'
 import consola from 'consola'
 
@@ -43,6 +43,7 @@ export const run: RunFunction = async (client, interaction) => {
 
 export const name: string = 'delstream'
 export const description: string = 'Removes a stream from this channel'
+export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
 export const options: Array<Object> = [
     {
         name: 'streamer',

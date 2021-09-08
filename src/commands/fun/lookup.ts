@@ -1,5 +1,5 @@
+import { MessageEmbed, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
-import { MessageEmbed } from 'discord.js'
 import anilist from 'anilist-node'
 import consola from 'consola'
 
@@ -60,6 +60,7 @@ export const run: RunFunction = async (client, interaction) => {
 
 export const name: string = 'lookup'
 export const description: string = 'Look up information on an anime or manga?'
+export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
 export const options: Array<Object> = [
     {
         name: 'type',

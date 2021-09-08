@@ -1,6 +1,6 @@
+import { MessageEmbed, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
 import ChannelMgr from '../../util/ChannelMgr'
-import { MessageEmbed } from 'discord.js'
 import consola from 'consola'
 
 export const run: RunFunction = async (client, interaction) => {
@@ -26,3 +26,4 @@ export const run: RunFunction = async (client, interaction) => {
 
 export const name: string = 'liststreams'
 export const description: string = 'Lists all streams followed in this server'
+export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']

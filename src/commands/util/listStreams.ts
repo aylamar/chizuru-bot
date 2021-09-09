@@ -27,3 +27,4 @@ export const run: RunFunction = async (client, interaction) => {
 export const name: string = 'liststreams'
 export const description: string = 'Lists all streams followed in this server'
 export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
+export const userPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'MANAGE_MESSAGES']

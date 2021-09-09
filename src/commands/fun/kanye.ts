@@ -23,3 +23,4 @@ export const run: RunFunction = async (client, interaction) => {
 export const name: string = 'kanye'
 export const description: string = 'Need some words of wisdom from Kanye?'
 export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
+export const userPermissions: Array<PermissionString> = ['SEND_MESSAGES']

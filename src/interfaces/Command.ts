@@ -10,5 +10,6 @@ export interface Command {
     category: string
     options?: Array<any>
     botPermissions: Array<PermissionString>
+    userPermissions: Array<PermissionString>
     run: RunFunction
 }

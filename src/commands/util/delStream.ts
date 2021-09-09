@@ -1,5 +1,4 @@
-import { Permissions, PermissionString, MessageEmbed } from 'discord.js'
-import { noPermission, somethingWrong } from '../../util/CommonReplies'
+import { MessageEmbed, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
 import ChannelMgr from '../../util/ChannelMgr'
 import consola from 'consola'
@@ -8,42 +7,32 @@ export const run: RunFunction = async (client, interaction) => {
     if (!interaction.isCommand()) return
     let streamer = interaction.options.getString('streamer')
 
-    if (typeof interaction.member.permissions === "string") {
-        await somethingWrong(interaction)
-        return
-    } else if (interaction.member.permissions.has(Permissions.FLAGS.MANAGE_CHANNELS)) {
-        let res = await ChannelMgr.delStream(streamer, interaction.channelId)
-        try {
-            switch(res) {
-                case "Doesn't Exist":
-                    let alreadyExistEmbed = new MessageEmbed()
-                        .setDescription(`You won't recieve any notifications for **${streamer}**.`)
-                        .setColor(15158332)
-                    await interaction.reply({embeds: [alreadyExistEmbed]})
-                    break
-                case 'Success':
-                    let successEmbed = new MessageEmbed()
-                        .setDescription(`You'll no longer be notified when **${streamer}** goes online.`)
-                        .setColor(15158332)
-                    await interaction.reply({embeds: [successEmbed]})
-                    break
-            }
-        } catch (err) {
-            consola.error(err)
+    let res = await ChannelMgr.delStream(streamer, interaction.channelId)
+    try {
+        switch(res) {
+            case "Doesn't Exist":
+                let alreadyExistEmbed = new MessageEmbed()
+                    .setDescription(`You won't recieve any notifications for **${streamer}**.`)
+                    .setColor(15158332)
+                await interaction.reply({embeds: [alreadyExistEmbed]})
+                break
+            case 'Success':
+                let successEmbed = new MessageEmbed()
+                    .setDescription(`You'll no longer be notified when **${streamer}** goes online.`)
+                    .setColor(15158332)
+                await interaction.reply({embeds: [successEmbed]})
+                break
         }
-    } else {
-        try {
-            await noPermission(interaction)
-        } catch (err) {
-            consola.error(err)
-        }
-        return
+    } catch (err) {
+        consola.error(err)
     }
+    return
 }
 
 export const name: string = 'delstream'
 export const description: string = 'Removes a stream from this channel'
 export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
+export const userPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'MANAGE_WEBHOOKS']
 export const options: Array<Object> = [
     {
         name: 'streamer',

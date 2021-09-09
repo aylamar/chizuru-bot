@@ -61,6 +61,7 @@ export const run: RunFunction = async (client, interaction) => {
 export const name: string = 'lookup'
 export const description: string = 'Look up information on an anime or manga?'
 export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
+export const userPermissions: Array<PermissionString> = ['SEND_MESSAGES']
 export const options: Array<Object> = [
     {
         name: 'type',

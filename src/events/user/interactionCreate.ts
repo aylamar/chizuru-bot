@@ -14,11 +14,11 @@ export const run: RunFunction = async (client, interaction) => {
         if (difference.length > 1) {
             let missing = difference.slice(0, -1).join(',') +' and ' + difference.slice(-1)
             missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
-            interaction.reply({ content: `I need the ${missing} permissions to run this command.`, ephemeral: true })
+            interaction.reply({ content: `❌ I need the ${missing} permissions to run this command.`, ephemeral: true })
         } else {
             let missing = difference.toString()
             missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
-            interaction.reply({ content: `I need the ${missing} permission to run this command.`, ephemeral: true, })
+            interaction.reply({ content: `❌ I need the ${missing} permission to run this command.`, ephemeral: true, })
         }
         return
     }

@@ -25,13 +25,10 @@ class Bot extends Client {
         this.login(config.discordToken)
 
         mongoose.connect(config.mongoURI)
-        .then((result: any) => {
-        this.logger.success('Connected with Mongoose')
-        StreamMgr.run(this)
-        
-    })
-    .catch((err: any) => consola.error(err))
-
+            .then((result: any) => {
+                this.logger.success('Connected with Mongoose')
+                StreamMgr.run(this)
+            }).catch((err: any) => consola.error(err))
 
         /* Commands */
         const commandFiles: string[] = await glob(`${__dirname}/../commands/**/*{.ts,.js}`)

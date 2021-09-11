@@ -8,6 +8,7 @@ import { promisify } from 'util'
 import mongoose from "mongoose"
 import _glob from 'glob'
 import { Music } from '../util/Music'
+import { DiscordTogether } from 'discord-together'
 
 const glob = promisify(_glob)
 
@@ -21,12 +22,14 @@ class Bot extends Client {
     public config: Config
     public logger: Consola = consola
     public music: Music
+    public activity: DiscordTogether<any>
 
     public async start(config: Config): Promise<void> {
         consola.info('Chizuru Bot is starting up...')
         this.config = config
         this.login(config.discordToken)
         this.music = new Music(this)
+        this.activity = new DiscordTogether(this)
 
         mongoose.connect(config.mongoURI)
             .then((result: any) => {

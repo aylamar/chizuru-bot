@@ -5,6 +5,7 @@ import ytSearch from 'yt-search'
 export const run: RunFunction = async (client, interaction) => {
     if (!interaction.isCommand()) return
     let args = interaction.options.getString('title') as string
+    interaction.deferReply()
 
     const videoSearch = async (query: any) => {
         try {
@@ -22,11 +23,10 @@ export const run: RunFunction = async (client, interaction) => {
 
     const video = await videoSearch(args)
     if (video) {
-        await interaction.reply(`${video.url}`)
+        await interaction.editReply(`${video.url}`)
     } else {
-        await interaction.reply({
+        await interaction.editReply({
             content: `❌ Unable to find a video with this name`,
-            ephemeral: true,
         })
     }
 }

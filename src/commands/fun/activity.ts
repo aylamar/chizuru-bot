@@ -14,6 +14,15 @@ export const run: RunFunction = async (client, interaction) => {
         return
     }
 
+    const permissions = voiceChannel.permissionsFor(client.user)
+    if (!permissions.has('CREATE_INSTANT_INVITE')) {
+        interaction.reply({
+            content: `❌ I don't have permission create an invite in that voice channel.`,
+            ephemeral: true,
+        })
+        return
+    }
+
     let activity = interaction.options.getString('activity')
 
     client.activity.createTogetherCode(voiceChannel.id, `${activity}`)

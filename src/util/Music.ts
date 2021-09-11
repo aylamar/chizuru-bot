@@ -1,5 +1,5 @@
+import { embedError, embedSuccess } from './Colors'
 import { Client, MessageEmbed } from 'discord.js'
-import { embedSuccess } from './Colors'
 import { DisTube } from 'distube'
 
 class Music extends DisTube {
@@ -23,6 +23,13 @@ class Music extends DisTube {
                 .setDescription(`Adding **${song.name}** requested by **${song.user}**`)
                 .setColor(embedSuccess)
             queue.textChannel.send({ embeds: [embed] })
+        })
+
+        this.on('error', (channel, error) => {
+            let embed = new MessageEmbed()
+                .setDescription(`Error:\n\`\`\`${error.message}\`\`\``)
+                .setColor(embedError)
+            channel.send({ embeds: [embed] })
         })
 
         this.on('deleteQueue', (queue) => {})

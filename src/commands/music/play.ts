@@ -1,10 +1,4 @@
-import {
-    entersState,
-    joinVoiceChannel,
-    VoiceConnectionStatus,
-} from '@discordjs/voice'
-import { PermissionString, GuildMember, MessageEmbed } from 'discord.js'
-import { embedError, embedSuccess } from '../../util/Colors'
+import { PermissionString, GuildMember } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
 
 export const run: RunFunction = async (client, interaction) => {

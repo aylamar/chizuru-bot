@@ -7,7 +7,7 @@ export const run: RunFunction = async (client, interaction) => {
     let queue = client.music.getQueue(interaction.guild)
 
     if (queue) {
-        if ((queue.repeatMode = 0)) {
+        if (queue.repeatMode === 0) {
             queue.repeatMode = 2
             let embed = new MessageEmbed()
                 .setDescription('Repeating the current queue.')

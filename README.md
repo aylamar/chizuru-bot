@@ -1,6 +1,13 @@
 # Chizuru Bot
 
-Chizuru Bot is a Twitch notification bot that notifies Discord channels on status changes, which *might* have additional features added over time.
+Chizuru Bot is a multi-purpose Discord bot that was originally intended to notify when Twitch streams go live, but now offers additional commands and features.
+
+## Commmands
+
+- Twitch notifications: `addstream`, `delstream`, and `/liststreams`.
+- Music: `play`, `skip`, `loop`, `nowplaying`, `shuffle`, and **4** more.
+- Fun: `activity` and `kanye`.
+- Search: `lookup` and `youtube`.
 
 ## Installation
 
@@ -46,29 +53,3 @@ If you want to be lazy, you're welcome to use the following link. You'll just wa
 ```bash
 https://discord.com/oauth2/authorize?client_id=<YOUR_BOT_CLIENT_ID_HERE>&scope=bot+applications.commands&permissions=259846039632
 ```
-
-## Commands
-
-### /addstream [stream]
-
-Requires: the MANAGE_CHANNELS permission, and begins monitoring mentioned stream in the channel that the command was executed in.
-
-### /deletestream [stream]
-
-Requires: the MANAGE_CHANNELS permission, and stops tracking the mentioned stream in the channel that the command was executed in.
-
-### /liststream [stream]
-
-Lists all streams that are currently being monitored in this channel.
-
-### /stats
-
-Displays stats about the Chizuru Bot
-
-### /kanye
-
-Makes a call to [kanye.rest](https://kanye.rest/) to deliver a random Kanye quote.
-
-### /ping
-
-Replies with pong!

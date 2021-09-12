@@ -10,7 +10,7 @@ export const run: RunFunction = async (client, interaction) => {
     if (queue) {
         const song = queue.songs[0]
         let embed = new MessageEmbed()
-            .setDescription(`(${song.name})[${song.url}] requested by ${song.user}`)
+            .setDescription(`**[${song.name}](${song.url})** requested by ${song.user}`)
             .setColor(embedPurple)
         interaction.reply({ embeds: [embed] })
     } else {

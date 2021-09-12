@@ -9,6 +9,8 @@ Chizuru Bot is a multi-purpose Discord bot that was originally intended to notif
 - Fun: `activity` and `kanye`.
 - Search: `lookup` and `youtube`.
 
+A full list of commands and how to use them can be found [here](https://github.com/aylamar/chizuru-bot/wiki/Commands).
+
 ## Installation
 
 1. Download a release and unzip it somewhere on your computer.

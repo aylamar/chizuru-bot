@@ -20,7 +20,14 @@ class Music extends DisTube {
 
         this.on('addSong', (queue, song) => {
             let embed = new MessageEmbed()
-                .setDescription(`Adding **${song.name}** requested by **${song.user}**`)
+                .setDescription(`Adding **${song.name}** to the queue, requested by **${song.user}**`)
+                .setColor(embedSuccess)
+            queue.textChannel.send({ embeds: [embed] })
+        })
+
+        this.on('addList', (queue, playlist) => {
+            let embed = new MessageEmbed()
+                .setDescription(`Adding **${playlist.songs.length}** songs from the playlist **${playlist.name}**, requested by ${playlist.user}`)
                 .setColor(embedSuccess)
             queue.textChannel.send({ embeds: [embed] })
         })

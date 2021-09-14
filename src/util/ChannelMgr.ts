@@ -1,7 +1,7 @@
 import StreamMgr from './StreamMgr'
 import consola from 'consola'
+import Channel from '../models/channel'
 
-const Channel = require('../models/channel')
 const ChannelMgr: any = {}
 
 ChannelMgr.addStream = async function (streamer_name: string, channel_id: string, guild_id: string) {
@@ -61,14 +61,14 @@ ChannelMgr.addStream = async function (streamer_name: string, channel_id: string
 
 ChannelMgr.delStream = async function (streamer_name: string, id: string) {
     try {
-        let res = await Channel.find({ _id: id, followed_channels: { $in: streamer_name }, })
+        let res = await Channel.find({ _id: id, followed_channels: streamer_name })
         // If no result found
         if (res.length === 0) {
             return 'Does not exist'
         } else if (res[0].followed_channels.length === 1 && res[0].followed_channels[0] == streamer_name) {
             await Channel.findOneAndDelete({ _id: id })
 
-            let channelList = await Channel.find({followed_channels: { $in: streamer_name },})
+            let channelList = await Channel.find({followed_channels: streamer_name })
             if (channelList.length === 0) {
                 StreamMgr.delStreamer(streamer_name)
             }
@@ -77,7 +77,7 @@ ChannelMgr.delStream = async function (streamer_name: string, id: string) {
             res[0].followed_channels = await res[0].followed_channels.filter((strm: string) => strm !== streamer_name)
             await res[0].save()
 
-            let channelList = await Channel.find({followed_channels: { $in: streamer_name },})
+            let channelList = await Channel.find({followed_channels: streamer_name })
             if (channelList.length === 0) {
                 StreamMgr.delStreamer(streamer_name)
             }
@@ -92,7 +92,7 @@ ChannelMgr.delStream = async function (streamer_name: string, id: string) {
 ChannelMgr.getChannelByStreamer = async function (streamer_name: string) {
     try {
         consola.info(`Fetching all channels watching ${streamer_name}`)
-        let res = await Channel.find({followed_channels: { $in: streamer_name },}).lean()
+        let res = await Channel.find({followed_channels: streamer_name }).lean()
         let idArr: String[] = []
         await res.map((e: { _id: String }) => {
             idArr.push(e._id)

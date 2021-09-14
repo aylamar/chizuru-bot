@@ -1,13 +1,13 @@
-import { model, Schema, Model, Document } from 'mongoose'
+import { model, Schema, Document } from 'mongoose'
 
-interface streamer extends Document {
+export interface streamer extends Document {
     _id: string
     channel_id: string
     profile_picture: string
     current_state: Boolean
 }
 
-const streamerSchema = new Schema(
+export const streamerSchema = new Schema(
     {
         _id: {
             type: String,
@@ -29,6 +29,4 @@ const streamerSchema = new Schema(
     { timestamps: true }
 )
 
-const Streamer: Model<streamer> = model('streamer', streamerSchema)
-
-module.exports = Streamer
+export default model<streamer>('streamer', streamerSchema)

@@ -1,12 +1,12 @@
-import { model, Schema, Model, Document } from 'mongoose'
+import { model, Schema, Document } from 'mongoose'
 
-interface discordChannel extends Document {
+export interface discordChannel extends Document {
     _id: string
     guildID: string
     followed_channels: string[]
 }
 
-const discordChannelSchema = new Schema(
+export const discordChannelSchema = new Schema(
     {
         _id: {
             type: String,
@@ -24,6 +24,4 @@ const discordChannelSchema = new Schema(
     { timestamps: true }
 )
 
-const DiscChannel: Model<discordChannel> = model('discordChannel', discordChannelSchema)
-
-module.exports = DiscChannel
+export default model<discordChannel>('discordChannel', discordChannelSchema)

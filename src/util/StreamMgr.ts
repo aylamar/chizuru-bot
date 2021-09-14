@@ -3,8 +3,8 @@ import Discord, { MessageEmbed } from 'discord.js'
 import TwitchMgr from './TwitchMgr'
 import { Bot } from '../client/client'
 import consola from 'consola'
+import Stream from '../models/streamer'
 
-const Stream = require('../models/streamer')
 const StreamMgr: any = {}
 
 StreamMgr.run = async function(client: Bot) {

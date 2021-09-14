@@ -1,18 +1,16 @@
 import { MessageEmbed, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
-import ChannelMgr from '../../util/ChannelMgr'
-import consola from 'consola'
+import { addStream } from '../../util/Streams'
 
 export const run: RunFunction = async (client, interaction) => {
     if (!interaction.isCommand()) return
     await interaction.deferReply()
     let streamer = interaction.options.getString('streamer')
   
-    let res = await ChannelMgr.addStream(streamer, interaction.channelId, interaction.guildId)
+    let res = await addStream(streamer, interaction.channelId, interaction.guildId, client)
     try {
         switch(res) {
             case 'Already exists':
-                console.log('hit')
                 let alreadyExistEmbed = new MessageEmbed()
                     .setDescription(`You already get notifications for **${streamer}** here.`)
                     .setColor(client.colors.error)

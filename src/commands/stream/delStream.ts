@@ -1,13 +1,12 @@
 import { MessageEmbed, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
-import ChannelMgr from '../../util/ChannelMgr'
-import consola from 'consola'
+import { delStream } from '../../util/Streams'
 
 export const run: RunFunction = async (client, interaction) => {
     if (!interaction.isCommand()) return
     let streamer = interaction.options.getString('streamer')
 
-    let res = await ChannelMgr.delStream(streamer, interaction.channelId)
+    let res = await delStream(streamer, interaction.channelId, client.logger)
     try {
         switch(res) {
             case 'Does not exist':

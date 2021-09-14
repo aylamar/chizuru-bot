@@ -3,13 +3,14 @@ import { Command } from '../interfaces/Command'
 import { Config } from '../interfaces/Config'
 import { Event } from '../interfaces/Event'
 import consola, { Consola } from 'consola'
-import StreamMgr from '../util/StreamMgr'
 import { promisify } from 'util'
 import mongoose from "mongoose"
 import _glob from 'glob'
 import { Music } from '../util/Music'
 import { DiscordTogether } from 'discord-together'
 import { EmbedColors } from '../interfaces/EmbedColors'
+import Twitch from '../util/Twitch'
+import { run } from '../util/Streams'
 
 const glob = promisify(_glob)
 
@@ -25,6 +26,7 @@ class Bot extends Client {
     public music: Music
     public activity: DiscordTogether<any>
     public colors: EmbedColors
+    public twitch: Twitch
 
     public async start(config: Config): Promise<void> {
         consola.info('Chizuru Bot is starting up...')
@@ -32,6 +34,7 @@ class Bot extends Client {
         this.login(config.discordToken)
         this.music = new Music(this)
         this.activity = new DiscordTogether(this)
+        this.twitch = new Twitch(this.config, this.logger)
         this.colors = {
             error: 15158332,
             success: 3066993,
@@ -43,7 +46,7 @@ class Bot extends Client {
         mongoose.connect(config.mongoURI)
             .then((result: any) => {
                 this.logger.success('Connected with Mongoose')
-                StreamMgr.run(this)
+                run(this)
             }).catch((err: any) => consola.error(err))
 
         /* Commands */

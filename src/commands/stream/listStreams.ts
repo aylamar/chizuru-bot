@@ -1,17 +1,16 @@
 import { MessageEmbed, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
-import ChannelMgr from '../../util/ChannelMgr'
-import consola from 'consola'
+import { getChannelByGuild } from '../../util/Streams'
 
 export const run: RunFunction = async (client, interaction) => {
     if (!interaction.isCommand()) return
-    let res = await ChannelMgr.getChannelByGuild(interaction.guildId)
+    let res = await getChannelByGuild(interaction.guildId, client.logger)
 
     const embed = new MessageEmbed()
         .setTitle("Streams followed on this server:")
         .setColor(client.colors.twitch)
 
-    await res.map((e: any) => {
+    res.map((e: any) => {
         e.followed_channels.map((f: any) => {
             embed.addFields({name: `${f}`, value: `<#${e._id}>`, inline: true})
         })

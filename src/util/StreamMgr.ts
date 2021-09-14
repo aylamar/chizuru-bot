@@ -110,7 +110,7 @@ StreamMgr.updateState = async function(client: Bot) {
                     stream.current_state = false
                     stream.save()
 
-                    let offlineEmbed = genGoOfflineEmbed(stream)
+                    let offlineEmbed = genGoOfflineEmbed(stream, client)
                     postStreams(stream._id, offlineEmbed, client)
 
                 } else if (res != undefined && stream.current_state === false) {
@@ -119,7 +119,7 @@ StreamMgr.updateState = async function(client: Bot) {
                     stream.current_state = true
                     stream.save()
 
-                    let onlineEmbed = genGoLiveEmbed(stream.profile_picture, res)
+                    let onlineEmbed = genGoLiveEmbed(stream.profile_picture, res, client)
                     postStreams(stream._id, onlineEmbed, client)
                 } 
             })
@@ -145,11 +145,11 @@ async function postStreams(channel_name: string, embed: MessageEmbed, client: Bo
 
 }
 
-function genGoLiveEmbed(profile_picture: string, data: any) {
+function genGoLiveEmbed(profile_picture: string, data: any, client: Bot) {
     const liveEmbed = new Discord.MessageEmbed()
         .setAuthor(data.title, '', `https://twitch.tv/${data.user_login}`)
         .setTitle(data.user_name)
-        .setColor(3066993)
+        .setColor(client.colors.success)
         .setDescription(`https://twitch.tv/${data.user_login}`)
         .setURL(`https://twitch.tv/${data.user_login}`)
         .addFields({name: 'Status', value: ':green_circle: Online', inline: true})
@@ -161,12 +161,12 @@ function genGoLiveEmbed(profile_picture: string, data: any) {
     return liveEmbed
 }
 
-function genGoOfflineEmbed(data: any) {
+function genGoOfflineEmbed(data: any, client: Bot) {
     const offlineEmbed = new Discord.MessageEmbed()
         .setTitle(`${data._id} has gone offline`)
         .setDescription(`https://twitch.tv/${data._id}`)
         .setThumbnail(data.profile_picture)
-        .setColor(15158332)
+        .setColor(client.colors.error)
     return offlineEmbed
 }
 

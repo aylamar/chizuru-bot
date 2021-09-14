@@ -11,7 +11,7 @@ ChannelMgr.addStream = async function (streamer_name: string, channel_id: string
             // If channel exists, check to see if ID has already been added
             let channel = await Channel.findById(channel_id)
             if (channel.followed_channels.includes(streamer_name)) {
-                return 'Already Exists'
+                return 'Already exists'
             } else {
                 let res = await StreamMgr.addStreamer(streamer_name)
                 switch (res) {
@@ -64,7 +64,7 @@ ChannelMgr.delStream = async function (streamer_name: string, id: string) {
         let res = await Channel.find({ _id: id, followed_channels: { $in: streamer_name }, })
         // If no result found
         if (res.length === 0) {
-            return "Doesn't Exist"
+            return 'Does not exist'
         } else if (res[0].followed_channels.length === 1 && res[0].followed_channels[0] == streamer_name) {
             await Channel.findOneAndDelete({ _id: id })
 

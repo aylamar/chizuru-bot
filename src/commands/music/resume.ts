@@ -1,4 +1,3 @@
-import { embedError, embedSuccess } from '../../util/Colors'
 import { MessageEmbed, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
 
@@ -11,19 +10,19 @@ export const run: RunFunction = async (client, interaction) => {
             await client.music.pause(interaction.guild)
             let embed = new MessageEmbed()
                 .setDescription('Pausing the current song.')
-                .setColor(embedError)
+                .setColor(client.colors.success)
             await interaction.reply({ embeds: [embed] })
         } else {
             client.music.resume(interaction.guild)
             let embed = new MessageEmbed()
                 .setDescription('Resuming the the current song.')
-                .setColor(embedSuccess)
+                .setColor(client.colors.success)
             await interaction.reply({ embeds: [embed] })
         }
     } else {
         let embed = new MessageEmbed()
             .setDescription('Nothing is currently playing in this server.')
-            .setColor(embedError)
+            .setColor(client.colors.error)
         await interaction.reply({ embeds: [embed] })
     }
 }

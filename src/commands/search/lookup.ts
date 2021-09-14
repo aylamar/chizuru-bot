@@ -49,7 +49,7 @@ export const run: RunFunction = async (client, interaction) => {
             .setDescription(`**_${genre}_**\n${desc}`)
             .setImage(`https://img.anili.st/media/${parsedRes.id}`)
             .setTimestamp(date)
-            .setColor(4172286)
+            .setColor(client.colors.anilist)
             .setFooter(`${type}`, 'https://anilist.co/img/icons/android-chrome-512x512.png')
 
         interaction.reply({ embeds: [embed] })

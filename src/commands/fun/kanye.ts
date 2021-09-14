@@ -10,6 +10,7 @@ export const run: RunFunction = async (client, interaction) => {
 
     const embed = new MessageEmbed()
         .setAuthor('Kanye West', 'https://i.imgur.com/ywPk81X.jpeg','https://twitter.com/kanyewest/')
+        .setColor(client.colors.success)
         .setDescription(`"${parsed.quote}"`)
     try {
         await interaction.reply({ embeds: [embed] })

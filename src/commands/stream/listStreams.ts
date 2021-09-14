@@ -9,7 +9,7 @@ export const run: RunFunction = async (client, interaction) => {
 
     const embed = new MessageEmbed()
         .setTitle("Streams followed on this server:")
-        .setColor(10181046)
+        .setColor(client.colors.twitch)
 
     await res.map((e: any) => {
         e.followed_channels.map((f: any) => {
@@ -20,7 +20,7 @@ export const run: RunFunction = async (client, interaction) => {
     try {
         interaction.reply({embeds: [embed]})
     } catch (err) {
-        consola.error(err)
+        client.logger.error(err)
     }
 }
 

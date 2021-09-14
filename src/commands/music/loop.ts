@@ -1,4 +1,3 @@
-import { embedError, embedSuccess } from '../../util/Colors'
 import { MessageEmbed, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
 
@@ -11,19 +10,19 @@ export const run: RunFunction = async (client, interaction) => {
             queue.repeatMode = 2
             let embed = new MessageEmbed()
                 .setDescription('Repeating the current queue.')
-                .setColor(embedSuccess)
+                .setColor(client.colors.success)
             interaction.reply({ embeds: [embed] })
         } else {
             queue.repeatMode = 0
             let embed = new MessageEmbed()
                 .setDescription(`No longer repeating the queue.`)
-                .setColor(embedSuccess)
+                .setColor(client.colors.success)
             interaction.reply({ embeds: [embed] })
         }
     } else {
         let embed = new MessageEmbed()
             .setDescription('Nothing is currently playing in this server.')
-            .setColor(embedError)
+            .setColor(client.colors.error)
         await interaction.reply({ embeds: [embed] })
     }
 }

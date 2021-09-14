@@ -10,21 +10,21 @@ export const run: RunFunction = async (client, interaction) => {
     let res = await ChannelMgr.delStream(streamer, interaction.channelId)
     try {
         switch(res) {
-            case "Doesn't Exist":
+            case 'Does not exist':
                 let alreadyExistEmbed = new MessageEmbed()
                     .setDescription(`You won't recieve any notifications for **${streamer}**.`)
-                    .setColor(15158332)
+                    .setColor(client.colors.error)
                 await interaction.reply({embeds: [alreadyExistEmbed]})
                 break
             case 'Success':
                 let successEmbed = new MessageEmbed()
                     .setDescription(`You'll no longer be notified when **${streamer}** goes online.`)
-                    .setColor(15158332)
+                    .setColor(client.colors.success)
                 await interaction.reply({embeds: [successEmbed]})
                 break
         }
     } catch (err) {
-        consola.error(err)
+        client.logger.error(err)
     }
     return
 }

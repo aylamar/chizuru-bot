@@ -1,6 +1,5 @@
 import { MessageActionRow, MessageButton, MessageEmbed, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
-import { embedError } from '../../util/Colors'
 import { Song } from 'distube'
 
 export const run: RunFunction = async (client, interaction) => {
@@ -49,7 +48,7 @@ export const run: RunFunction = async (client, interaction) => {
     } else {
         let embed = new MessageEmbed()
             .setDescription('Nothing is currently playing in this server.')
-            .setColor(embedError)
+            .setColor(client.colors.error)
         await interaction.reply({ embeds: [embed] })
     }
 }

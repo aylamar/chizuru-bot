@@ -1,7 +1,5 @@
-import { embedError, embedPurple, embedSuccess } from '../../util/Colors'
 import { MessageEmbed, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
-import { AudioPlayerStatus } from '@discordjs/voice'
 
 export const run: RunFunction = async (client, interaction) => {
     if (!interaction.isCommand()) return
@@ -11,12 +9,12 @@ export const run: RunFunction = async (client, interaction) => {
         const song = queue.songs[0]
         let embed = new MessageEmbed()
             .setDescription(`**[${song.name}](${song.url})** requested by ${song.user}`)
-            .setColor(embedPurple)
+            .setColor(client.colors.purple)
         interaction.reply({ embeds: [embed] })
     } else {
         let embed = new MessageEmbed()
             .setDescription('Nothing is currently playing in this server.')
-            .setColor(embedError)
+            .setColor(client.colors.error)
         await interaction.reply({ embeds: [embed] })
     }
 }

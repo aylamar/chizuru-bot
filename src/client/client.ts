@@ -9,6 +9,7 @@ import mongoose from "mongoose"
 import _glob from 'glob'
 import { Music } from '../util/Music'
 import { DiscordTogether } from 'discord-together'
+import { EmbedColors } from '../interfaces/EmbedColors'
 
 const glob = promisify(_glob)
 
@@ -23,6 +24,7 @@ class Bot extends Client {
     public logger: Consola = consola
     public music: Music
     public activity: DiscordTogether<any>
+    public colors: EmbedColors
 
     public async start(config: Config): Promise<void> {
         consola.info('Chizuru Bot is starting up...')
@@ -30,6 +32,13 @@ class Bot extends Client {
         this.login(config.discordToken)
         this.music = new Music(this)
         this.activity = new DiscordTogether(this)
+        this.colors = {
+            error: 15158332,
+            success: 3066993,
+            purple: 15158332,
+            twitch: 10181046,
+            anilist: 4172286
+        }
 
         mongoose.connect(config.mongoURI)
             .then((result: any) => {

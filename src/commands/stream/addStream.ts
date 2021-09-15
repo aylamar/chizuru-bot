@@ -10,23 +10,29 @@ export const run: RunFunction = async (client, interaction) => {
     let res = await addStream(streamer, interaction.channelId, interaction.guildId, client)
     try {
         switch(res) {
-            case 'Already exists':
-                let alreadyExistEmbed = new MessageEmbed()
-                    .setDescription(`You already get notifications for **${streamer}** here.`)
-                    .setColor(client.colors.error)
-                await interaction.editReply({embeds: [alreadyExistEmbed]})
-                break
             case 'Success':
                 let successEmbed = new MessageEmbed()
                     .setDescription(`You'll be notified when **${streamer}** goes online.`)
                     .setColor(client.colors.success)
                 await interaction.editReply({embeds: [successEmbed]})
                 break
+            case 'Already exists':
+                let alreadyExistEmbed = new MessageEmbed()
+                    .setDescription(`You already get notifications for **${streamer}** here.`)
+                    .setColor(client.colors.error)
+                await interaction.editReply({embeds: [alreadyExistEmbed]})
+                break
             case 'Unable to locate':
                 let unableEmbed = new MessageEmbed()
                     .setDescription(`Unable to locate **${streamer}** for some reason, is this the right channel name?`)
                     .setColor(client.colors.error)
                 await interaction.editReply({embeds: [unableEmbed]})
+                break
+            case 'Failure':
+                let failureEmbed = new MessageEmbed()
+                    .setDescription('Something went wrong, try running this command again.')
+                    .setColor(client.colors.error)
+                await interaction.reply({embeds: [failureEmbed]})
                 break
         }
     } catch (err) {

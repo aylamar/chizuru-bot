@@ -1,9 +1,10 @@
-import Channel from '../models/channel'
-import Stream from '../models/streamer'
+import Channel, { discordChannel } from '../models/channel'
+import Stream, { streamer } from '../models/streamer'
 import { Consola } from 'consola'
 import { Bot } from '../client/client'
 import { MessageEmbed } from 'discord.js'
 import { EmbedColors } from '../interfaces/EmbedColors'
+import { LeanDocument } from 'mongoose'
 
 export async function run(client: Bot) {
     await initState(client).then(() => client.logger.success('Done setting initial stream state'))
@@ -11,8 +12,6 @@ export async function run(client: Bot) {
 }
 
 async function initState(client: Bot): Promise<any> {
-    client.logger.info('Setting intial state...')
-
     try {
         let streams = await getAllStreams(client.logger)
         streams.map(async (stream: any) => {
@@ -30,6 +29,7 @@ async function initState(client: Bot): Promise<any> {
     } catch (err) {
         client.logger.error(err)
     }
+    client.logger.info('Done setting intial state...')
     return
 }
 
@@ -59,8 +59,8 @@ async function updateState(client: Bot) {
 }
 
 async function postStreams(channel_name: string, embed: MessageEmbed, client: Bot) {
-    let arr = await getChannelByStreamer(channel_name, client.logger)
-    arr.map(async (channelID: string) => {
+    let arr = await getChannelsByStreamer(channel_name, client.logger)
+    arr.map(async (channelID: any) => {
         let channel = client.channels.resolve(channelID)
         if (channel.isText()) {
             // Errors seen so far "Missing Permissions": no post perms in channel
@@ -75,6 +75,9 @@ async function postStreams(channel_name: string, embed: MessageEmbed, client: Bo
     })
 }
 
+/**
+ * Add a stream to the channel database, then add to stream database
+ */
 export async function addStream(streamer_name: string, channel_id: string, guild_id: string, client: Bot) {
     try {
         let res = await Channel.exists({ _id: channel_id })
@@ -121,6 +124,9 @@ export async function addStream(streamer_name: string, channel_id: string, guild
     }
 }
 
+/**
+ * Add a streamer to the streamer database
+ */
 async function addStreamer(channel_name: string, client: Bot) {
     channel_name = channel_name.toLocaleLowerCase()
     let streamDB = await Stream.findById(channel_name)
@@ -150,6 +156,9 @@ async function addStreamer(channel_name: string, client: Bot) {
     }
 }
 
+/**
+ * Removes a stream from the spcified channel`id` and deletes it from stream database if no channels follow specified streamer
+ */
 export async function delStream(streamer_name: string, id: string, logger: Consola) {
     try {
         let res = await Channel.find({ _id: id, followed_channels: streamer_name })
@@ -177,25 +186,28 @@ export async function delStream(streamer_name: string, id: string, logger: Conso
     }
 }
 
+/**
+ * Removes a streamer to the streamer database
+ */
 async function delStreamer(channel_name: string, logger: Consola) {
     channel_name = channel_name.toLocaleLowerCase()
-    let streamDB = await Stream.findById(channel_name)
-    if (streamDB == null) {
-        logger.info(`It doesn't look like ${channel_name} was in the database`)
-        return false
-    } else {
-        try {
+    try {
+        let streamDB = await Stream.findById(channel_name)
+        if (streamDB == null) {
+            logger.info(`It doesn't look like ${channel_name} was in the database`)
+            return false
+        } else {
             await Stream.findOneAndDelete({ _id: channel_name })
             logger.success(`Successfully removed ${channel_name} from the database`)
             return true
-        } catch (err) {
-            logger.error('err')
-            return false
         }
+    } catch (err) {
+        logger.error(err)
+        return false
     }
 }
 
-export async function getAllStreams(logger: Consola) {
+export async function getAllStreams(logger: Consola): Promise<streamer[]> {
     try {
         return Stream.find({})
     } catch (err) {
@@ -203,7 +215,7 @@ export async function getAllStreams(logger: Consola) {
     }
 }
 
-export async function getChannelByStreamer(streamer_name: string, logger: Consola): Promise<any> {
+export async function getChannelsByStreamer(streamer_name: string, logger: Consola): Promise<String[]> {
     let idArr: String[] = []
     try {
         logger.info(`Fetching all channels watching ${streamer_name}`)
@@ -228,7 +240,8 @@ async function getStreamersByChannel(channel_id: string, logger: Consola) {
     }
 }
 
-export async function getChannelByGuild(guild_id: string, logger: Consola) {
+export async function getChannelByGuild(guild_id: string, logger: Consola): Promise<LeanDocument<discordChannel>[]>
+{
     try {
         let res = await Channel.find({ guild_id }).lean()
         return res
@@ -238,7 +251,7 @@ export async function getChannelByGuild(guild_id: string, logger: Consola) {
     }
 }
 
-function genGoLiveEmbed(profile_picture: string, data: any, colors: EmbedColors) {
+function genGoLiveEmbed(profile_picture: string, data: any, colors: EmbedColors): MessageEmbed {
     const liveEmbed = new MessageEmbed()
         .setAuthor(data.title, '', `https://twitch.tv/${data.user_login}`)
         .setTitle(data.user_name)
@@ -254,7 +267,7 @@ function genGoLiveEmbed(profile_picture: string, data: any, colors: EmbedColors)
     return liveEmbed
 }
 
-function genGoOfflineEmbed(data: any, colors: EmbedColors) {
+function genGoOfflineEmbed(data: any, colors: EmbedColors): MessageEmbed {
     const offlineEmbed = new MessageEmbed()
         .setTitle(`${data._id} has gone offline`)
         .setDescription(`https://twitch.tv/${data._id}`)

@@ -1,4 +1,4 @@
-import { Client, Intents, Collection, Snowflake } from 'discord.js'
+import { Client, Intents, Collection } from 'discord.js'
 import { Command } from '../interfaces/Command'
 import { Config } from '../interfaces/Config'
 import { Event } from '../interfaces/Event'

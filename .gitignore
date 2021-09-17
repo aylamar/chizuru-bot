@@ -1,7 +1,5 @@
 # Config Files
 config.json
-token.json
-streams.json
 
 # lib folder
 lib/

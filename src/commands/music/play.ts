@@ -6,43 +6,52 @@ export const run: RunFunction = async (client, interaction) => {
     if (!(interaction.member instanceof GuildMember)) return
     if (!(interaction.channel.type === 'GUILD_TEXT')) return
 
-    const voiceChannel = interaction.member.voice.channel
-    const member = interaction.member
-    const textChannel = interaction.channel
+    const musicChannel = client.cache[interaction.guildId].musicChannel
+    if (musicChannel === interaction.channelId || musicChannel == undefined) {
+        const voiceChannel = interaction.member.voice.channel
+        const member = interaction.member
+        const textChannel = interaction.channel
 
-    // Play specific permission checks
-    if (!voiceChannel) {
+        // Play specific permission checks
+        if (!voiceChannel) {
+            interaction.reply({
+                content: `❌ You need to be in a voice channel to run this command.`,
+                ephemeral: true,
+            })
+            return
+        }
+
+        const permissions = voiceChannel.permissionsFor(client.user)
+        if (!permissions.has('CONNECT')) {
+            interaction.reply({
+                content: `❌ I don't have permission to join that voice channel.`,
+                ephemeral: true,
+            })
+            return
+        }
+
+        if (!permissions.has('SPEAK')) {
+            interaction.reply({
+                content: `❌ I don't have permission to speak in that voice channel.`,
+                ephemeral: true,
+            })
+            return
+        }
+
+        interaction.deferReply()
+        let args = interaction.options.getString('song') as string
+        await client.music.playVoiceChannel(voiceChannel, args, {
+            member,
+            textChannel,
+        })
+        await interaction.deleteReply()
+
+    } else {
         interaction.reply({
-            content: `❌ You need to be in a voice channel to run this command.`,
+            content: `This command can only be run in <#${musicChannel}>.`,
             ephemeral: true,
         })
-        return
     }
-
-    const permissions = voiceChannel.permissionsFor(client.user)
-    if (!permissions.has('CONNECT')) {
-        interaction.reply({
-            content: `❌ I don't have permission to join that voice channel.`,
-            ephemeral: true,
-        })
-        return
-    }
-
-    if (!permissions.has('SPEAK')) {
-        interaction.reply({
-            content: `❌ I don't have permission to speak in that voice channel.`,
-            ephemeral: true,
-        })
-        return
-    }
-
-    interaction.deferReply()
-    let args = interaction.options.getString('song') as string
-    await client.music.playVoiceChannel(voiceChannel, args, {
-        member,
-        textChannel,
-    })
-    await interaction.deleteReply()
 }
 
 export const name: string = 'play'

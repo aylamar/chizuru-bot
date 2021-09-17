@@ -4,52 +4,61 @@ import { Song } from 'distube'
 
 export const run: RunFunction = async (client, interaction) => {
     if (!interaction.isCommand()) return
-    let queue = client.music.getQueue(interaction.guild)
 
-    if (queue) {
-        let pageCount = Math.floor(queue.songs.length / 10) + 1
-        let pages = generatePages(pageCount, queue.songs)
+    const musicChannel = client.cache[interaction.guildId].musicChannel
+    if (musicChannel === interaction.channelId || musicChannel == undefined) {
+        let queue = client.music.getQueue(interaction.guild)
 
-        const row = new MessageActionRow().addComponents(
-            new MessageButton()
-                .setCustomId('previous')
-                .setLabel('Previous')
-                .setStyle('PRIMARY'),
-            new MessageButton()
-                .setCustomId('next')
-                .setLabel('Next')
-                .setStyle('PRIMARY')
-        )
+        if (queue) {
+            let pageCount = Math.floor(queue.songs.length / 10) + 1
+            let pages = generatePages(pageCount, queue.songs)
 
-        let page = 0
-        interaction.reply({ content: pages[0], components: [row] })
+            const row = new MessageActionRow().addComponents(
+                new MessageButton()
+                    .setCustomId('previous')
+                    .setLabel('Previous')
+                    .setStyle('PRIMARY'),
+                new MessageButton()
+                    .setCustomId('next')
+                    .setLabel('Next')
+                    .setStyle('PRIMARY')
+            )
 
-        const filter = (i: any) => i.customId === 'previous' || i.customId === 'next'
-        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 120000 })
+            let page = 0
+            interaction.reply({ content: pages[0], components: [row] })
 
-        collector.on('collect', async (i) => {
-            if (i.customId === 'previous') {
-                if (page > 0) {
-                    page--
-                } else {
-                    page = pages.length - 1
+            const filter = (i: any) => i.customId === 'previous' || i.customId === 'next'
+            const collector = interaction.channel.createMessageComponentCollector({ filter, time: 120000 })
+
+            collector.on('collect', async (i) => {
+                if (i.customId === 'previous') {
+                    if (page > 0) {
+                        page--
+                    } else {
+                        page = pages.length - 1
+                    }
+                } else if (i.customId === 'next') {
+                    if (page + 1 < pages.length) {
+                        page++
+                    } else {
+                        page = 0
+                    }
                 }
-            } else if (i.customId === 'next') {
-                if (page + 1 < pages.length) {
-                    page++
-                } else {
-                    page = 0
-                }
-            }
-            await i.deferUpdate()
-            await i.editReply({ content: pages[page], components: [row] })
-            collector.resetTimer()
-        })
+                await i.deferUpdate()
+                await i.editReply({ content: pages[page], components: [row] })
+                collector.resetTimer()
+            })
+        } else {
+            let embed = new MessageEmbed()
+                .setDescription('Nothing is currently playing in this server.')
+                .setColor(client.colors.error)
+            await interaction.reply({ embeds: [embed] })
+        }
     } else {
-        let embed = new MessageEmbed()
-            .setDescription('Nothing is currently playing in this server.')
-            .setColor(client.colors.error)
-        await interaction.reply({ embeds: [embed] })
+        interaction.reply({
+            content: `This command can only be run in <#${musicChannel}>.`,
+            ephemeral: true,
+        })
     }
 }
 

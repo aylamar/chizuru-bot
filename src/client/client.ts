@@ -11,6 +11,7 @@ import { DiscordTogether } from 'discord-together'
 import { EmbedColors } from '../interfaces/EmbedColors'
 import Twitch from '../util/Twitch'
 import { monitorStreams } from '../util/Streams'
+import { GuildCache } from '../interfaces/GuildCache'
 
 const glob = promisify(_glob)
 
@@ -27,14 +28,10 @@ class Bot extends Client {
     public activity: DiscordTogether<any>
     public colors: EmbedColors
     public twitch: Twitch
+    public cache: GuildCache
 
     public async start(config: Config): Promise<void> {
         consola.info('Chizuru Bot is starting up...')
-        this.config = config
-        this.login(config.discordToken)
-        this.music = new Music(this)
-        this.activity = new DiscordTogether(this)
-        this.twitch = new Twitch(this.config, this.logger)
         this.colors = {
             error: 15158332,
             success: 3066993,
@@ -42,6 +39,12 @@ class Bot extends Client {
             twitch: 10181046,
             anilist: 4172286
         }
+        this.config = config
+        this.login(config.discordToken)
+        this.music = new Music(this)
+        this.activity = new DiscordTogether(this)
+        this.twitch = new Twitch(this.config, this.logger)
+        this.cache = {}
 
         mongoose.connect(config.mongoURI)
             .then((result: any) => {

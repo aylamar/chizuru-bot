@@ -3,19 +3,28 @@ import { RunFunction } from '../../interfaces/Command'
 
 export const run: RunFunction = async (client, interaction) => {
     if (!interaction.isCommand()) return
-    let queue = client.music.getQueue(interaction.guild)
 
-    if (queue) {
-        const song = queue.songs[0]
-        let embed = new MessageEmbed()
-            .setDescription(`**[${song.name}](${song.url})** requested by ${song.user}`)
-            .setColor(client.colors.purple)
-        interaction.reply({ embeds: [embed] })
+    const musicChannel = client.cache[interaction.guildId].musicChannel
+    if (musicChannel === interaction.channelId || musicChannel == undefined) {
+        let queue = client.music.getQueue(interaction.guild)
+
+        if (queue) {
+            const song = queue.songs[0]
+            let embed = new MessageEmbed()
+                .setDescription(`**[${song.name}](${song.url})** requested by ${song.user}`)
+                .setColor(client.colors.purple)
+            interaction.reply({ embeds: [embed] })
+        } else {
+            let embed = new MessageEmbed()
+                .setDescription('Nothing is currently playing in this server.')
+                .setColor(client.colors.error)
+            await interaction.reply({ embeds: [embed] })
+        }
     } else {
-        let embed = new MessageEmbed()
-            .setDescription('Nothing is currently playing in this server.')
-            .setColor(client.colors.error)
-        await interaction.reply({ embeds: [embed] })
+        interaction.reply({
+            content: `This command can only be run in <#${musicChannel}>.`,
+            ephemeral: true,
+        })
     }
 }
 

@@ -1,4 +1,5 @@
 import { RunFunction } from '../../interfaces/Command'
+import { getGuild } from '../../util/Guild'
 
 export const run: RunFunction = async (client, interaction) => {
     if (!interaction.isCommand()) return
@@ -41,6 +42,11 @@ export const run: RunFunction = async (client, interaction) => {
         return
     }
 
+    // Check if guild has been cached, if it hasn't, get data
+    if(!client.cache[interaction.guildId]) {
+        client.cache[interaction.guildId] = await getGuild(interaction.guildId)
+    }
+    
     try {
         command.run(client, interaction)
     } catch (err) {

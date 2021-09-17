@@ -3,27 +3,36 @@ import { RunFunction } from '../../interfaces/Command'
 
 export const run: RunFunction = async (client, interaction) => {
     if (!interaction.isCommand()) return
-    let queue = client.music.getQueue(interaction.guild)
 
-    if(queue) {
-        if(!queue.paused) {
-            await client.music.pause(interaction.guild)
-            let embed = new MessageEmbed()
-                .setDescription('Pausing the current song.')
-                .setColor(client.colors.success)
-            await interaction.reply({ embeds: [embed] })
+    const musicChannel = client.cache[interaction.guildId].musicChannel
+    if (musicChannel === interaction.channelId || musicChannel == undefined) {
+        let queue = client.music.getQueue(interaction.guild)
+
+        if (queue) {
+            if (!queue.paused) {
+                client.music.pause(interaction.guild)
+                let embed = new MessageEmbed()
+                    .setDescription('Pausing the current song.')
+                    .setColor(client.colors.success)
+                await interaction.reply({ embeds: [embed] })
+            } else {
+                client.music.resume(interaction.guild)
+                let embed = new MessageEmbed()
+                    .setDescription('Resuming the the current song.')
+                    .setColor(client.colors.success)
+                await interaction.reply({ embeds: [embed] })
+            }
         } else {
-            client.music.resume(interaction.guild)
             let embed = new MessageEmbed()
-                .setDescription('Resuming the the current song.')
-                .setColor(client.colors.success)
+                .setDescription('Nothing is currently playing in this server.')
+                .setColor(client.colors.error)
             await interaction.reply({ embeds: [embed] })
         }
     } else {
-        let embed = new MessageEmbed()
-            .setDescription('Nothing is currently playing in this server.')
-            .setColor(client.colors.error)
-        await interaction.reply({ embeds: [embed] })
+        interaction.reply({
+            content: `This command can only be run in <#${musicChannel}>.`,
+            ephemeral: true,
+        })
     }
 }
 

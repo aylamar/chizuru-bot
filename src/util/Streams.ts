@@ -6,7 +6,7 @@ import { MessageEmbed } from 'discord.js'
 import { EmbedColors } from '../interfaces/EmbedColors'
 import { LeanDocument } from 'mongoose'
 
-export async function run(client: Bot) {
+export async function monitorStreams(client: Bot) {
     await initState(client).then(() => client.logger.success('Done setting initial stream state'))
     setInterval(() => updateState(client), 1000 * 60, client)
 }

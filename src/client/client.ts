@@ -10,7 +10,7 @@ import { Music } from '../util/Music'
 import { DiscordTogether } from 'discord-together'
 import { EmbedColors } from '../interfaces/EmbedColors'
 import Twitch from '../util/Twitch'
-import { run } from '../util/Streams'
+import { monitorStreams } from '../util/Streams'
 
 const glob = promisify(_glob)
 
@@ -46,7 +46,7 @@ class Bot extends Client {
         mongoose.connect(config.mongoURI)
             .then((result: any) => {
                 this.logger.success('Connected with Mongoose')
-                run(this)
+                monitorStreams(this)
             }).catch((err: any) => consola.error(err))
 
         /* Commands */

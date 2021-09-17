@@ -37,7 +37,7 @@ async function music(interaction: Interaction, subCommand: string, client: Bot) 
         case 'clear':
             clearMusicChannel(interaction.guildId, client)
             interaction.reply({
-                content: `Cleared!`,
+                content: `Music commands can now be used anywhere on the server.`,
                 ephemeral: true,
             })
             return
@@ -57,17 +57,17 @@ export const options: Array<any> = [
         options: [
             {
                 name: 'set',
-                description: 'Require music to be queued in a specific channel',
+                description: 'Lock music commands to a specific channel',
                 type: 1,
                 options: [{
                     name: 'music-channel',
-                    description: 'Channel to lock music commands to',
+                    description: 'The channel to lock music commands to',
                     type: 7,
                 }],
             },
             {
                 name: 'clear',
-                description: 'Clear the music channel, allowing music to be queued anywhere',
+                description: 'Allow music commands to be used anywhere',
                 type: 1
             },
         ],

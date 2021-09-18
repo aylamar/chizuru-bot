@@ -1,7 +1,7 @@
 import { RunFunction } from '../../interfaces/Command'
 import { Interaction, PermissionString } from 'discord.js'
 import { Bot } from '../../client/client'
-import { clearLogChannel, clearMusicChannel, setLogChannel, setMusicChannel } from '../../util/Guild'
+import { clearLogChannel, clearMusicChannel, setLogChannel, setMusicChannel, toggleLogChannelEdit, toggleLogMessageDelete, toggleLogMessageEdit } from '../../util/Guild'
 
 export const run: RunFunction = async (client, interaction) => {
     if (!interaction.isCommand()) return
@@ -27,9 +27,9 @@ async function music(interaction: Interaction, subCommand: string, client: Bot) 
             const channel = interaction.options.getChannel('music-channel')
 
             if (client.channels.cache.get(channel.id).isText()) {
-                await setMusicChannel(interaction.guildId, channel.id, client)
+                let musicChannel = await setMusicChannel(interaction.guildId, channel.id, client)
                 interaction.reply({
-                    content: `Locking music commands to <#${channel.id}>.`,
+                    content: musicChannel,
                 })
             } else {
                 await interaction.reply({
@@ -39,9 +39,9 @@ async function music(interaction: Interaction, subCommand: string, client: Bot) 
             }
             return
         case 'clear':
-            clearMusicChannel(interaction.guildId, client)
+            let musicClear = await clearMusicChannel(interaction.guildId, client)
             interaction.reply({
-                content: `Music commands can now be used anywhere on the server.`,
+                content: musicClear,
             })
             return
     }
@@ -55,9 +55,9 @@ async function log(interaction: Interaction, subCommand: string, client: Bot) {
             const channel = interaction.options.getChannel('log-channel')
 
             if (client.channels.cache.get(channel.id).isText()) {
-                await setLogChannel(interaction.guildId, channel.id, client)
+                let logChannel = await setLogChannel(interaction.guildId, channel.id, client)
                 interaction.reply({
-                    content: `I'll now start logging changes to <#${channel.id}>.`,
+                    content: logChannel,
                 })
             } else {
                 await interaction.reply({
@@ -66,13 +66,26 @@ async function log(interaction: Interaction, subCommand: string, client: Bot) {
                 })
             }
             return
-        case 'clear': {
-            clearLogChannel(interaction.guildId, client)
-            interaction.reply({
-                content: `Nothing will be logged on this server anymore.`,
-            })
+        case 'clear':
+            let clearLog = await clearLogChannel(interaction.guildId, client)
+            interaction.reply({content: clearLog})
             return
-        }
+        case 'toggle':
+            const choice = interaction.options.getString('setting')
+            switch (choice) {
+                case 'message-delete':
+                    let msgDelete = await toggleLogMessageDelete(interaction.guildId, client)
+                    interaction.reply({content: msgDelete, ephemeral: true})
+                    return
+                case 'message-edit':
+                    let msgEdit = await toggleLogMessageEdit(interaction.guildId, client)
+                    interaction.reply({content: msgEdit, ephemeral: true})
+                    return
+                case 'channel-edit':
+                    let chnlEdit = await toggleLogChannelEdit(interaction.guildId, client)
+                    interaction.reply({content: chnlEdit, ephemeral: true})
+                    return
+            }
     }
 }
 
@@ -123,6 +136,31 @@ export const options: Array<any> = [
                 description: 'Allow music commands to be used anywhere',
                 type: 1
             },
+            {
+                name: 'toggle',
+                description: 'Toggle logging of specific actions',
+                type: 1,
+                options: [{
+                    name: 'setting',
+                    description: 'test',
+                    type: 3,
+                    choices: [
+                        {
+                            name: 'channel-edit',
+                            value: 'channel-edit',
+                        },
+                        {
+                            name: 'message-delete',
+                            value: 'message-delete'
+                        },
+                        {
+                            name: 'message-edit',
+                            value: 'message-edit'
+                        }
+                    ]
+    
+                }]
+            }
         ]
     }
 ]

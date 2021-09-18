@@ -15,6 +15,7 @@ export const run: RunFunction = async (client: Bot, message: Message) => {
         logChannel = client.cache[guildID].logChannel
     }
     if (!logChannel) return
+    if (!client.cache[guildID].logMessageDelete) return
 
     let channel = client.channels.resolve(logChannel)
     if (channel.isText()) {

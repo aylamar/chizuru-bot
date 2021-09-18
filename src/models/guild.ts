@@ -4,6 +4,9 @@ export interface guild extends Document {
     _id: string
     music_channel: string
     log_channel: string
+    log_channel_edit: Boolean
+    log_message_delete: Boolean
+    log_message_edit: Boolean
 }
 
 export const guildSchema = new Schema(
@@ -20,6 +23,18 @@ export const guildSchema = new Schema(
             type: String,
             required: false,
         },
+        log_channel_edit: {
+            type: Boolean,
+            required: false
+        },
+        log_message_delete: {
+            type: Boolean,
+            required: false
+        },
+        log_message_edit: {
+            type: Boolean,
+            required: false
+        }
     },
     { timestamps: true }
 )

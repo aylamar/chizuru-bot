@@ -14,10 +14,9 @@ export const run: RunFunction = async (client: Bot, oldChannel: GuildChannel, ne
     } else {
         logChannel = client.cache[guildID].logChannel
     }
-
     if (!logChannel) return
-    let channel = client.channels.resolve(logChannel)
 
+    let channel = client.channels.resolve(logChannel)
     if (channel.isText()) {
         const auditLogFetch = await oldChannel.guild.fetchAuditLogs({
             limit: 1,
@@ -32,7 +31,11 @@ export const run: RunFunction = async (client: Bot, oldChannel: GuildChannel, ne
             .setFooter(`User ID: ${entry.executor.id}`)
             .setTimestamp()
 
-        channel.send({ embeds: [embed] })
+            try {
+                channel.send({ embeds: [embed] })
+            } catch (err) {
+                client.logger.error(err)
+            }
         return
     } else {
         return

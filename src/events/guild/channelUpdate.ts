@@ -4,6 +4,7 @@ import { RunFunction } from '../../interfaces/Event'
 import { getGuild } from '../../util/Guild'
 
 export const run: RunFunction = async (client: Bot, oldChannel: GuildChannel, newChannel: GuildChannel) => {
+    if (oldChannel.name === newChannel.name) return
     let guildID: string = oldChannel.guildId
     let logChannel: string = null
 

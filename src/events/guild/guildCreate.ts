@@ -1,8 +1,9 @@
 import { Guild } from 'discord.js'
-import { RunFunction } from '../../interfaces/Command'
+import { Bot } from '../../client/client'
+import { RunFunction } from '../../interfaces/Event'
 import { createGuild } from '../../util/Guild'
 
-export const run: RunFunction = async (guild) => {
+export const run: RunFunction = async (client: Bot, guild: Guild) => {
     if (!(guild instanceof Guild)) return
     createGuild(guild.id)
 }

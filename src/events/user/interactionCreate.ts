@@ -1,7 +1,9 @@
-import { RunFunction } from '../../interfaces/Command'
+import { Interaction } from 'discord.js'
+import { Bot } from '../../client/client'
+import { RunFunction } from '../../interfaces/Event'
 import { getGuild } from '../../util/Guild'
 
-export const run: RunFunction = async (client, interaction) => {
+export const run: RunFunction = async (client: Bot, interaction: Interaction) => {
     if (!interaction.isCommand()) return
     if (!client.commands.has(interaction.commandName)) return
     if (!interaction.guild) return

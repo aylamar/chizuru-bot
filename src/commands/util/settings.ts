@@ -1,7 +1,7 @@
 import { RunFunction } from '../../interfaces/Command'
 import { Interaction, PermissionString } from 'discord.js'
 import { Bot } from '../../client/client'
-import { clearMusicChannel, setMusicChannel } from '../../util/Guild'
+import { clearLogChannel, clearMusicChannel, setLogChannel, setMusicChannel } from '../../util/Guild'
 
 export const run: RunFunction = async (client, interaction) => {
     if (!interaction.isCommand()) return
@@ -9,7 +9,14 @@ export const run: RunFunction = async (client, interaction) => {
     const group = interaction.options.getSubcommandGroup()
     const subCommand = interaction.options.getSubcommand()
 
-    music(interaction, subCommand, client)
+    switch (group) {
+        case 'music':
+            music(interaction, subCommand, client)
+            break
+        case 'log':
+            log(interaction, subCommand, client)
+            break
+    }
 }
 
 async function music(interaction: Interaction, subCommand: string, client: Bot) {
@@ -19,30 +26,54 @@ async function music(interaction: Interaction, subCommand: string, client: Bot) 
         case 'set':
             const channel = interaction.options.getChannel('music-channel')
 
-            if(client.channels.cache.get(channel.id).isText()) {
+            if (client.channels.cache.get(channel.id).isText()) {
                 await setMusicChannel(interaction.guildId, channel.id, client)
                 interaction.reply({
                     content: `Locking music commands to <#${channel.id}>.`,
-                    ephemeral: true,
                 })
             } else {
-                await 
-                interaction.reply({
+                await interaction.reply({
                     content: `This only works for text channels, please try again with a text channel.`,
                     ephemeral: true,
                 })
             }
             return
-
         case 'clear':
             clearMusicChannel(interaction.guildId, client)
             interaction.reply({
                 content: `Music commands can now be used anywhere on the server.`,
-                ephemeral: true,
             })
             return
     }
+}
 
+async function log(interaction: Interaction, subCommand: string, client: Bot) {
+    if (!interaction.isCommand()) return
+
+    switch (subCommand) {
+        case 'set':
+            const channel = interaction.options.getChannel('log-channel')
+
+            if (client.channels.cache.get(channel.id).isText()) {
+                await setLogChannel(interaction.guildId, channel.id, client)
+                interaction.reply({
+                    content: `I'll now start logging changes to <#${channel.id}>.`,
+                })
+            } else {
+                await interaction.reply({
+                    content: `This only works for text channels, please try again with a text channel.`,
+                    ephemeral: true,
+                })
+            }
+            return
+        case 'clear': {
+            clearLogChannel(interaction.guildId, client)
+            interaction.reply({
+                content: `Nothing will be logged on this server anymore.`,
+            })
+            return
+        }
+    }
 }
 
 export const name: string = 'settings'
@@ -72,4 +103,26 @@ export const options: Array<any> = [
             },
         ],
     },
+    {
+        name: 'log',
+        type: 2,
+        description: 'Logging options',
+        options: [
+            {
+                name: 'set',
+                description: 'Begin logging changes to a specific channel',
+                type: 1,
+                options: [{
+                    name: 'log-channel',
+                    description: 'The channel to log things to',
+                    type: 7,
+                }],
+            },
+            {
+                name: 'clear',
+                description: 'Allow music commands to be used anywhere',
+                type: 1
+            },
+        ]
+    }
 ]

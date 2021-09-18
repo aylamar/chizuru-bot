@@ -34,7 +34,7 @@ export async function createGuild(guildID: string) {
             consola.success(`Successfully added ${guildID} to the database.`)
             let data: GuildData = {
                 musicChannel: undefined,
-                logChannel: undefined,    
+                logChannel: undefined,
             }
 
             return data
@@ -81,6 +81,32 @@ export async function clearMusicChannel(guildID: string, client: Bot) {
         guild.music_channel = undefined
         await guild.save()
         client.cache[guildID].musicChannel = undefined
+        return true
+    } catch (err) {
+        client.logger.error(err)
+        return false
+    }
+}
+
+export async function setLogChannel(guildID: string, channelID: string, client: Bot) {
+    try {
+        let guild = await Guild.findById(guildID)
+        guild.log_channel = channelID
+        guild.save()
+        client.cache[guildID].logChannel = channelID
+        return true
+    } catch (err) {
+        client.logger.error(err)
+        return false
+    }
+}
+
+export async function clearLogChannel(guildID: string, client: Bot) {
+    try {
+        let guild = await Guild.findById(guildID)
+        guild.log_channel = undefined
+        await guild.save()
+        client.cache[guildID].logChannel = undefined
         return true
     } catch (err) {
         client.logger.error(err)

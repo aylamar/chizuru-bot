@@ -37,23 +37,27 @@ async function updateState(client: Bot) {
     let streams = await getAllStreams(client.logger)
 
     streams.map(async (stream: any) => {
-        let res = await client.twitch.checkStream(stream._id)
-        if (res == undefined && stream.current_state === true) {
-            // if streamer goes offline
-            // should be set to false, set to true for testing
-            stream.current_state = false
-            stream.save()
+        try {
+            let res = await client.twitch.checkStream(stream._id)
+            if (res == undefined && stream.current_state === true) {
+                // if streamer goes offline
+                // should be set to false, set to true for testing
+                stream.current_state = false
+                stream.save()
 
-            let offlineEmbed = genGoOfflineEmbed(stream, client.colors)
-            postStreams(stream._id, offlineEmbed, client)
-        } else if (res != undefined && stream.current_state === false) {
-            // if streamer comes online
-            // should be set to true, set to false for testing
-            stream.current_state = true
-            stream.save()
+                let offlineEmbed = genGoOfflineEmbed(stream, client.colors)
+                postStreams(stream._id, offlineEmbed, client)
+            } else if (res != undefined && stream.current_state === false) {
+                // if streamer comes online
+                // should be set to true, set to false for testing
+                stream.current_state = true
+                stream.save()
 
-            let onlineEmbed = genGoLiveEmbed(stream.profile_picture, res, client.colors)
-            postStreams(stream._id, onlineEmbed, client)
+                let onlineEmbed = genGoLiveEmbed(stream.profile_picture, res, client.colors)
+                postStreams(stream._id, onlineEmbed, client)
+            }
+        } catch (err) {
+            client.logger.error(err)
         }
     })
 }

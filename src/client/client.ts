@@ -34,8 +34,9 @@ class Bot extends Client {
         consola.info('Chizuru Bot is starting up...')
         this.colors = {
             error: 15158332,
+            warn: 15651330,
             success: 3066993,
-            purple: 15158332,
+            purple: 10181046,
             twitch: 10181046,
             anilist: 4172286
         }

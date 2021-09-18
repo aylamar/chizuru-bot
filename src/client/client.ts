@@ -20,7 +20,7 @@ class Bot extends Client {
     public events: Collection<string, Event> = new Collection()
     public constructor() {
         super({
-            intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES],
+            intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES],
         })}
     public config: Config
     public logger: Consola = consola

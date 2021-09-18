@@ -65,7 +65,6 @@ class Bot extends Client {
             const file: Event = await import(val)
             this.events.set(file.name, file)
             this.on(file.name, file.run.bind(null, this))
-            this.channels.resolve
         })
     }
 }

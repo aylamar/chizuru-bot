@@ -12,6 +12,7 @@ export async function monitorStreams(client: Bot) {
 }
 
 async function initState(client: Bot): Promise<any> {
+    client.logger.info('Setting intial state...')
     try {
         let streams = await getAllStreams(client.logger)
         streams.map(async (stream: any) => {
@@ -29,7 +30,6 @@ async function initState(client: Bot): Promise<any> {
     } catch (err) {
         client.logger.error(err)
     }
-    client.logger.info('Done setting intial state...')
     return
 }
 

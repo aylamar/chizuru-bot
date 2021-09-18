@@ -39,20 +39,6 @@ export default class Twitch {
         }
     }
 
-    public async getTwitchChannelStatus(channel_name: string) {
-        let res: any = await fetch(`https://api.twitch.tv/helix/streams?user_login=${channel_name}`, {
-            method: 'GET',
-            headers: {
-                'client-id': this.clientID,
-                Authorization: `Bearer ${await this.getToken()}`,
-            },
-        })
-        let resParsed: any = await res.json()
-        let data: any /*IsChannel*/ = resParsed.data
-
-        return data
-    }
-
     public async getProfile(channel_name: string) {
         try {
             let res: any = await fetch(`https://api.twitch.tv/helix/search/channels?query=${channel_name}`, {

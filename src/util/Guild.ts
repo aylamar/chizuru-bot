@@ -11,6 +11,9 @@ export async function getGuild(guildID: string) {
         let data: GuildData = {
             musicChannel: guild?.music_channel,
             logChannel: guild?.log_channel,
+            logChannelEdit: guild?.log_channel_edit,
+            logMessageDelete: guild?.log_message_delete,
+            logMessageEdit: guild?.log_message_edit
         }
 
         return data
@@ -35,6 +38,9 @@ export async function createGuild(guildID: string) {
             let data: GuildData = {
                 musicChannel: undefined,
                 logChannel: undefined,
+                logChannelEdit: undefined,
+                logMessageDelete: undefined,
+                logMessageEdit: undefined    
             }
 
             return data
@@ -46,6 +52,9 @@ export async function createGuild(guildID: string) {
         let data: GuildData = {
             musicChannel: guild?.music_channel,
             logChannel: guild?.log_channel,
+            logChannelEdit: guild?.log_channel_edit,
+            logMessageDelete: guild?.log_message_delete,
+            logMessageEdit: guild?.log_message_edit
         }
 
         return data

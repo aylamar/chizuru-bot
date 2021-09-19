@@ -70,11 +70,11 @@ export const options: Array<Object> = [
         required: true,
         choices: [
             {
-                name: 'Anime',
+                name: 'anime',
                 value: 'anime',
             },
             {
-                name: 'Manga',
+                name: 'manga',
                 value: 'manga',
             },
         ],

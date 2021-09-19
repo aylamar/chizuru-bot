@@ -42,7 +42,6 @@ export async function createGuild(guildID: string) {
                 logMessageDelete: undefined,
                 logMessageEdit: undefined    
             }
-
             return data
         } catch (err) {
             consola.error(`Error adding ${guildID} to the database ${err}`)
@@ -56,7 +55,6 @@ export async function createGuild(guildID: string) {
             logMessageDelete: guild?.log_message_delete,
             logMessageEdit: guild?.log_message_edit
         }
-
         return data
     }
 }
@@ -135,7 +133,7 @@ export async function toggleLogChannelEdit(guildID: string, client: Bot) {
             guild.log_channel_edit = undefined
             await guild.save()
             client.cache[guildID].logChannelEdit = undefined
-            return 'No longer channel edits edits to the log channel.'
+            return 'No longer logging channel edits to the log channel.'
         }
     } catch (err) {
         client.logger.error(err)
@@ -155,7 +153,7 @@ export async function toggleLogMessageDelete(guildID: string, client: Bot) {
             guild.log_message_delete = undefined
             await guild.save()
             client.cache[guildID].logMessageDelete = undefined
-            return 'No longer deleted message to the log channel.'
+            return 'No longer logging deleted messages to the log channel.'
         }
     } catch (err) {
         client.logger.error(err)
@@ -175,7 +173,7 @@ export async function toggleLogMessageEdit(guildID: string, client: Bot) {
             guild.log_message_edit = undefined
             await guild.save()
             client.cache[guildID].logMessageEdit = undefined
-            return 'No longer message edits edits to the log channel.'
+            return 'No longer logging message edits to the log channel.'
         }
     } catch (err) {
         client.logger.error(err)

@@ -1,29 +1,40 @@
 import { MessageEmbed, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
-import anilist from 'anilist-node'
-import consola from 'consola'
+import anilist, { AnimeEntry, MangaEntry, MediaSearchEntry } from 'anilist-node'
 
 const Anilist = new anilist()
 
 export const run: RunFunction = async (client, interaction) => {
     if (!interaction.isCommand()) return
-
+    
     try {
-        let res = null
-        let parsedRes = null
+        let res: MediaSearchEntry = null
+        let parsedRes: AnimeEntry | MangaEntry = null
         let type = ''
         switch (interaction.options.data[0].value) {
             case 'anime':
                 res = await Anilist.searchEntry.anime(interaction.options.data[1].value.toString())
+                if(res.pageInfo.total === 0) break
                 parsedRes = await Anilist.media.anime(res.media[0].id)
                 type = 'Anime'
                 break
             case 'manga':
                 res = await Anilist.searchEntry.manga(interaction.options.data[1].value.toString())
+                if(res.pageInfo.total === 0) break
                 parsedRes = await Anilist.media.manga(res.media[0].id)
                 type = 'Manga'
                 break
         }
+
+        if (res.pageInfo.total === 0) {
+            interaction.reply({ content: 'Nothing found, try searching for something else.', ephemeral: true })
+            return
+        }
+        
+        if(parsedRes.isAdult && client.cache[interaction.guildId].lookupNSFW !== true) {
+            interaction.reply({ content: 'Adult anime & manga is currently disabled on this server.', ephemeral: true })
+            return
+        } 
 
         let genre = parsedRes.genres.join(', ')
         let title = ''
@@ -51,10 +62,10 @@ export const run: RunFunction = async (client, interaction) => {
             .setTimestamp(date)
             .setColor(client.colors.anilist)
             .setFooter(`${type}`, 'https://anilist.co/img/icons/android-chrome-512x512.png')
+        interaction.reply({ embeds: [embed] })                
 
-        interaction.reply({ embeds: [embed] })
     } catch (err) {
-        consola.error(err)
+        client.logger.error(err)
     }
 }
 

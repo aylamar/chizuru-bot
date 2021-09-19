@@ -10,6 +10,7 @@ export async function getGuild(guildID: string) {
         // if guild exists
         let data: GuildData = {
             musicChannel: guild?.music_channel,
+            lookupNSFW: guild?.lookup_nsfw,
             logChannel: guild?.log_channel,
             logChannelEdit: guild?.log_channel_edit,
             logMessageDelete: guild?.log_message_delete,
@@ -37,6 +38,7 @@ export async function createGuild(guildID: string) {
             consola.success(`Successfully added ${guildID} to the database.`)
             let data: GuildData = {
                 musicChannel: undefined,
+                lookupNSFW: undefined,
                 logChannel: undefined,
                 logChannelEdit: undefined,
                 logMessageDelete: undefined,
@@ -50,6 +52,7 @@ export async function createGuild(guildID: string) {
         // if guild exists
         let data: GuildData = {
             musicChannel: guild?.music_channel,
+            lookupNSFW: guild?.lookup_nsfw,
             logChannel: guild?.log_channel,
             logChannelEdit: guild?.log_channel_edit,
             logMessageDelete: guild?.log_message_delete,
@@ -174,6 +177,26 @@ export async function toggleLogMessageEdit(guildID: string, client: Bot) {
             await guild.save()
             client.cache[guildID].logMessageEdit = undefined
             return 'No longer logging message edits to the log channel.'
+        }
+    } catch (err) {
+        client.logger.error(err)
+        return 'Something went wrong, please try again later.'
+    }
+}
+
+export async function toggleLookupNSFW(guildID: string, client: Bot) {
+    try {
+        let guild = await Guild.findById(guildID)
+        if (guild.lookup_nsfw !== true) {
+            guild.lookup_nsfw = true
+            await guild.save()
+            client.cache[guildID].lookupNSFW = true
+            return 'NSFW anime & manga will now be displayed.'
+        } else {
+            guild.lookup_nsfw = undefined
+            await guild.save()
+            client.cache[guildID].lookupNSFW = undefined
+            return 'NSFW anime & manga will no longer be displayed.'
         }
     } catch (err) {
         client.logger.error(err)

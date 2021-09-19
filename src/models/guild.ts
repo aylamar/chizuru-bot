@@ -3,6 +3,7 @@ import { model, Schema, Document } from 'mongoose'
 export interface guild extends Document {
     _id: string
     music_channel: string
+    lookup_nsfw: Boolean
     log_channel: string
     log_channel_edit: Boolean
     log_message_delete: Boolean
@@ -17,6 +18,10 @@ export const guildSchema = new Schema(
         },
         music_channel: {
             type: String,
+            required: false,
+        },
+        lookup_nsfw: {
+            type: Boolean,
             required: false,
         },
         log_channel: {

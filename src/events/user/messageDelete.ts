@@ -31,6 +31,27 @@ export const run: RunFunction = async (client: Bot, message: Message) => {
         } catch (err) {
             client.logger.error(err)
         }
+
+        if (message.attachments.first() !== undefined) {
+            let imgEmbed = new MessageEmbed()
+                .setAuthor(message.author.tag, message.author.avatarURL())
+                .setColor(client.colors.warn)
+                .setFooter(`User ID: ${message.author.id}`)
+                .setTimestamp()
+                .setDescription(`${message.author.tag}'s message included the following attachments:`)
+            message.attachments.forEach((test) => {
+                imgEmbed.addField(
+                    `Content Type: ${test.contentType}`,
+                    `<${test.url}>`,
+                    true
+                )
+            })
+            try {
+                channel.send({ embeds: [imgEmbed] })
+            } catch (err) {
+                client.logger.error(err)
+            }
+        }
         return
     } else {
         return

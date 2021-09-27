@@ -43,8 +43,9 @@ export const options: Array<any> = [
         options: [
             {
                 name: 'channel',
-                description: 'The channel to lock music commands to',
                 type: 7,
+                required: true,
+                description: 'The channel to lock music commands to',
             },
         ],
     },

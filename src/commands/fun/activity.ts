@@ -27,7 +27,7 @@ export const run: RunFunction = async (client, interaction) => {
 
     client.activity.createTogetherCode(voiceChannel.id, `${activity}`)
         .then(async (invite) => {
-            interaction.reply(`${invite.code}`)
+            interaction.reply(`Click this link to join the activity in ${voiceChannel.name}: ${invite.code}`)
         })
 }
 

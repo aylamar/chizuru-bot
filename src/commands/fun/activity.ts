@@ -62,6 +62,18 @@ export const options: Array<Object> = [
                 name: 'Fishing',
                 value: 'fishing',
             },
+            {
+                name: 'Letter Tile',
+                value: 'lettertile'
+            },
+            {
+                name: 'Words Snack',
+                value: 'wordsnack'
+            },
+            {
+                name: 'Doodle Crew',
+                value: 'doodlecrew'
+            },
         ],
     },
 ]

@@ -12,6 +12,7 @@ import { EmbedColors } from '../interfaces/EmbedColors'
 import Twitch from '../util/Twitch'
 import { monitorStreams } from '../util/Streams'
 import { GuildCache } from '../interfaces/GuildCache'
+import { StarboardClient } from '../util/Starboard'
 
 const glob = promisify(_glob)
 
@@ -20,7 +21,7 @@ class Bot extends Client {
     public events: Collection<string, Event> = new Collection()
     public constructor() {
         super({
-            intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES],
+            intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS],
         })}
     public config: Config
     public logger: Consola = consola
@@ -29,6 +30,7 @@ class Bot extends Client {
     public colors: EmbedColors
     public twitch: Twitch
     public cache: GuildCache
+    public Starboard: StarboardClient
 
     public async start(config: Config): Promise<void> {
         consola.info('Chizuru Bot is starting up...')
@@ -46,11 +48,13 @@ class Bot extends Client {
         this.activity = new DiscordTogether(this)
         this.twitch = new Twitch(this.config, this.logger)
         this.cache = {}
+        this.Starboard = new StarboardClient({client: this})
 
         mongoose.connect(config.mongoURI)
             .then((result: any) => {
                 this.logger.success('Connected with Mongoose')
                 monitorStreams(this)
+                this.Starboard.start(this)
             }).catch((err: any) => consola.error(err))
 
         /* Commands */

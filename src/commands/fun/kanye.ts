@@ -15,9 +15,7 @@ export const run: RunFunction = async (client, interaction) => {
     try {
         await interaction.reply({ embeds: [embed] })
     } catch (err) {
-        client.logger.error(
-            `Error sending help response in ${interaction.channelId}\n${err}`
-        )
+        client.logger.error(`Error sending help response in ${interaction.channelId}\n${err}`)
     }
 }
 

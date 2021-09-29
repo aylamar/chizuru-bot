@@ -94,6 +94,6 @@ export const options: Array<Object> = [
         name: 'series',
         type: 3,
         required: true,
-        description: 'The name of the manga or anime to lookup',
+        description: 'The name of the anime or manga to lookup',
     },
 ]

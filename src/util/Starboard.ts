@@ -115,7 +115,7 @@ export class StarboardClient {
         })
     }
 
-    private validGuild(guild: Snowflake) {
+    public validGuild(guild: Snowflake) {
         return this.guilds.some((x) => x.id === guild)
     }
 
@@ -134,6 +134,11 @@ export class StarboardClient {
                     .setFooter(`${starCount} ⭐ (${message.id}) • ${message.createdAt.toLocaleDateString()}`),
             ],
         }
+    }
+
+    public async getConfig(guildId: Snowflake) {
+        let data = this.getData(guildId)
+        return data.options
     }
 
     public async listener(reaction: MessageReaction) {

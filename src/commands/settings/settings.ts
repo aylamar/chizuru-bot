@@ -31,6 +31,35 @@ export const run: RunFunction = async (client, interaction) => {
                 embed.addField('Music Settings', 'Music commands can be run in any channel on this server.')
             }
 
+            if(!client.Starboard.validGuild(interaction.guildId)) {
+                embed.addField('Starboard Settings', 'Currently no starboard is setup for this server')
+            } else {
+                let sbData = await client.Starboard.getConfig(interaction.guildId)
+                let bannedUsers, blacklistedChannels = null
+
+                if (sbData.bannedUsers.length > 0) {
+                    let userList = sbData.bannedUsers.map(id => {
+                        return `<@${id}>`
+                    }).join(', ')
+                    bannedUsers = `Banned Users: ${userList}`
+                } else {
+                    bannedUsers = 'Banned Users: None'
+                }
+
+                if (sbData.blacklistedChannels.length > 0) {
+                    let userList = sbData.blacklistedChannels.map(id => {
+                        return `<#${id}>`
+                    }).join(', ')
+                    blacklistedChannels = `Blacklisted Channels: ${userList}`
+                } else {
+                    blacklistedChannels = 'Blacklisted Channels: None'
+                }
+
+                embed.addField('Starboard Settings',
+                    `Channel: <#${sbData.starboardChannel}>\nEmote: ${sbData.starEmote}\nRequired count: ${sbData.starCount}\n${bannedUsers}\n${blacklistedChannels}`
+                )
+            }
+
             try {
                 await interaction.reply({ embeds: [embed] })
             } catch (err) {

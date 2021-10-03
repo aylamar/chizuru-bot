@@ -19,7 +19,8 @@ export const run: RunFunction = async (client, interaction) => {
                 if(cache.logMessageEdit) log.push('message edits')
                 embed.addField(
                     `Log Settings`,
-                    `Currently logging data to: <#${cache.logChannel}>\nThe following is logged: ${log.join(', ')}`
+                    `Currently logging data to: <#${cache.logChannel}>
+                    The following is logged: ${log.join(', ')}`
                 )
             } else {
                 embed.addField('Log Settings', 'No data is currently being logged on this server.')
@@ -56,7 +57,11 @@ export const run: RunFunction = async (client, interaction) => {
                 }
 
                 embed.addField('Starboard Settings',
-                    `Channel: <#${sbData.starboardChannel}>\nEmote: ${sbData.starEmote}\nRequired count: ${sbData.starCount}\n${bannedUsers}\n${blacklistedChannels}`
+                    `Channel: <#${sbData.starboardChannel}>
+                    Emote: ${sbData.starEmote}
+                    Required count: ${sbData.starCount}
+                    ${bannedUsers}
+                    ${blacklistedChannels}`
                 )
             }
 

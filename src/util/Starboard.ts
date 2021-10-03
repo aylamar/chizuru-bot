@@ -25,6 +25,7 @@ export class StarboardClient {
                             starCount: d.star_count,
                             starboardChannel: d.star_channel,
                             starEmote: d.star_emote,
+                            bannedUsers: d.banned_users,
                             blacklistedChannels: d.blacklisted_channels
                         },
                     }
@@ -60,6 +61,18 @@ export class StarboardClient {
             } else {
                 channels.push(channelId)
                 return `Messages from <#${channelId}> will no longer appear in the starboard.`
+            }
+        },
+
+        banUser: (guildId: Snowflake, userId: Snowflake) => {
+            const users = this.getData(guildId)?.options.bannedUsers
+            if (users.includes(userId)) {
+                let idx = users.indexOf(userId)
+                users.splice(idx, 1)
+                return `<@${userId}> is no longer banned from the starboard.`
+            } else {
+                users.push(userId)
+                return `<@${userId}> has been banned from the starboard.`
             }
         }
     }
@@ -129,21 +142,25 @@ export class StarboardClient {
         if (reaction.partial) await reaction.fetch()
         const { guildId, id } = reaction.message
         if (this.getData(guildId)?.options.blacklistedChannels.includes(reaction.message.channelId)) return
-
         if (
-            reaction.emoji.name !== this.getData(guildId)?.options.starEmote ||
-            reaction.count < this.getData(guildId)?.options.starCount
+            reaction.count < this.getData(guildId)?.options.starCount ||
+            reaction.emoji.name !== this.getData(guildId)?.options.starEmote
         ) return
+
+        let count = 0
+        // Do not count users who are banned
+        reaction.users.cache.map((usr) => {
+            if (!this.getData(guildId).options.bannedUsers.includes(usr.id))
+                count++
+        })
+        if (count < this.getData(guildId)?.options.starCount) return
 
         const data = this.cache.get(guildId) || []
         const starboardChannel = this.client.channels.cache.get(
             this.guilds.find((x) => x.id === guildId)?.options.starboardChannel
         ) as TextChannel
         const getMessage = data.find((x) => x.origin === id)
-        const generateEdit = this.generateEdit(
-            reaction.count,
-            reaction.message as Message
-        )
+        const generateEdit = this.generateEdit(count, reaction.message as Message)
 
         const sendMessage = () => {
             starboardChannel?.send(generateEdit).then((m) => {

@@ -16,14 +16,24 @@ export const run: RunFunction = async (client, interaction) => {
     }
 
     switch (option) {
-        case 'delete':
+        case 'ban':
+            const bannedUser = interaction.options.getUser('user')
             try {
-                if (data) data.delete()
-                client.Starboard.start(client)
-                let delEmbed = new MessageEmbed()
-                    .setDescription('The starboard has successfully been deleted.')
+                if(data.banned_users.includes(bannedUser.id)) {
+                    let idx = data.banned_users.indexOf(bannedUser.id)
+                    data.banned_users.splice(idx, 1)
+                    await data.save()
+                    //console.log('hit', data)
+                } else {
+                    data.banned_users.push(bannedUser.id)
+                    await data.save()    
+                    //console.log('hit222222', data)
+                }
+                let res = client.Starboard.config.banUser(interaction.guildId, bannedUser.id)
+                let banEmbed = new MessageEmbed()
+                    .setDescription(res)
                     .setColor(client.colors.success)
-                interaction.reply({ embeds: [delEmbed] })
+                await interaction.reply({embeds: [banEmbed]})
             } catch (err) {
                 client.logger.error(err)
                 interaction.reply({
@@ -38,10 +48,10 @@ export const run: RunFunction = async (client, interaction) => {
                 if(data.blacklisted_channels.includes(blacklistChannel.id)) {
                     let idx = data.blacklisted_channels.indexOf(blacklistChannel.id)
                     data.blacklisted_channels.splice(idx, 1)
-                    data.save()
+                    await data.save()
                 } else {
                     data.blacklisted_channels.push(blacklistChannel.id)
-                    data.save()    
+                    await data.save()    
                 }
                 let res = client.Starboard.config.blacklistChannel(interaction.guildId, blacklistChannel.id)
                 let blacklistEmbed = new MessageEmbed()
@@ -81,6 +91,7 @@ export const run: RunFunction = async (client, interaction) => {
                     star_count: starcount,
                     star_channel: channel.id,
                     star_emote: emote,
+                    banned_users: [],
                     blacklisted_channels: [],
                 })
                 await newStarboard.save()
@@ -91,6 +102,7 @@ export const run: RunFunction = async (client, interaction) => {
                         starCount: starcount,
                         starboardChannel: channel.id,
                         starEmote: emote,
+                        bannedUsers: [],
                         blacklistedChannels: [],
                     },
                 })
@@ -107,6 +119,22 @@ export const run: RunFunction = async (client, interaction) => {
                 })
             }
             return
+        case 'delete':
+            try {
+                if (data) data.delete()
+                client.Starboard.start(client)
+                let delEmbed = new MessageEmbed()
+                    .setDescription('The starboard has successfully been deleted.')
+                    .setColor(client.colors.success)
+                interaction.reply({ embeds: [delEmbed] })
+            } catch (err) {
+                client.logger.error(err)
+                interaction.reply({
+                    content: 'Something went wrong, try again in a few minutes.',
+                    ephemeral: true,
+                })
+            }
+            return
     }
 }
 
@@ -115,6 +143,19 @@ export const description: string = 'Setup a starboard for this server'
 export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
 export const userPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'MANAGE_GUILD']
 export const options: Array<any> = [
+    {
+        name: 'ban',
+        type: 1,
+        description: 'Ban a user from the starboard, preventing any of their reactions from counting',
+        options: [
+            {
+                name: 'user',
+                description: 'The user to ban or unban from the starboard',
+                required: true,
+                type: 6
+            }
+        ]
+    },
     {
         name: 'blacklist',
         type: 1,

@@ -5,6 +5,7 @@ export interface starboard extends Document {
     star_count: number
     star_emote: string
     star_channel: string
+    banned_users: string[]
     blacklisted_channels: string[]
 }
 
@@ -25,6 +26,10 @@ export const starboardSchema = new Schema(
         star_channel: {
             type: String,
             required: true,
+        },
+        banned_users: {
+            type: [String],
+            required: true
         },
         blacklisted_channels: {
             type: [String],

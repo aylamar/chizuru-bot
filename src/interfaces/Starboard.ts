@@ -10,6 +10,7 @@ export interface StarboardGuildOptions {
     starCount: number
     starboardChannel: Snowflake
     starEmote: string
+    bannedUsers: string[]
     blacklistedChannels: string[]
 }
 

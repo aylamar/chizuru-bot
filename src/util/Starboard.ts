@@ -17,7 +17,7 @@ export class StarboardClient {
     public async start (client: Bot) {
         try {
             const data = await starboard.find()
-            this.config.guilds.set(
+            this.config.set(
                 data.map((d: any) => {
                     return {
                         id: d._id,
@@ -25,32 +25,43 @@ export class StarboardClient {
                             starCount: d.star_count,
                             starboardChannel: d.star_channel,
                             starEmote: d.star_emote,
+                            blacklistedChannels: d.blacklisted_channels
                         },
                     }
                 })
             )
-            client.logger.success(`${data.length} starboards initialized`)
+            client.logger.success(`Initialized ${data.length} starboards`)
         } catch (err) {
             client.logger.error(err)
         }
     }
 
     public config = {
-        guilds: {
-            set: (StarboardGuilds: StarboardGuild[]) => {
-                this.guilds = StarboardGuilds
-                this.cacheData()
-            },
-
-            add: (StarboardGuild: StarboardGuild) => {
-                const filtered = (this.guilds || []).filter(
-                    (x) => x.id === StarboardGuild.id
-                )
-
-                this.guilds = [...filtered, StarboardGuild]
-                this.cacheData()
-            },
+        set: (StarboardGuilds: StarboardGuild[]) => {
+            this.guilds = StarboardGuilds
+            this.cacheData()
         },
+
+        add: (StarboardGuild: StarboardGuild) => {
+            const filtered = (this.guilds || []).filter(
+                (x) => x.id === StarboardGuild.id
+            )
+
+            this.guilds = [...filtered, StarboardGuild]
+            this.cacheData()
+        },
+
+        blacklistChannel: (guildId: Snowflake, channelId: Snowflake) => {
+            const channels = this.getData(guildId)?.options.blacklistedChannels
+            if (channels.includes(channelId)) {
+                let idx = channels.indexOf(channelId)
+                channels.splice(idx, 1)
+                return `Messages from <#${channelId}> will now appear in the starboard.`
+            } else {
+                channels.push(channelId)
+                return `Messages from <#${channelId}> will no longer appear in the starboard.`
+            }
+        }
     }
 
     private cacheData() {
@@ -75,13 +86,9 @@ export class StarboardClient {
                     const starCount =
                         message.embeds[0].footer.text.match(/\d+/)?.[0]
                     const origin =
-                        message.embeds[0].footer.text.match(
-                            /(?!\()\d+(?=\))/
-                        )?.[0]
+                        message.embeds[0].footer.text.match(/(?!\()\d+(?=\))/)?.[0]
 
                     if (!starCount || !origin) return accumulator
-                    //////////////////////////////////////////////////////////////////
-                    //console.log(starCount, origin)
 
                     const data: starMessageData = {
                         id: message.id,
@@ -107,20 +114,11 @@ export class StarboardClient {
         return {
             embeds: [
                 new MessageEmbed()
-                    .setAuthor(
-                        message.author.tag,
-                        message.author.displayAvatarURL({ dynamic: true })
-                    )
+                    .setAuthor(message.author.tag, message.author.displayAvatarURL({ dynamic: true }))
                     .setColor(this.client.colors.purple)
-                    .setDescription(
-                        `${message.content}\n\n→ [original oessage](${message.url}) in <#${message.channelId}>`
-                    )
+                    .setDescription(`${message.content}\n\n→ [original oessage](${message.url}) in <#${message.channelId}>`)
                     .setImage(message.attachments.first()?.url || null)
-                    .setFooter(
-                        `${starCount} ⭐ (${
-                            message.id
-                        }) • ${message.createdAt.toLocaleDateString()}`
-                    ),
+                    .setFooter(`${starCount} ⭐ (${message.id}) • ${message.createdAt.toLocaleDateString()}`),
             ],
         }
     }
@@ -130,6 +128,7 @@ export class StarboardClient {
         if (reaction.message.partial) await reaction.message.fetch()
         if (reaction.partial) await reaction.fetch()
         const { guildId, id } = reaction.message
+        if (this.getData(guildId)?.options.blacklistedChannels.includes(reaction.message.channelId)) return
 
         if (
             reaction.emoji.name !== this.getData(guildId)?.options.starEmote ||

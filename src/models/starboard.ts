@@ -5,6 +5,7 @@ export interface starboard extends Document {
     star_count: number
     star_emote: string
     star_channel: string
+    blacklisted_channels: string[]
 }
 
 export const starboardSchema = new Schema(
@@ -25,6 +26,10 @@ export const starboardSchema = new Schema(
             type: String,
             required: true,
         },
+        blacklisted_channels: {
+            type: [String],
+            required: true
+        }
     },
 )
 

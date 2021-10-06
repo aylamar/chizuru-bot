@@ -52,6 +52,39 @@ export class StarboardClient {
             this.cacheData()
         },
 
+        create: async (client: Bot, guildId: Snowflake, channelId: Snowflake, emote: string, starcount: number) => {
+            try {
+                const data = await starboard.findById(guildId)
+                if (data)
+                    return 'A starboard has already been created for this server, delete it first to create a new one'
+
+                const newStarboard = new starboard({
+                    _id: guildId,
+                    star_count: starcount,
+                    star_channel: channelId,
+                    star_emote: emote,
+                    banned_users: [],
+                    blacklisted_channels: [],
+                })
+                await newStarboard.save()
+
+                this.config.add({
+                    id: guildId,
+                    options: {
+                        starCount: starcount,
+                        starboardChannel: channelId,
+                        starEmote: emote,
+                        bannedUsers: [],
+                        blacklistedChannels: [],
+                    },
+                })
+                return true
+            } catch (err) {
+                client.logger.error(err)
+                return `Something went wrong, try again in a few minutes`
+            }
+        },
+
         delete: async (guildId: Snowflake, client: Bot): Promise<Boolean> => {
             try {
                 const data = await starboard.findById(guildId)
@@ -64,7 +97,18 @@ export class StarboardClient {
             }
         },
 
-        blacklistChannel: (guildId: Snowflake, channelId: Snowflake) => {
+        blacklistChannel: async (guildId: Snowflake, channelId: Snowflake) => {
+            const data = await starboard.findById(guildId)
+
+            if(data.blacklisted_channels.includes(channelId)) {
+                let idx = data.blacklisted_channels.indexOf(channelId)
+                data.blacklisted_channels.splice(idx, 1)
+                await data.save()
+            } else {
+                data.blacklisted_channels.push(channelId)
+                await data.save()    
+            }
+
             const channels = this.getData(guildId)?.options.blacklistedChannels
             if (channels.includes(channelId)) {
                 let idx = channels.indexOf(channelId)
@@ -76,7 +120,18 @@ export class StarboardClient {
             }
         },
 
-        banUser: (guildId: Snowflake, userId: Snowflake) => {
+        banUser: async (guildId: Snowflake, userId: Snowflake) => {
+            const data = await starboard.findById(guildId)
+
+            if(data.banned_users.includes(userId)) {
+                let idx = data.banned_users.indexOf(userId)
+                data.banned_users.splice(idx, 1)
+                await data.save()
+            } else {
+                data.banned_users.push(userId)
+                await data.save()    
+            }
+
             const users = this.getData(guildId)?.options.bannedUsers
             if (users.includes(userId)) {
                 let idx = users.indexOf(userId)

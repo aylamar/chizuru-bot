@@ -22,6 +22,15 @@ function run() {
                 body: commands,
             })
 
+            // Remove guild commands
+            rest.put(
+                Routes.applicationGuildCommands(
+                    config.clientID,
+                    config.guildID
+                ),
+                { body: {} }
+            )
+
             console.log('Successfully registered application commands.')
         } catch (error) {
             console.error(error)

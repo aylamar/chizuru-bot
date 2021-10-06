@@ -26,6 +26,11 @@ function run() {
                 { body: commands }
             )
 
+            // Remove global commands
+            rest.put(Routes.applicationCommands(config.clientID), {
+                body: {},
+            })
+
             console.log('Successfully registered application commands.')
         } catch (error) {
             console.error(error)

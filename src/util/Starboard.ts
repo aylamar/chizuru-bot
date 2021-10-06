@@ -129,7 +129,7 @@ export class StarboardClient {
                 new MessageEmbed()
                     .setAuthor(message.author.tag, message.author.displayAvatarURL({ dynamic: true }))
                     .setColor(this.client.colors.purple)
-                    .setDescription(`${message.content}\n\n→ [original oessage](${message.url}) in <#${message.channelId}>`)
+                    .setDescription(`${message.content}\n\n→ [original message](${message.url}) in <#${message.channelId}>`)
                     .setImage(message.attachments.first()?.url || null)
                     .setFooter(`${starCount} ⭐ (${message.id}) • ${message.createdAt.toLocaleDateString()}`),
             ],

@@ -23,11 +23,9 @@ export const run: RunFunction = async (client, interaction) => {
                     let idx = data.banned_users.indexOf(bannedUser.id)
                     data.banned_users.splice(idx, 1)
                     await data.save()
-                    //console.log('hit', data)
                 } else {
                     data.banned_users.push(bannedUser.id)
                     await data.save()    
-                    //console.log('hit222222', data)
                 }
                 let res = client.Starboard.config.banUser(interaction.guildId, bannedUser.id)
                 let banEmbed = new MessageEmbed()

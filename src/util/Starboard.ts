@@ -151,6 +151,7 @@ export class StarboardClient {
             reaction.count < this.getData(guildId)?.options.starCount ||
             reaction.emoji.name !== this.getData(guildId)?.options.starEmote
         ) return
+        if (reaction.users.cache) await reaction.users.fetch()
 
         let count = 0
         // Do not count users who are banned

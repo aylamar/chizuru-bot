@@ -22,6 +22,7 @@ class Bot extends Client {
     public constructor() {
         super({
             intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS],
+            partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
         })}
     public config: Config
     public logger: Consola = consola

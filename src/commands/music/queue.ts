@@ -3,8 +3,6 @@ import { RunFunction } from '../../interfaces/Command'
 import { Song } from 'distube'
 
 export const run: RunFunction = async (client, interaction) => {
-    if (!interaction.isCommand()) return
-
     const musicChannel = client.cache[interaction.guildId].musicChannel
     if (musicChannel === interaction.channelId || musicChannel == undefined) {
         let queue = client.music.getQueue(interaction.guild)

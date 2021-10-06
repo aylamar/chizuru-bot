@@ -3,7 +3,6 @@ import { RunFunction } from '../../interfaces/Command'
 import { getChannelByGuild } from '../../util/Streams'
 
 export const run: RunFunction = async (client, interaction) => {
-    if (!interaction.isCommand()) return
     try {
         let res = await getChannelByGuild(interaction.guildId, client.logger)
 

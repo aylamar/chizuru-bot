@@ -1,9 +1,8 @@
 import { RunFunction } from '../../interfaces/Command'
-import { MessageEmbed, PermissionString } from 'discord.js'
+import { CommandInteraction, MessageEmbed, PermissionString } from 'discord.js'
 import starboard from '../../models/starboard'
 
 export const run: RunFunction = async (client, interaction) => {
-    if (!interaction.isCommand()) return
     const option = interaction.options.getSubcommand()
 
     const data = await starboard.findById(interaction.guildId)

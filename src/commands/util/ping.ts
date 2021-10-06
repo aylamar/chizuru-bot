@@ -2,7 +2,6 @@ import { RunFunction } from '../../interfaces/Command'
 import { PermissionString } from 'discord.js'
 
 export const run: RunFunction = async (client, interaction) => {
-    if (!interaction.isCommand()) return
     let curTime = Date.now()
     let ping = curTime - interaction.createdTimestamp
     interaction.createdTimestamp

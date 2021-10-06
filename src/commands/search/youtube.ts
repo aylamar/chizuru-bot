@@ -3,7 +3,6 @@ import { RunFunction } from '../../interfaces/Command'
 import ytSearch from 'yt-search'
 
 export const run: RunFunction = async (client, interaction) => {
-    if (!interaction.isCommand()) return
     let args = interaction.options.getString('title') as string
     interaction.deferReply()
 

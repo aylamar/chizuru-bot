@@ -3,7 +3,6 @@ import { RunFunction } from '../../interfaces/Command'
 import { addStream } from '../../util/Streams'
 
 export const run: RunFunction = async (client, interaction) => {
-    if (!interaction.isCommand()) return
     await interaction.deferReply()
     let streamer = interaction.options.getString('streamer')
   

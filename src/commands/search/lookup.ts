@@ -5,8 +5,6 @@ import anilist, { AnimeEntry, MangaEntry, MediaSearchEntry } from 'anilist-node'
 const Anilist = new anilist()
 
 export const run: RunFunction = async (client, interaction) => {
-    if (!interaction.isCommand()) return
-    
     try {
         let res: MediaSearchEntry = null
         let parsedRes: AnimeEntry | MangaEntry = null

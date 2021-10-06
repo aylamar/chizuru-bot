@@ -3,7 +3,6 @@ import { RunFunction } from '../../interfaces/Command'
 import { delStream } from '../../util/Streams'
 
 export const run: RunFunction = async (client, interaction) => {
-    if (!interaction.isCommand()) return
     let streamer = interaction.options.getString('streamer')
 
     let res = await delStream(streamer, interaction.channelId, client.logger)

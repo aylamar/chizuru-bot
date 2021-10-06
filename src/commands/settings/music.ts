@@ -3,8 +3,6 @@ import { PermissionString } from 'discord.js'
 import { clearMusicChannel, setMusicChannel } from '../../util/Guild'
 
 export const run: RunFunction = async (client, interaction) => {
-    if (!interaction.isCommand()) return
-
     const subCommand = interaction.options.getSubcommand()
     switch (subCommand) {
         case 'set':

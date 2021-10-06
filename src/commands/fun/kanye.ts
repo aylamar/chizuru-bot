@@ -3,8 +3,6 @@ import { RunFunction } from '../../interfaces/Command'
 import fetch from 'node-fetch'
 
 export const run: RunFunction = async (client, interaction) => {
-    if (!interaction.isCommand()) return
-
     let res = await fetch('https://api.kanye.rest')
     let parsed: any = await res.json()
 

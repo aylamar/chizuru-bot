@@ -2,7 +2,6 @@ import { PermissionString, GuildMember } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
 
 export const run: RunFunction = async (client, interaction) => {
-    if (!interaction.isCommand()) return
     if (!(interaction.member instanceof GuildMember)) return
     const voiceChannel = interaction.member.voice.channel
 

@@ -1,8 +1,8 @@
-import { Interaction, PermissionString } from 'discord.js'
+import { CommandInteraction, PermissionString } from 'discord.js'
 import { Bot } from '../client/client'
 
 export interface RunFunction {
-    (client: Bot, interaction: Interaction, args?: string[]): Promise<void>
+    (client: Bot, interaction: CommandInteraction, args?: string[]): Promise<void>
 }
 
 export interface Command {

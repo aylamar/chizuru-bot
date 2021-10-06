@@ -1,6 +1,7 @@
 import { RunFunction } from '../../interfaces/Command'
 import { MessageEmbed, PermissionString } from 'discord.js'
 import { toggleLookupNSFW } from '../../util/Guild'
+import { GuildData } from '../../interfaces/GuildCache'
 
 export const run: RunFunction = async (client, interaction) => {
     const subCommand = interaction.options.getSubcommand()
@@ -25,7 +26,7 @@ export const run: RunFunction = async (client, interaction) => {
             }
 
             if(cache.musicChannel) {
-                console.log('Music Settings', `Music commands can only be run in <#${cache.musicChannel}>`)
+                embed.addField('Music Settings', `Music commands can only be run in <#${cache.musicChannel}>`)
             } else {
                 embed.addField('Music Settings', 'Music commands can be run in any channel on this server.')
             }
@@ -63,6 +64,9 @@ export const run: RunFunction = async (client, interaction) => {
                 )
             }
 
+            let lookupValue = lookupVal(cache)
+            embed.addField('Misc Settings',`${lookupValue}`)
+
             try {
                 await interaction.reply({ embeds: [embed] })
             } catch (err) {
@@ -93,3 +97,11 @@ export const options: Array<any> = [
         type: 1,
     }
 ]
+
+function lookupVal (cache: GuildData) {
+    if (cache.lookupNSFW == true) {
+        return 'NSFW lookup searches are enabled on this server.'
+    } else {
+        return 'NSFW lookup searches are not enabled on this server.'
+    }
+}

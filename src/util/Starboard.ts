@@ -52,6 +52,18 @@ export class StarboardClient {
             this.cacheData()
         },
 
+        delete: async (guildId: Snowflake, client: Bot): Promise<Boolean> => {
+            try {
+                const data = await starboard.findById(guildId)
+                if (data) data.delete()
+                this.start(client)
+                return true
+            } catch (err) {
+                client.logger.error(err)
+                return false
+            }
+        },
+
         blacklistChannel: (guildId: Snowflake, channelId: Snowflake) => {
             const channels = this.getData(guildId)?.options.blacklistedChannels
             if (channels.includes(channelId)) {

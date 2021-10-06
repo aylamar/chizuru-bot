@@ -1,5 +1,5 @@
 import { RunFunction } from '../../interfaces/Command'
-import { CommandInteraction, MessageEmbed, PermissionString } from 'discord.js'
+import { MessageEmbed, PermissionString } from 'discord.js'
 import starboard from '../../models/starboard'
 
 export const run: RunFunction = async (client, interaction) => {
@@ -118,12 +118,18 @@ export const run: RunFunction = async (client, interaction) => {
             return
         case 'delete':
             try {
-                if (data) data.delete()
-                client.Starboard.start(client)
-                let delEmbed = new MessageEmbed()
-                    .setDescription('The starboard has successfully been deleted.')
-                    .setColor(client.colors.success)
-                interaction.reply({ embeds: [delEmbed] })
+                let delRes = await client.Starboard.config.delete(interaction.guildId, client)
+                if (delRes) {
+                    let delEmbed = new MessageEmbed()
+                        .setDescription('The starboard has successfully been deleted.')
+                        .setColor(client.colors.success)
+                    interaction.reply({ embeds: [delEmbed] })
+                } else {
+                    interaction.reply({
+                        content: 'Something went wrong, try again in a few minutes.',
+                        ephemeral: true,
+                    })
+                }
             } catch (err) {
                 client.logger.error(err)
                 interaction.reply({

@@ -3,16 +3,24 @@ import { RunFunction } from '../../interfaces/Command'
 import fetch from 'node-fetch'
 
 export const run: RunFunction = async (client, interaction) => {
-    let res = await fetch('https://api.kanye.rest')
-    let parsed: any = await res.json()
-
-    const embed = new MessageEmbed()
-        .setAuthor('Kanye West', 'https://i.imgur.com/ywPk81X.jpeg','https://twitter.com/kanyewest/')
-        .setColor(client.colors.success)
-        .setDescription(`"${parsed.quote}"`)
     try {
+        let res = await fetch('https://api.kanye.rest')
+        let parsed: any = await res.json()
+
+        const embed = new MessageEmbed()
+            .setAuthor(
+                'Kanye West',
+                'https://i.imgur.com/ywPk81X.jpeg',
+                'https://twitter.com/kanyewest/'
+            )
+            .setColor(client.colors.success)
+            .setDescription(`"${parsed.quote}"`)
         await interaction.reply({ embeds: [embed] })
     } catch (err) {
+        await interaction.reply({
+            content: 'Something went wrong, please try again in a few minutes.',
+            ephemeral: true,
+        })
         client.logger.error(`Error sending help response in ${interaction.channelId}\n${err}`)
     }
 }

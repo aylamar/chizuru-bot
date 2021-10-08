@@ -19,6 +19,7 @@ export const run: RunFunction = async (client: Bot, oldMessage: Message, newMess
     if (client.cache[guildID].logBlacklist?.includes(newMessage.channelId)) return
     if (newMessage.partial) await oldMessage.fetch()
     if (newMessage.author?.bot) return
+    if (newMessage.content == oldMessage.content) return
 
     logChannels.map((l) => {
         let channel = client.channels.resolve(l)

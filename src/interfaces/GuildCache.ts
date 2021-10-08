@@ -4,6 +4,7 @@ export interface GuildCache {
         lookupNSFW?: boolean
         logBlacklist?: string[]
         logBan?: string[]
+        logVoice?: string[]
         messageDelete?: string[]
         messageEdit?: string[]
     }
@@ -14,6 +15,7 @@ export interface GuildData {
     lookupNSFW?: boolean
     logBlacklist?: string[]
     logBan?: string[]
+    logVoice?: string[]
     messageDelete?: string[]
     messageEdit?: string[]
 }

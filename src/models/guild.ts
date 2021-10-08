@@ -6,6 +6,7 @@ export interface guild extends Document {
     lookup_nsfw: boolean
     log_blacklist: string[]
     log_ban: string[]
+    log_voice: string[]
     log_message_delete: string[]
     log_message_edit: string[]
 }
@@ -29,6 +30,10 @@ export const guildSchema = new Schema(
             required: false
         },
         log_ban: {
+            type: [String],
+            required: false
+        },
+        log_voice: {
             type: [String],
             required: false
         },

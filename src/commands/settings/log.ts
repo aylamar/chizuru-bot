@@ -1,6 +1,6 @@
 import { RunFunction } from '../../interfaces/Command'
 import { PermissionString } from 'discord.js'
-import { logBan, logBlacklist, logMessageDelete, logMessageEdit } from '../../util/Guild'
+import { logBan, logBlacklist, logMessageDelete, logMessageEdit, logVoice } from '../../util/Guild'
 
 export const run: RunFunction = async (client, interaction) => {
     const option = interaction.options.getSubcommand()
@@ -25,6 +25,10 @@ export const run: RunFunction = async (client, interaction) => {
                 case 'ban':
                     let msgBan = await logBan(interaction.guildId, channel.id, client)
                     interaction.reply({ content: msgBan, ephemeral: true })
+                    return
+                case 'voice':
+                    let msgVoice = await logVoice(interaction.guildId, channel.id, client)
+                    interaction.reply({ content: msgVoice, ephemeral: true })
                     return
                 default:
                     return
@@ -79,6 +83,10 @@ export const options: Array<any> = [
                         name: 'ban',
                         value: 'ban',
                     },
+                    {
+                        name: 'voice-states',
+                        value: 'voice'
+                    }
                 ],
             },
         ]

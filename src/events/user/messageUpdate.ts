@@ -5,37 +5,42 @@ import { getGuild } from '../../util/Guild'
 
 export const run: RunFunction = async (client: Bot, oldMessage: Message, newMessage: Message) => {
     let guildID: string = oldMessage.guildId
-    let logChannel: string = null
+    let logChannels: string[] = null
 
     if (!client.cache[guildID]) {
         let data = await getGuild(guildID)
         client.cache[guildID] = data
-        logChannel = data.logChannel
+        logChannels = data.messageEdit
     } else {
-        logChannel = client.cache[guildID].logChannel
+        logChannels = client.cache[guildID].messageEdit
     }
-    if (!logChannel) return
-    if (!client.cache[guildID].logMessageEdit) return
+    if (!logChannels) return
+    if (!client.cache[guildID].messageDelete) return
+    if (oldMessage.partial) await oldMessage.fetch()
     if (oldMessage.author?.bot) return
 
-    let channel = client.channels.resolve(logChannel)
-    if (channel.isText()) {
-        let embed = new MessageEmbed()
-            .setAuthor(newMessage.author.tag, newMessage.author.avatarURL())
-            .setDescription(`<@${newMessage.author.id}> edited a **[message](https://discord.com/channels/${newMessage.guildId}/${newMessage.channelId}/${newMessage.id})** in <#${newMessage.channelId}>\n\n**Old message**\n${oldMessage.content}\n\n**New message**\n${newMessage.content}`)
-            .setColor(client.colors.warn)
-            .setFooter(`User ID: ${newMessage.author.id}`)
-            .setTimestamp()
+    logChannels.map((l) => {
+        let channel = client.channels.resolve(l)
+        if (channel.isText()) {
+            let embed = new MessageEmbed()
+                .setAuthor(newMessage.author.tag, newMessage.author.avatarURL())
+                .setDescription(
+                    `<@${newMessage.author.id}> edited a **[message](https://discord.com/channels/${newMessage.guildId}/${newMessage.channelId}/${newMessage.id})** in <#${newMessage.channelId}>\n\n**Old message**\n${oldMessage.content}\n\n**New message**\n${newMessage.content}`
+                )
+                .setColor(client.colors.warn)
+                .setFooter(`User ID: ${newMessage.author.id}`)
+                .setTimestamp()
 
-        try {
-            channel.send({ embeds: [embed] })
-        } catch (err) {
-            client.logger.error(err)
+            try {
+                channel.send({ embeds: [embed] })
+            } catch (err) {
+                client.logger.error(err)
+            }
+            return
+        } else {
+            return
         }
-        return
-    } else {
-        return
-    }
+    })
 }
 
 export const name: string = 'messageUpdate'

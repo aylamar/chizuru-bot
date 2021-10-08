@@ -1,19 +1,15 @@
 export interface GuildCache {
     [guildID: string]: {
         musicChannel?: string
-        lookupNSFW?: Boolean
-        logChannel?: string
-        logChannelEdit?: Boolean
-        logMessageDelete?: Boolean
-        logMessageEdit?: Boolean    
+        lookupNSFW?: boolean
+        messageDelete?: string[]
+        messageEdit?: string[]
     }
 }
 
 export interface GuildData {
     musicChannel?: string
-    lookupNSFW?: Boolean
-    logChannel?: string
-    logChannelEdit?: Boolean
-    logMessageDelete?: Boolean
-    logMessageEdit?: Boolean
+    lookupNSFW?: boolean
+    messageDelete?: string[]
+    messageEdit?: string[]
 }

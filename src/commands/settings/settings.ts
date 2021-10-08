@@ -1,31 +1,41 @@
 import { RunFunction } from '../../interfaces/Command'
 import { MessageEmbed, PermissionString } from 'discord.js'
-import { toggleLookupNSFW } from '../../util/Guild'
+import { getGuild, toggleLookupNSFW } from '../../util/Guild'
 import { GuildData } from '../../interfaces/GuildCache'
 
 export const run: RunFunction = async (client, interaction) => {
     const subCommand = interaction.options.getSubcommand()
     switch (subCommand) {
         case 'list':
+            if (!client.cache[interaction.guildId]) await getGuild(interaction.guildId)        
             const cache = client.cache[interaction.guildId]
             let embed = new MessageEmbed()
                 .setColor(client.colors.purple)
 
-            if (cache.logChannel) {
-                let log = []
-                if (cache.logChannelEdit) log.push('channel edits')
-                if (cache.logMessageDelete) log.push('deleted messages')
-                if (cache.logMessageEdit) log.push('message edits')
-                embed.addField(`Log Settings`,
-                    `Currently logging data to: <#${cache.logChannel}>
-                    The following is logged: ${log.join(', ')}`
-                )
+            let msgDel = ''
+            if (cache.messageDelete?.length > 0) {
+                let delList = cache.messageDelete
+                    .map((id) => {return `<#${id}>`})
+                    .join(', ')
+                    msgDel = `Deleted messages: ${delList}`
             } else {
-                embed.addField('Log Settings',
-                    'No data is currently being logged on this server.'
-                )
+                msgDel = 'Deleted messages: Not currently logging'
             }
 
+            let msgEdit = ''
+            if (cache.messageEdit?.length > 0) {
+                let delList = cache.messageEdit
+                    .map((id) => {return `<#${id}>`})
+                    .join(', ')
+                    msgEdit = `Edited messages: ${delList}`
+            } else {
+                msgEdit = 'Edited messages: Not currently logging'
+            }
+
+            embed.addField(`Log Settings`,
+                `${msgDel}
+                ${msgEdit}`)
+       
             if (cache.musicChannel) {
                 embed.addField('Music Settings',
                     `Music commands can only be run in <#${cache.musicChannel}>`

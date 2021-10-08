@@ -16,7 +16,7 @@ export const run: RunFunction = async (client: Bot, oldMessage: Message, newMess
     }
     if (!logChannel) return
     if (!client.cache[guildID].logMessageEdit) return
-    if (oldMessage.author.bot) return
+    if (oldMessage.author?.bot) return
 
     let channel = client.channels.resolve(logChannel)
     if (channel.isText()) {

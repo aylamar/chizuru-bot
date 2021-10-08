@@ -16,6 +16,7 @@ export const run: RunFunction = async (client: Bot, message: Message) => {
     }
     if (!logChannels) return
     if (!client.cache[guildID].messageDelete) return
+    if (client.cache[guildID].logBlacklist?.includes(message.channelId)) return
     if (message.partial) return
     if (message.author?.bot) return
 

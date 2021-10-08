@@ -12,10 +12,10 @@ export async function getGuild(guildID: string) {
         let data: GuildData = {
             musicChannel: guild?.music_channel,
             lookupNSFW: guild?.lookup_nsfw,
+            logBlacklist: guild?.log_blacklist,
             messageDelete: guild?.log_message_delete,
             messageEdit: guild?.log_message_edit
         }
-
         return data
     } else {
         // if no guild exists
@@ -38,6 +38,7 @@ export async function createGuild(guildID: string) {
             let data: GuildData = {
                 musicChannel: undefined,
                 lookupNSFW: undefined,
+                logBlacklist: undefined,
                 messageDelete: undefined,
                 messageEdit: undefined    
             }
@@ -50,6 +51,7 @@ export async function createGuild(guildID: string) {
         let data: GuildData = {
             musicChannel: guild?.music_channel,
             lookupNSFW: guild?.lookup_nsfw,
+            logBlacklist: guild?.log_blacklist,
             messageDelete: guild?.log_message_delete,
             messageEdit: guild?.log_message_edit
         }
@@ -87,6 +89,40 @@ export async function clearMusicChannel(guildID: string, client: Bot) {
         await guild.save()
         client.cache[guildID].musicChannel = undefined
         return 'Music commands can now be used anywhere on the server'
+    } catch (err) {
+        client.logger.error(err)
+        return 'Something went wrong, please try again later.'
+    }
+}
+
+export async function logBlacklist(guildId: Snowflake, channelId: Snowflake, client: Bot) {
+    try {
+        let guild = await Guild.findById(guildId)
+        if (guild.log_blacklist.includes(channelId)) {
+            if (guild.log_blacklist.length === 1) {
+                guild.log_blacklist = undefined
+                await guild.save()
+                client.cache[guildId].logBlacklist = undefined
+            } else {
+                let dbIdx = guild.log_blacklist.indexOf(channelId)
+                guild.log_blacklist.splice(dbIdx, 1)
+                await guild.save()
+    
+                let cacheIdx = client.cache[guildId].logBlacklist.indexOf(channelId)
+                client.cache[guildId].logBlacklist.splice(cacheIdx, 1)
+            }
+            return `<#${channelId}> has been removed from the log blacklist.`
+        } else if (guild.log_blacklist === undefined || guild.log_blacklist.length === 0) {
+            guild.log_blacklist = [channelId]
+            await guild.save()
+            client.cache[guildId].logBlacklist = [channelId]
+            return `Nothing from <#${channelId}> will be logged.`
+        } else {
+            guild.log_blacklist.push(channelId)
+            await guild.save()
+            client.cache[guildId].logBlacklist.push(channelId)
+            return `Nothing from <#${channelId}> will be logged.`
+        }
     } catch (err) {
         client.logger.error(err)
         return 'Something went wrong, please try again later.'

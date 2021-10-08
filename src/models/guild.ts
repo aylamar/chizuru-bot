@@ -5,6 +5,7 @@ export interface guild extends Document {
     music_channel: string
     lookup_nsfw: boolean
     log_blacklist: string[]
+    log_ban: string[]
     log_message_delete: string[]
     log_message_edit: string[]
 }
@@ -24,6 +25,10 @@ export const guildSchema = new Schema(
             required: false,
         },
         log_blacklist: {
+            type: [String],
+            required: false
+        },
+        log_ban: {
             type: [String],
             required: false
         },

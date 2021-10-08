@@ -1,6 +1,6 @@
 import { RunFunction } from '../../interfaces/Command'
 import { PermissionString } from 'discord.js'
-import { logBlacklist, logMessageDelete, logMessageEdit } from '../../util/Guild'
+import { logBan, logBlacklist, logMessageDelete, logMessageEdit } from '../../util/Guild'
 
 export const run: RunFunction = async (client, interaction) => {
     const option = interaction.options.getSubcommand()
@@ -22,8 +22,13 @@ export const run: RunFunction = async (client, interaction) => {
                     let msgEdit = await logMessageEdit(interaction.guildId, channel.id, client)
                     interaction.reply({ content: msgEdit, ephemeral: true })
                     return
+                case 'ban':
+                    let msgBan = await logBan(interaction.guildId, channel.id, client)
+                    interaction.reply({ content: msgBan, ephemeral: true })
+                    return
+                default:
+                    return
             }        
-            return
     }
 }
 
@@ -69,6 +74,10 @@ export const options: Array<any> = [
                     {
                         name: 'message-edit',
                         value: 'message-edit',
+                    },
+                    {
+                        name: 'ban',
+                        value: 'ban',
                     },
                 ],
             },

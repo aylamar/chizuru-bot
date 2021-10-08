@@ -13,6 +13,7 @@ export async function getGuild(guildID: string) {
             musicChannel: guild?.music_channel,
             lookupNSFW: guild?.lookup_nsfw,
             logBlacklist: guild?.log_blacklist,
+            logBan: guild?.log_ban,
             messageDelete: guild?.log_message_delete,
             messageEdit: guild?.log_message_edit
         }
@@ -39,6 +40,7 @@ export async function createGuild(guildID: string) {
                 musicChannel: undefined,
                 lookupNSFW: undefined,
                 logBlacklist: undefined,
+                logBan: undefined,
                 messageDelete: undefined,
                 messageEdit: undefined    
             }
@@ -52,6 +54,7 @@ export async function createGuild(guildID: string) {
             musicChannel: guild?.music_channel,
             lookupNSFW: guild?.lookup_nsfw,
             logBlacklist: guild?.log_blacklist,
+            logBan: guild?.log_ban,
             messageDelete: guild?.log_message_delete,
             messageEdit: guild?.log_message_edit
         }
@@ -122,6 +125,40 @@ export async function logBlacklist(guildId: Snowflake, channelId: Snowflake, cli
             await guild.save()
             client.cache[guildId].logBlacklist.push(channelId)
             return `Nothing from <#${channelId}> will be logged.`
+        }
+    } catch (err) {
+        client.logger.error(err)
+        return 'Something went wrong, please try again later.'
+    }
+}
+
+export async function logBan(guildId: Snowflake, channelId: Snowflake, client: Bot) {
+    try {
+        let guild = await Guild.findById(guildId)
+        if (guild.log_ban.includes(channelId)) {
+            if (guild.log_ban.length === 1) {
+                guild.log_ban = undefined
+                await guild.save()
+                client.cache[guildId].logBan = undefined
+            } else {
+                let dbIdx = guild.log_ban.indexOf(channelId)
+                guild.log_ban.splice(dbIdx, 1)
+                await guild.save()
+    
+                let cacheIdx = client.cache[guildId].logBan.indexOf(channelId)
+                client.cache[guildId].logBan.splice(cacheIdx, 1)
+            }
+            return `No longer logging bans and unbans to <#${channelId}>.`
+        } else if (guild.log_ban === undefined || guild.log_ban.length === 0) {
+            guild.log_ban = [channelId]
+            await guild.save()
+            client.cache[guildId].logBan = [channelId]
+            return `Now logging bans and unbans to <#${channelId}>.`
+        } else {
+            guild.log_ban.push(channelId)
+            await guild.save()
+            client.cache[guildId].logBan.push(channelId)
+            return `Now logging bans and unbans to <#${channelId}>.`
         }
     } catch (err) {
         client.logger.error(err)

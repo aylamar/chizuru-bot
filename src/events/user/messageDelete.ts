@@ -20,7 +20,7 @@ export const run: RunFunction = async (client: Bot, message: Message) => {
     if (message.partial) return
     if (message.author?.bot) return
 
-    logChannels.map(l => {
+    logChannels.map((l) => {
         let channel = client.channels.resolve(l)
         if (channel.isText()) {
             let embed = new MessageEmbed()
@@ -29,13 +29,13 @@ export const run: RunFunction = async (client: Bot, message: Message) => {
                 .setColor(client.colors.warn)
                 .setFooter(`User ID: ${message.author.id}`)
                 .setTimestamp()
-    
+
             try {
                 channel.send({ embeds: [embed] })
             } catch (err) {
                 client.logger.error(err)
             }
-    
+
             if (message.attachments.first() !== undefined) {
                 let imgEmbed = new MessageEmbed()
                     .setAuthor(message.author.tag, message.author.avatarURL())

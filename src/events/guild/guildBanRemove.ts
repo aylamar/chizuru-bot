@@ -16,7 +16,7 @@ export const run: RunFunction = async (client, ban: GuildBan) => {
     if (!logChannels) return
     if (!client.cache[guildID].logBan) return
 
-    logChannels.map(l => {
+    logChannels.map((l) => {
         let channel = client.channels.resolve(l)
 
         if (channel.isText()) {

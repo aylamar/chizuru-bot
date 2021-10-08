@@ -1,4 +1,4 @@
-import { GuildBan, MessageEmbed, VoiceState } from 'discord.js'
+import { MessageEmbed, VoiceState } from 'discord.js'
 import { RunFunction } from '../../interfaces/Event'
 import { getGuild } from '../../util/Guild'
 
@@ -18,9 +18,9 @@ export const run: RunFunction = async (client, oldState: VoiceState, newState: V
 
     if (newState.selfMute.valueOf() === oldState.selfMute?.valueOf()) return
 
-    logChannels.map(l => {
+    logChannels.map((l) => {
         let channel = client.channels.resolve(l)
-        
+
         let curState = ''
         if (newState.selfMute.valueOf() === true) {
             curState = 'muted'
@@ -30,7 +30,8 @@ export const run: RunFunction = async (client, oldState: VoiceState, newState: V
 
         if (channel.isText()) {
             let embed = new MessageEmbed()
-                .setAuthor(newState.member.user.tag, newState.member.user.avatarURL())
+                .setAuthor(newState.member.user.tag,
+                    newState.member.user.avatarURL())
                 .setDescription(`${newState.member.user.tag} is now ${curState} in ${newState.channel.name}.`)
                 .setColor(client.colors.warn)
                 .setFooter(`User ID: ${newState.member.id}`)

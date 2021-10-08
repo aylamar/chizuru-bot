@@ -16,7 +16,7 @@ export async function getGuild(guildID: string) {
             logBan: guild?.log_ban,
             logVoice: guild?.log_voice,
             messageDelete: guild?.log_message_delete,
-            messageEdit: guild?.log_message_edit
+            messageEdit: guild?.log_message_edit,
         }
         return data
     } else {
@@ -44,7 +44,7 @@ export async function createGuild(guildID: string) {
                 logBan: undefined,
                 logVoice: undefined,
                 messageDelete: undefined,
-                messageEdit: undefined    
+                messageEdit: undefined,
             }
             return data
         } catch (err) {
@@ -59,7 +59,7 @@ export async function createGuild(guildID: string) {
             logBan: guild?.log_ban,
             logVoice: guild?.log_voice,
             messageDelete: guild?.log_message_delete,
-            messageEdit: guild?.log_message_edit
+            messageEdit: guild?.log_message_edit,
         }
         return data
     }
@@ -113,7 +113,7 @@ export async function logBlacklist(guildId: Snowflake, channelId: Snowflake, cli
                 let dbIdx = guild.log_blacklist.indexOf(channelId)
                 guild.log_blacklist.splice(dbIdx, 1)
                 await guild.save()
-    
+
                 let cacheIdx = client.cache[guildId].logBlacklist.indexOf(channelId)
                 client.cache[guildId].logBlacklist.splice(cacheIdx, 1)
             }
@@ -147,7 +147,7 @@ export async function logBan(guildId: Snowflake, channelId: Snowflake, client: B
                 let dbIdx = guild.log_ban.indexOf(channelId)
                 guild.log_ban.splice(dbIdx, 1)
                 await guild.save()
-    
+
                 let cacheIdx = client.cache[guildId].logBan.indexOf(channelId)
                 client.cache[guildId].logBan.splice(cacheIdx, 1)
             }
@@ -181,7 +181,7 @@ export async function logVoice(guildId: Snowflake, channelId: Snowflake, client:
                 let dbIdx = guild.log_voice.indexOf(channelId)
                 guild.log_voice.splice(dbIdx, 1)
                 await guild.save()
-    
+
                 let cacheIdx = client.cache[guildId].logVoice.indexOf(channelId)
                 client.cache[guildId].logVoice.splice(cacheIdx, 1)
             }
@@ -215,7 +215,7 @@ export async function logMessageDelete(guildId: Snowflake, channelId: Snowflake,
                 let dbIdx = guild.log_message_delete.indexOf(channelId)
                 guild.log_message_delete.splice(dbIdx, 1)
                 await guild.save()
-    
+
                 let cacheIdx = client.cache[guildId].messageDelete.indexOf(channelId)
                 client.cache[guildId].messageDelete.splice(cacheIdx, 1)
             }
@@ -249,7 +249,7 @@ export async function logMessageEdit(guildId: Snowflake, channelId: Snowflake, c
                 let dbIdx = guild.log_message_edit.indexOf(channelId)
                 guild.log_message_edit.splice(dbIdx, 1)
                 await guild.save()
-    
+
                 let cacheIdx = client.cache[guildId].messageEdit.indexOf(channelId)
                 client.cache[guildId].messageEdit.splice(cacheIdx, 1)
             }

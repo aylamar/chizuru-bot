@@ -9,33 +9,31 @@ export interface starboard extends Document {
     blacklisted_channels: string[]
 }
 
-export const starboardSchema = new Schema(
-    {
-        _id: {
-            type: String,
-            required: true,
-        },
-        star_count: {
-            type: Number,
-            required: true,
-        },
-        star_emote: {
-            type: String,
-            required: true,
-        },
-        star_channel: {
-            type: String,
-            required: true,
-        },
-        banned_users: {
-            type: [String],
-            required: true
-        },
-        blacklisted_channels: {
-            type: [String],
-            required: true
-        }
+export const starboardSchema = new Schema({
+    _id: {
+        type: String,
+        required: true,
     },
-)
+    star_count: {
+        type: Number,
+        required: true,
+    },
+    star_emote: {
+        type: String,
+        required: true,
+    },
+    star_channel: {
+        type: String,
+        required: true,
+    },
+    banned_users: {
+        type: [String],
+        required: true,
+    },
+    blacklisted_channels: {
+        type: [String],
+        required: true,
+    },
+})
 
 export default model<starboard>('starboard', starboardSchema)

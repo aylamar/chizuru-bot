@@ -1,7 +1,7 @@
-import { Bot } from "../client/client"
-import { Collection, Message, MessageEmbed, MessageReaction, MessageOptions, Snowflake, TextChannel } from "discord.js"
-import starboard from "../models/starboard"
-import { StarboardClientOptions, starMessageData, StarboardGuild } from "../interfaces/Starboard"
+import { Bot } from '../client/client'
+import { Collection, Message, MessageEmbed, MessageReaction, MessageOptions, Snowflake, TextChannel } from 'discord.js'
+import starboard from '../models/starboard'
+import { StarboardClientOptions, starMessageData, StarboardGuild } from '../interfaces/Starboard'
 
 export class StarboardClient {
     public client: Bot
@@ -14,7 +14,7 @@ export class StarboardClient {
         this.client.on('ready', () => this.cacheData())
     }
 
-    public async start (client: Bot) {
+    public async start(client: Bot) {
         try {
             const data = await starboard.find()
             this.config.set(
@@ -26,7 +26,7 @@ export class StarboardClient {
                             starboardChannel: d.star_channel,
                             starEmote: d.star_emote,
                             bannedUsers: d.banned_users,
-                            blacklistedChannels: d.blacklisted_channels
+                            blacklistedChannels: d.blacklisted_channels,
                         },
                     }
                 })
@@ -52,7 +52,7 @@ export class StarboardClient {
             this.cacheData()
         },
 
-        create: async (client: Bot, guildId: Snowflake, channelId: Snowflake, emote: string, starcount: number) => {
+        create: async ( client: Bot, guildId: Snowflake, channelId: Snowflake, emote: string, starcount: number ) => {
             try {
                 const data = await starboard.findById(guildId)
                 if (data)
@@ -100,13 +100,13 @@ export class StarboardClient {
         blacklistChannel: async (guildId: Snowflake, channelId: Snowflake) => {
             const data = await starboard.findById(guildId)
 
-            if(data.blacklisted_channels.includes(channelId)) {
+            if (data.blacklisted_channels.includes(channelId)) {
                 let idx = data.blacklisted_channels.indexOf(channelId)
                 data.blacklisted_channels.splice(idx, 1)
                 await data.save()
             } else {
                 data.blacklisted_channels.push(channelId)
-                await data.save()    
+                await data.save()
             }
 
             const channels = this.getData(guildId)?.options.blacklistedChannels
@@ -123,13 +123,13 @@ export class StarboardClient {
         banUser: async (guildId: Snowflake, userId: Snowflake) => {
             const data = await starboard.findById(guildId)
 
-            if(data.banned_users.includes(userId)) {
+            if (data.banned_users.includes(userId)) {
                 let idx = data.banned_users.indexOf(userId)
                 data.banned_users.splice(idx, 1)
                 await data.save()
             } else {
                 data.banned_users.push(userId)
-                await data.save()    
+                await data.save()
             }
 
             const users = this.getData(guildId)?.options.bannedUsers
@@ -141,7 +141,7 @@ export class StarboardClient {
                 users.push(userId)
                 return `<@${userId}> has been banned from the starboard.`
             }
-        }
+        },
     }
 
     private cacheData() {

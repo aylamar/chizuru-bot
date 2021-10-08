@@ -1,5 +1,5 @@
-import { Snowflake } from "discord.js";
-import { Bot } from "../client/client";
+import { Snowflake } from 'discord.js'
+import { Bot } from '../client/client'
 
 export interface StarboardClientOptions {
     client: Bot

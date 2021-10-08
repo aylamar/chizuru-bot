@@ -13,14 +13,7 @@ class Music extends DisTube {
     }
 
     public async start(): Promise<void> {
-        this.on('playSong', (queue, song) => {
-            /*
-            let embed = new MessageEmbed()
-                .setDescription(`Now playing **${song.name}** requested by **${song.user}**`)
-                .setColor(this.colors.success)
-            queue.textChannel.send({embeds: [embed]})
-            */
-        })
+        this.on('playSong', (queue, song) => {})
 
         this.on('addSong', (queue, song) => {
             let embed = new MessageEmbed()

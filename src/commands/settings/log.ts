@@ -55,6 +55,7 @@ export const options: Array<any> = [
                 name: 'channel',
                 description: 'The channel to log things to',
                 type: 7,
+                required: true,
             },
         ],
     },
@@ -72,6 +73,7 @@ export const options: Array<any> = [
                 name: 'setting',
                 description: 'test',
                 type: 3,
+                require: true,
                 choices: [
                     {
                         name: 'channel-edit',

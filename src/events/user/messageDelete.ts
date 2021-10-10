@@ -26,7 +26,7 @@ export const run: RunFunction = async (client: Bot, message: Message) => {
             let embed = new MessageEmbed()
                 .setAuthor(message.author.tag, message.author.avatarURL())
                 .setDescription(`Message from <@${message.author.id}> deleted in <#${message.channelId}>\n\n${message.content}`)
-                .setColor(client.colors.warn)
+                .setColor(client.colors.error)
                 .setFooter(`User ID: ${message.author.id}`)
                 .setTimestamp()
 
@@ -39,7 +39,7 @@ export const run: RunFunction = async (client: Bot, message: Message) => {
             if (message.attachments.first() !== undefined) {
                 let imgEmbed = new MessageEmbed()
                     .setAuthor(message.author.tag, message.author.avatarURL())
-                    .setColor(client.colors.warn)
+                    .setColor(client.colors.error)
                     .setFooter(`User ID: ${message.author.id}`)
                     .setTimestamp()
                     .setDescription(`${message.author.tag}'s message included the following attachments:`)

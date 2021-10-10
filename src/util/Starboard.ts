@@ -191,16 +191,41 @@ export class StarboardClient {
     }
 
     private generateEdit(starCount: number, message: Message): MessageOptions {
-        return {
-            embeds: [
-                new MessageEmbed()
-                    .setAuthor(message.author.tag, message.author.displayAvatarURL({ dynamic: true }))
-                    .setColor(this.client.colors.purple)
-                    .setDescription(`${message.content}\n\n→ [original message](${message.url}) in <#${message.channelId}>`)
-                    .setImage(message.attachments.first()?.url || null)
-                    .setFooter(`${starCount} ⭐ (${message.id}) • ${message.createdAt.toLocaleDateString()}`),
-            ],
+        interface Data {
+            content: string,
+            imageURL: string,
         }
+
+        let data: Data = {
+            content: '',
+            imageURL: ''
+        }
+
+        if (message.content.length < 3900) {
+            data.content = message.content
+        } else {
+            data.content = `${message.content.substring(0, 3920)} **[ ... ]**`
+        }
+        data.content += `\n\n→ [original message](${message.url}) in <#${message.channelId}>`
+
+        if (message.embeds.length) {
+            const imgs = message.embeds
+                .filter(embed => embed.thumbnail || embed.image)
+                .map(embed => (embed.thumbnail) ? embed.thumbnail.url : embed.image.url)
+            data.imageURL = imgs[0]
+        } else if (message.attachments.size) {
+            data.imageURL = message.attachments.first().url
+            data.content += `\n📎 [${message.attachments.first().name}](${message.attachments.first().proxyURL})`
+        }
+  
+        let embed = new MessageEmbed()
+            .setAuthor(message.author.tag, message.author.displayAvatarURL({ dynamic: true }))
+            .setColor(this.client.colors.purple)
+            .setDescription(data.content)
+            .setImage(data.imageURL)
+            .setFooter(`${starCount} ⭐ (${message.id}) • ${message.createdAt.toLocaleDateString()}`)
+
+        return {embeds: [embed],}
     }
 
     public async getConfig(guildId: Snowflake) {

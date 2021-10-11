@@ -33,7 +33,7 @@ export const run: RunFunction = async (client, oldState: VoiceState, newState: V
                 .setAuthor(newState.member.user.tag,
                     newState.member.user.avatarURL())
                 .setDescription(`${newState.member.user.tag} is now ${curState} in ${newState.channel.name}.`)
-                .setColor(client.colors.warn)
+                .setColor(client.colors.blurple)
                 .setFooter(`User ID: ${newState.member.id}`)
                 .setTimestamp()
             try {

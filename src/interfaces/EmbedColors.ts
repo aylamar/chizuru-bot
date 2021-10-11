@@ -3,6 +3,7 @@ export interface EmbedColors {
     warn: number
     success: number
     purple: number
+    blurple: number
     twitch: number
     anilist: number
 }

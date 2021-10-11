@@ -41,6 +41,7 @@ class Bot extends Client {
             warn: 15651330,
             success: 3066993,
             purple: 10181046,
+            blurple: 7506394,
             twitch: 10181046,
             anilist: 4172286
         }

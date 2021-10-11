@@ -7,6 +7,7 @@ export interface GuildCache {
         logVoice?: string[]
         messageDelete?: string[]
         messageEdit?: string[]
+        streamPing?: boolean
     }
 }
 
@@ -18,4 +19,5 @@ export interface GuildData {
     logVoice?: string[]
     messageDelete?: string[]
     messageEdit?: string[]
+    streamPing?: boolean
 }

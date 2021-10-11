@@ -290,3 +290,23 @@ export async function toggleLookupNSFW(guildID: string, client: Bot) {
         return 'Something went wrong, please try again later.'
     }
 }
+
+export async function toggleStreamPing(guildID: string, client: Bot) {
+    try {
+        let guild = await Guild.findById(guildID)
+        if (guild.stream_ping !== true) {
+            guild.stream_ping = true
+            await guild.save()
+            client.cache[guildID].streamPing = true
+            return 'Everyone will be pinged when *any* stream goes live.'
+        } else {
+            guild.stream_ping = undefined
+            await guild.save()
+            client.cache[guildID].streamPing = undefined
+            return 'No one will be pinged when a stream goes longer.'
+        }
+    } catch (err) {
+        client.logger.error(err)
+        return 'Something went wrong, please try again later.'
+    }
+}

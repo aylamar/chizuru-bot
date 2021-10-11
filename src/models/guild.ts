@@ -9,6 +9,7 @@ export interface guild extends Document {
     log_voice: string[]
     log_message_delete: string[]
     log_message_edit: string[]
+    stream_ping: boolean
 }
 
 export const guildSchema = new Schema(
@@ -43,6 +44,10 @@ export const guildSchema = new Schema(
         },
         log_message_edit: {
             type: [String],
+            required: false,
+        },
+        stream_ping: {
+            type: Boolean,
             required: false,
         },
     },

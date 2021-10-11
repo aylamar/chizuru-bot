@@ -1,6 +1,6 @@
 import { RunFunction } from '../../interfaces/Command'
 import { MessageEmbed, PermissionString } from 'discord.js'
-import { getGuild, toggleLookupNSFW } from '../../util/Guild'
+import { getGuild, toggleLookupNSFW, toggleStreamPing } from '../../util/Guild'
 import { GuildData } from '../../interfaces/GuildCache'
 
 export const run: RunFunction = async (client, interaction) => {
@@ -94,6 +94,10 @@ export const run: RunFunction = async (client, interaction) => {
             let lookupSetting = await toggleLookupNSFW(interaction.guildId, client)
             interaction.reply({ content: `${lookupSetting}`, ephemeral: true })
             break
+        case 'stream-ping':
+            let streamPingSetting = await toggleStreamPing(interaction.guildId, client)
+            interaction.reply({ content: `${streamPingSetting}`, ephemeral: true })
+            break
     }
 }
 
@@ -112,6 +116,13 @@ export const options: Array<any> = [
         description: 'Toggles on or off the NSFW setting for this server',
         type: 1,
     },
+    /*
+    {
+        name: 'stream-ping',
+        description: 'Toggles on or off @everyone when a stream goes life',
+        type: 1,
+    },
+    */
 ]
 
 function lookupVal(cache: GuildData) {

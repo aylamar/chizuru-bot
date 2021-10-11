@@ -306,7 +306,7 @@ export async function toggleStreamPing(guildID: string, client: Bot) {
             guild.stream_ping = undefined
             await guild.save()
             client.cache[guildID].streamPing = undefined
-            return 'No one will be pinged when a stream goes longer.'
+            return 'No one will be pinged when a stream goes live.'
         }
     } catch (err) {
         client.logger.error(err)

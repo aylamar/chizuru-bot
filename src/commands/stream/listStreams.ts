@@ -1,10 +1,9 @@
 import { MessageEmbed, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
-import { getChannelByGuild } from '../../util/Streams'
 
 export const run: RunFunction = async (client, interaction) => {
     try {
-        let res = await getChannelByGuild(interaction.guildId, client.logger)
+        let res = await client.Streams.getChannelByGuild(interaction.guildId, client.logger)
 
         const embed = new MessageEmbed()
             .setTitle("Streams followed on this server:")

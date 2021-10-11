@@ -10,7 +10,7 @@ import { Music } from '../util/Music'
 import { DiscordTogether } from 'discord-together'
 import { EmbedColors } from '../interfaces/EmbedColors'
 import Twitch from '../util/Twitch'
-import { monitorStreams } from '../util/Streams'
+import { Streams } from '../util/Streams'
 import { GuildCache } from '../interfaces/GuildCache'
 import { StarboardClient } from '../util/Starboard'
 
@@ -32,6 +32,7 @@ class Bot extends Client {
     public twitch: Twitch
     public cache: GuildCache
     public Starboard: StarboardClient
+    public Streams: Streams
 
     public async start(config: Config): Promise<void> {
         consola.info('Chizuru Bot is starting up...')
@@ -54,7 +55,7 @@ class Bot extends Client {
         mongoose.connect(config.mongoURI)
             .then((result: any) => {
                 this.logger.success('Connected with Mongoose')
-                monitorStreams(this)
+                this.Streams = new Streams(this)
                 this.Starboard.start(this)
             }).catch((err: any) => consola.error(err))
 

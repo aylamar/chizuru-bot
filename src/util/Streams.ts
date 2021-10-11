@@ -1,101 +1,166 @@
-import Channel, { discordChannel } from '../models/channel'
-import Stream, { streamer } from '../models/streamer'
+import Channel from '../models/channel'
+import Stream from '../models/streamer'
 import { Consola } from 'consola'
 import { Bot } from '../client/client'
 import { MessageEmbed } from 'discord.js'
 import { EmbedColors } from '../interfaces/EmbedColors'
-import { LeanDocument } from 'mongoose'
 
-export async function monitorStreams(client: Bot) {
-    await initState(client).then(() => client.logger.success('Done setting initial stream state'))
-    setInterval(() => updateState(client), 1000 * 60, client)
+interface streamer {
+    username: string
+    channelId: string
+    profilePicture: string
+    followedBy: string[]
+    currentState: boolean
 }
 
-async function initState(client: Bot): Promise<any> {
-    client.logger.info('Setting intial state...')
-    try {
-        let streams = await getAllStreams(client.logger)
-        streams.map(async (stream: any) => {
-            let res = await client.twitch.checkStream(stream._id)
-            if (res == undefined) {
-                // Should be false, set true for testing
-                stream.current_state = false
-                stream.save()
-            } else if (res != undefined) {
-                // Should be true, set false for testing
-                stream.current_state = true
-                stream.save()
-            }
-        })
-    } catch (err) {
-        client.logger.error(err)
+type StreamerCache = {
+    [key: string]: streamer
+}
+
+interface discChannel {
+    channelId: string
+    followedChannels: string[]
+    guildId: string
+}
+
+type WatchingCache = {
+    [key: string]: discChannel
+}
+
+export class Streams {
+    streamers: string[]
+    streamerCache: StreamerCache
+    watchingCache: WatchingCache
+
+    public constructor(client: Bot) {
+        this.streamers = []
+        this.streamerCache = {}
+        this.watchingCache = {}
+        this.initState(client).then(() => client.logger.success('Done setting initial stream state'))
+        setInterval(() => this.updateState(client), 1000 * 60, client)
     }
-    return
-}
 
-async function updateState(client: Bot) {
-    let streams = await getAllStreams(client.logger)
+    private async initState(client: Bot) {
+        let streamList = await Stream.find({}).lean()
+        await Promise.all(
+            streamList.map(async (stream) => {
+                let res = await client.twitch.checkStream(stream._id)
 
-    streams.map(async (stream: any) => {
-        try {
-            let res = await client.twitch.checkStream(stream._id)
-            if (res == undefined && stream.current_state === true) {
-                // if streamer goes offline
-                // should be set to false, set to true for testing
-                stream.current_state = false
-                stream.save()
+                let state = false
+                if (res != undefined) state = true
 
-                let offlineEmbed = genGoOfflineEmbed(stream, client.colors)
-                postStreams(stream._id, offlineEmbed, client)
-            } else if (res != undefined && stream.current_state === false) {
-                // if streamer comes online
-                // should be set to true, set to false for testing
-                stream.current_state = true
-                stream.save()
+                this.streamers.push(stream._id)
+                this.streamerCache[stream._id] = {
+                    username: stream._id,
+                    channelId: stream.channel_id,
+                    profilePicture: stream.profile_picture,
+                    followedBy: [],
+                    currentState: state,
+                }
+            })
+        )
 
-                let onlineEmbed = genGoLiveEmbed(stream.profile_picture, res, client.colors)
-                postStreams(stream._id, onlineEmbed, client)
-            }
-        } catch (err) {
-            client.logger.error(err)
-        }
-    })
-}
+        let channelList = await Channel.find({})
+        await Promise.all(
+            channelList.map(async (channel) => {
+                this.watchingCache[channel._id] = {
+                    channelId: channel._id,
+                    followedChannels: channel.followed_channels,
+                    guildId: channel.guildID,
+                }
+                channel.followed_channels.forEach((i) => {
+                    this.streamerCache[i].followedBy.push(channel._id)
+                })
+            })
+        )
+    }
 
-async function postStreams(channel_name: string, embed: MessageEmbed, client: Bot) {
-    let arr = await getChannelsByStreamer(channel_name, client.logger)
-    arr.map(async (channelID: any) => {
-        let channel = client.channels.resolve(channelID)
-        if (channel.isText()) {
-            // Errors seen so far "Missing Permissions": no post perms in channel
+    private async updateState(client: Bot) {
+        this.streamers.map(async (streamer) => {
+            //console.log(`checking on ${streamer.username}, ${streamer.currentState}`)
             try {
-                channel.send({ embeds: [embed] })
+                let res = await client.twitch.checkStream(streamer)
+                if (res == undefined && this.streamerCache[streamer].currentState === true) {
+                    // if streamer goes offline
+                    // should be set to false, set to true for testing
+                    this.streamerCache[streamer].currentState = false
+
+                    let offlineEmbed = this.genGoOfflineEmbed(this.streamerCache[streamer], client.colors)
+                    this.postStreams(streamer, offlineEmbed, client)
+                } else if (res != undefined && this.streamerCache[streamer].currentState === false) {
+                    // if streamer comes online
+                    // should be set to true, set to false for testing
+                    this.streamerCache[streamer].currentState = true
+
+                    let onlineEmbed = this.genGoLiveEmbed(this.streamerCache[streamer].profilePicture, res, client.colors)
+                    this.postStreams(streamer, onlineEmbed, client)
+                }
             } catch (err) {
                 client.logger.error(err)
             }
-        } else {
-            client.logger.error(`${channel.id} is not a text based channel`)
-        }
-    })
-}
+        })
+    }
 
-/**
- * Add a stream to the channel database, then add to stream database
- */
-export async function addStream(streamer_name: string, channel_id: string, guild_id: string, client: Bot) {
-    try {
-        let res = await Channel.exists({ _id: channel_id })
-        if (res === true) {
-            // If channel exists, check to see if ID has already been added
-            let channel = await Channel.findById(channel_id)
-            if (channel.followed_channels.includes(streamer_name)) {
-                return 'Already exists'
+    private async postStreams(streamerName: string, embed: MessageEmbed, client: Bot) {
+        this.streamerCache[streamerName].followedBy.map(async (channel) => {
+            try {
+                let discChannel = client.channels.resolve(channel)
+                if (discChannel.isText()) {
+                    // Errors seen so far "Missing Permissions": no post perms in channel
+                    try {
+                        discChannel.send({ embeds: [embed] })
+                    } catch (err) {
+                        client.logger.error(err)
+                    }
+                } else {
+                    client.logger.error(`${discChannel.id} is not a text based channel`)
+                }
+            } catch (err) {
+                client.logger.error(err)
+            }
+        })
+    }
+
+    public async addStream(streamer_name: string, channel_id: string, guild_id: string, client: Bot) {
+        try {
+            let res = await Channel.exists({ _id: channel_id })
+            if (res === true) {
+                // If channel exists, check to see if ID has already been added
+                let channel = await Channel.findById(channel_id)
+                if (channel.followed_channels.includes(streamer_name)) {
+                    return 'Already exists'
+                } else {
+                    let res = await this.addStreamer(streamer_name, client)
+                    switch (res) {
+                        case 'Success':
+                            channel.followed_channels.push(streamer_name)
+                            await channel.save()
+
+                            this.streamerCache[streamer_name].followedBy.push(channel_id)
+                            return 'Success'
+                        case 'Unable to locate':
+                            return 'Unable to locate'
+                        case 'Failure':
+                            return 'Failure'
+                    }
+                }
             } else {
-                let res = await addStreamer(streamer_name, client)
+                // If channel does not exist, create new channel with stream
+                let res = await this.addStreamer(streamer_name, client)
                 switch (res) {
                     case 'Success':
-                        channel.followed_channels.push(streamer_name)
-                        await channel.save()
+                        const channel = new Channel({
+                            _id: channel_id,
+                            guild_id: guild_id,
+                            followed_channels: streamer_name,
+                        })
+                        channel.save()
+
+                        this.watchingCache[channel_id] = {
+                            channelId: channel_id,
+                            followedChannels: [streamer_name],
+                            guildId: guild_id,
+                        }
                         return 'Success'
                     case 'Unable to locate':
                         return 'Unable to locate'
@@ -103,179 +168,144 @@ export async function addStream(streamer_name: string, channel_id: string, guild
                         return 'Failure'
                 }
             }
-        } else {
-            // If channel does not exist, create new channel with stream
-            let res = await addStreamer(streamer_name, client)
-            switch (res) {
-                case 'Success':
-                    const channel = new Channel({
-                        _id: channel_id,
-                        guild_id: guild_id,
-                        followed_channels: streamer_name,
-                    })
-                    channel.save()
-                    addStreamer(streamer_name, client)
-                    return 'Success'
-                case 'Unable to locate':
-                    return 'Unable to locate'
-                case 'Failure':
-                    return 'Failure'
-            }
+        } catch (err) {
+            client.logger.error(err)
+            return 'Failure'
         }
-    } catch (err) {
-        client.logger.error(err)
-        return 'Failure'
     }
-}
 
-/**
- * Add a streamer to the streamer database
- */
-async function addStreamer(channel_name: string, client: Bot) {
-    channel_name = channel_name.toLocaleLowerCase()
-    let streamDB = await Stream.findById(channel_name)
-    if (streamDB == null) {
-        let res = await client.twitch.getProfile(channel_name)
-        if ((await res) !== 'Unable to locate') {
-            try {
-                const streamer = new Stream({
-                    _id: channel_name,
-                    channel_id: res.id,
-                    profile_picture: res.thumbnail_url,
-                    current_state: res.is_live,
-                })
-                await streamer.save()
-                client.logger.success(`${channel_name} was added to the database`)
-                return 'Success'
-            } catch (err) {
-                client.logger.error(err)
-                return 'Failure'
-            }
-        } else {
-            return 'Unable to locate'
-        }
-    } else {
-        client.logger.info(`It looks like ${channel_name} was already in the database`)
-        return 'Success'
-    }
-}
-
-/**
- * Removes a stream from the spcified channel`id` and deletes it from stream database if no channels follow specified streamer
- */
-export async function delStream(streamer_name: string, id: string, logger: Consola) {
-    try {
-        let res = await Channel.find({ _id: id, followed_channels: streamer_name })
-        if (res.length === 0) {
-            return 'Does not exist'
-        } else if (res[0].followed_channels.length === 1 && res[0].followed_channels[0] == streamer_name) {
-            await Channel.findOneAndDelete({ _id: id })
-            let channelList = await Channel.find({ followed_channels: streamer_name })
-            if (channelList.length === 0) {
-                delStreamer(streamer_name, logger)
-            }
-            return 'Success'
-        } else {
-            res[0].followed_channels = res[0].followed_channels.filter((strm: string) => strm !== streamer_name)
-            await res[0].save()
-            let channelList = await Channel.find({ followed_channels: streamer_name })
-            if (channelList.length === 0) {
-                delStreamer(streamer_name, logger)
-            }
-            return 'Success'
-        }
-    } catch (err) {
-        logger.error(err)
-        return 'Failure'
-    }
-}
-
-/**
- * Removes a streamer to the streamer database
- */
-async function delStreamer(channel_name: string, logger: Consola) {
-    channel_name = channel_name.toLocaleLowerCase()
-    try {
-        let streamDB = await Stream.findById(channel_name)
+    private async addStreamer(streamer_name: string, client: Bot) {
+        streamer_name = streamer_name.toLocaleLowerCase()
+        let streamDB = await Stream.findById(streamer_name)
         if (streamDB == null) {
-            logger.info(`It doesn't look like ${channel_name} was in the database`)
-            return false
+            let res = await client.twitch.getProfile(streamer_name)
+            if ((await res) !== 'Unable to locate') {
+                try {
+                    const streamer = new Stream({
+                        _id: streamer_name,
+                        channel_id: res.id,
+                        profile_picture: res.thumbnail_url,
+                        current_state: res.is_live,
+                    })
+                    await streamer.save()
+
+                    this.streamerCache[streamer_name] = {
+                        username: streamer_name,
+                        channelId: res.id,
+                        profilePicture: res.thumbnail_url,
+                        followedBy: [],
+                        currentState: res.is_live,
+                    }
+
+                    client.logger.success(`${streamer_name} was added to the database`)
+                    return 'Success'
+                } catch (err) {
+                    client.logger.error(err)
+                    return 'Failure'
+                }
+            } else {
+                return 'Unable to locate'
+            }
         } else {
-            await Stream.findOneAndDelete({ _id: channel_name })
-            logger.success(`Successfully removed ${channel_name} from the database`)
-            return true
+            client.logger.info(`It looks like ${streamer_name} was already in the database`)
+            return 'Success'
         }
-    } catch (err) {
-        logger.error(err)
-        return false
     }
-}
 
-export async function getAllStreams(logger: Consola): Promise<streamer[]> {
-    try {
-        return Stream.find({})
-    } catch (err) {
-        logger.error(err)
+    public async delStream(streamer_name: string, id: string, logger: Consola) {
+        try {
+            let res = await Channel.find({_id: id, followed_channels: streamer_name})
+            if (res.length === 0) {
+                return 'Does not exist'
+            } else if (res[0].followed_channels.length === 1 && res[0].followed_channels[0] == streamer_name) {
+                await Channel.findOneAndDelete({ _id: id })
+                delete this.watchingCache[id]
+            } else {
+                res[0].followed_channels = res[0].followed_channels.filter((streamers) => streamers !== streamer_name)
+                this.watchingCache[id].followedChannels = this.watchingCache[id].followedChannels
+                    .filter((streamers) => {streamers !== streamer_name
+                })
+                await res[0].save()
+            }
+
+            let channelList = await Channel.find({followed_channels: streamer_name})
+            if (channelList.length === 0) {
+                this.delStreamer(streamer_name, logger)
+            }
+            return 'Success'
+        } catch (err) {
+            logger.error(err)
+            return 'Failure'
+        }
     }
-}
 
-export async function getChannelsByStreamer(streamer_name: string, logger: Consola): Promise<String[]> {
-    let idArr: String[] = []
-    try {
-        logger.info(`Fetching all channels watching ${streamer_name}`)
-        let res = await Channel.find({ followed_channels: streamer_name }).lean()
-        res.map((e: { _id: String }) => {
-            idArr.push(e._id)
-        })
-        return idArr
-    } catch (err) {
-        logger.error(err)
-        return idArr
+    private async delStreamer(streamer_name: string, logger: Consola) {
+        streamer_name = streamer_name.toLocaleLowerCase()
+        try {
+            let streamDB = await Stream.findById(streamer_name)
+            if (streamDB == null) {
+                logger.info(`It doesn't look like ${streamer_name} was in the database`)
+                return false
+            } else {
+                await Stream.findOneAndDelete({ _id: streamer_name })
+                delete this.streamerCache[streamer_name]
+                let idx = this.streamers.indexOf(streamer_name)
+                this.streamers.splice(idx, 1)
+                logger.success(`Successfully removed ${streamer_name} from the database`)
+                return true
+            }
+        } catch (err) {
+            logger.error(err)
+            return false
+        }
     }
-}
 
-async function getStreamersByChannel(channel_id: string, logger: Consola) {
-    try {
-        let res = await Channel.find({ _id: channel_id }).lean()
-        return res[0].followed_channels
-    } catch (err) {
-        logger.error(err)
-        return null
+    public async getChannelByGuild(guild_id: string, logger: Consola) {
+        try {
+            let res = await Channel.find({ guild_id }).lean()
+            return res
+        } catch (err) {
+            logger.error(err)
+            return null
+        }
     }
-}
 
-export async function getChannelByGuild(guild_id: string, logger: Consola): Promise<LeanDocument<discordChannel>[]>
-{
-    try {
-        let res = await Channel.find({ guild_id }).lean()
-        return res
-    } catch (err) {
-        logger.error(err)
-        return null
+    private genGoLiveEmbed(profile_picture: string, data: any, colors: EmbedColors): MessageEmbed {
+        const liveEmbed = new MessageEmbed()
+            .setAuthor(data.title, '', `https://twitch.tv/${data.user_login}`)
+            .setTitle(data.user_name)
+            .setColor(colors.success)
+            .setDescription(`https://twitch.tv/${data.user_login}`)
+            .setURL(`https://twitch.tv/${data.user_login}`)
+            .addFields({
+                name: 'Status',
+                value: ':green_circle: Online',
+                inline: true,
+            })
+            .addFields({
+                name: 'Viewers',
+                value: data.viewer_count.toString(),
+                inline: true,
+            })
+            .addFields({
+                name: 'Streaming',
+                value: data.game_name,
+                inline: true,
+            })
+            .setImage(
+                `https://static-cdn.jtvnw.net/previews-ttv/live_user_${data.user_login}-620x360.jpg`
+            )
+            .setThumbnail(profile_picture)
+            .setTimestamp()
+        return liveEmbed
     }
-}
 
-function genGoLiveEmbed(profile_picture: string, data: any, colors: EmbedColors): MessageEmbed {
-    const liveEmbed = new MessageEmbed()
-        .setAuthor(data.title, '', `https://twitch.tv/${data.user_login}`)
-        .setTitle(data.user_name)
-        .setColor(colors.success)
-        .setDescription(`https://twitch.tv/${data.user_login}`)
-        .setURL(`https://twitch.tv/${data.user_login}`)
-        .addFields({ name: 'Status', value: ':green_circle: Online', inline: true })
-        .addFields({ name: 'Viewers', value: data.viewer_count.toString(), inline: true })
-        .addFields({ name: 'Streaming', value: data.game_name, inline: true })
-        .setImage(`https://static-cdn.jtvnw.net/previews-ttv/live_user_${data.user_login}-620x360.jpg`)
-        .setThumbnail(profile_picture)
-        .setTimestamp()
-    return liveEmbed
-}
-
-function genGoOfflineEmbed(data: any, colors: EmbedColors): MessageEmbed {
-    const offlineEmbed = new MessageEmbed()
-        .setTitle(`${data._id} has gone offline`)
-        .setDescription(`https://twitch.tv/${data._id}`)
-        .setThumbnail(data.profile_picture)
-        .setColor(colors.error)
-    return offlineEmbed
+    private genGoOfflineEmbed(streamer: streamer, colors: EmbedColors): MessageEmbed {
+        const offlineEmbed = new MessageEmbed()
+            .setTitle(`${streamer.username} has gone offline`)
+            .setDescription(`https://twitch.tv/${streamer.username}`)
+            .setThumbnail(streamer.profilePicture)
+            .setColor(colors.error)
+        return offlineEmbed
+    }
 }

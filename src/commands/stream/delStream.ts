@@ -1,11 +1,10 @@
 import { MessageEmbed, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
-import { delStream } from '../../util/Streams'
 
 export const run: RunFunction = async (client, interaction) => {
     let streamer = interaction.options.getString('streamer')
 
-    let res = await delStream(streamer, interaction.channelId, client.logger)
+    let res = await client.Streams.delStream(streamer, interaction.channelId, client.logger)
     try {
         switch(res) {
             case 'Success':

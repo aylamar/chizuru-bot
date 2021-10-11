@@ -17,6 +17,7 @@ export async function getGuild(guildID: string) {
             logVoice: guild?.log_voice,
             messageDelete: guild?.log_message_delete,
             messageEdit: guild?.log_message_edit,
+            streamPing: guild?.stream_ping
         }
         return data
     } else {
@@ -45,6 +46,7 @@ export async function createGuild(guildID: string) {
                 logVoice: undefined,
                 messageDelete: undefined,
                 messageEdit: undefined,
+                streamPing: undefined,
             }
             return data
         } catch (err) {
@@ -60,6 +62,7 @@ export async function createGuild(guildID: string) {
             logVoice: guild?.log_voice,
             messageDelete: guild?.log_message_delete,
             messageEdit: guild?.log_message_edit,
+            streamPing: guild?.stream_ping
         }
         return data
     }

@@ -116,13 +116,11 @@ export const options: Array<any> = [
         description: 'Toggles on or off the NSFW setting for this server',
         type: 1,
     },
-    /*
     {
         name: 'stream-ping',
         description: 'Toggles on or off @everyone when a stream goes life',
         type: 1,
     },
-    */
 ]
 
 function lookupVal(cache: GuildData) {

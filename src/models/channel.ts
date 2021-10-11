@@ -2,7 +2,7 @@ import { model, Schema, Document } from 'mongoose'
 
 export interface discordChannel extends Document {
     _id: string
-    guildID: string
+    guild_id: string
     followed_channels: string[]
 }
 

@@ -4,6 +4,7 @@ import { Consola } from 'consola'
 import { Bot } from '../client/client'
 import { MessageEmbed } from 'discord.js'
 import { EmbedColors } from '../interfaces/EmbedColors'
+import { getGuild } from './Guild'
 
 interface streamer {
     username: string
@@ -37,7 +38,7 @@ export class Streams {
         this.streamerCache = {}
         this.watchingCache = {}
         this.initState(client).then(() => client.logger.success('Done setting initial stream state'))
-        setInterval(() => this.updateState(client), 1000 * 60, client)
+        setInterval(() => this.updateState(client), 1000 * 20, client)
     }
 
     private async initState(client: Bot) {
@@ -66,7 +67,7 @@ export class Streams {
                 this.watchingCache[channel._id] = {
                     channelId: channel._id,
                     followedChannels: channel.followed_channels,
-                    guildId: channel.guildID,
+                    guildId: channel.guild_id,
                 }
                 channel.followed_channels.forEach((i) => {
                     this.streamerCache[i].followedBy.push(channel._id)
@@ -77,7 +78,6 @@ export class Streams {
 
     private async updateState(client: Bot) {
         this.streamers.map(async (streamer) => {
-            //console.log(`checking on ${streamer.username}, ${streamer.currentState}`)
             try {
                 let res = await client.twitch.checkStream(streamer)
                 if (res == undefined && this.streamerCache[streamer].currentState === true) {
@@ -86,14 +86,14 @@ export class Streams {
                     this.streamerCache[streamer].currentState = false
 
                     let offlineEmbed = this.genGoOfflineEmbed(this.streamerCache[streamer], client.colors)
-                    this.postStreams(streamer, offlineEmbed, client)
+                    this.postStreams(streamer, offlineEmbed, client, false)
                 } else if (res != undefined && this.streamerCache[streamer].currentState === false) {
                     // if streamer comes online
                     // should be set to true, set to false for testing
                     this.streamerCache[streamer].currentState = true
 
                     let onlineEmbed = this.genGoLiveEmbed(this.streamerCache[streamer].profilePicture, res, client.colors)
-                    this.postStreams(streamer, onlineEmbed, client)
+                    this.postStreams(streamer, onlineEmbed, client, true)
                 }
             } catch (err) {
                 client.logger.error(err)
@@ -101,22 +101,43 @@ export class Streams {
         })
     }
 
-    private async postStreams(streamerName: string, embed: MessageEmbed, client: Bot) {
+    private async postStreams(streamerName: string, embed: MessageEmbed, client: Bot, goLive: boolean) {
         this.streamerCache[streamerName].followedBy.map(async (channel) => {
             try {
                 let discChannel = client.channels.resolve(channel)
                 if (discChannel.isText()) {
                     // Errors seen so far "Missing Permissions": no post perms in channel
                     try {
-                        discChannel.send({ embeds: [embed] })
+                        let guildId = this.watchingCache[channel].guildId
+                        if (goLive === true) {
+                            let notify = false
+                            if (!client.cache[guildId]) {
+                                let data = await getGuild(guildId)
+                                client.cache[guildId] = data
+                                notify = data.streamPing
+                            } else {
+                                notify = client.cache[guildId].streamPing
+                            }
+
+                            if (notify != undefined && notify === true) {
+                                return discChannel.send({ content: '@everyone', embeds: [embed] })
+                            } else {
+                                return discChannel.send({ embeds: [embed] })
+                            }
+                        } else {
+                            return discChannel.send({ embeds: [embed] })
+                        }
                     } catch (err) {
                         client.logger.error(err)
+                        return
                     }
                 } else {
                     client.logger.error(`${discChannel.id} is not a text based channel`)
+                    return
                 }
             } catch (err) {
                 client.logger.error(err)
+                return
             }
         })
     }

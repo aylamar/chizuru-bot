@@ -102,8 +102,8 @@ export class StarboardClient {
 
             if (data.blacklisted_channels.includes(channelId)) {
                 let idx = data.blacklisted_channels.indexOf(channelId)
-                data.blacklisted_channels.splice(idx, 1)
                 await data.save()
+                data.blacklisted_channels.splice(idx, 1)
             } else {
                 data.blacklisted_channels.push(channelId)
                 await data.save()

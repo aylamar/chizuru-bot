@@ -12,6 +12,12 @@ export const run: RunFunction = async (client, interaction) => {
             interaction.reply({ content: blacklistMsg, ephemeral: true })
             return
         case 'toggle':
+            let resolvedChannel = client.channels.resolve(channel.id)
+            if (!resolvedChannel.isText()) {
+                interaction.reply({ content: 'Changes can only be logged ot ext channel.', ephemeral: true })
+                return
+            }
+
             const setting = interaction.options.getString('setting')
             switch (setting) {
                 case 'message-delete':

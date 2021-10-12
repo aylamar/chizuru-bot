@@ -245,6 +245,9 @@ export class StarboardClient {
         ) return
         if (reaction.users.cache) await reaction.users.fetch()
 
+        // Ignore messages from banned users
+        if(this.getData(guildId).options.bannedUsers.includes(reaction.message.author.id)) return
+
         let count = 0
         // Do not count users who are banned
         reaction.users.cache.map((usr) => {

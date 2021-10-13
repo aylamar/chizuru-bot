@@ -8,8 +8,12 @@ export const run: RunFunction = async (client, interaction) => {
 
         if (queue) {
             const song = queue.songs[0]
+
+            let curTime = await beautifySeconds(queue.currentTime)
+            let dur = await beautifySeconds(song.duration)
+
             let embed = new MessageEmbed()
-                .setDescription(`**[${song.name}](${song.url})** requested by ${song.user}.`)
+                .setDescription(`**[${song.name}](${song.url})** (${curTime}/${dur}) requested by ${song.user}.`)
                 .setColor(client.colors.purple)
             interaction.reply({ embeds: [embed] })
         } else {
@@ -24,6 +28,20 @@ export const run: RunFunction = async (client, interaction) => {
             ephemeral: true,
         })
     }
+}
+
+async function beautifySeconds(sec: number ) {
+    let minutes: number = 0
+    let seconds: number | string = 0
+
+    minutes = Math.floor(sec/60)
+    seconds = Math.floor(sec % 60)
+
+    if (seconds < 10) {
+        seconds = `0${seconds}`
+    }
+
+    return `${minutes}:${seconds}`
 }
 
 export const name: string = 'nowplaying'

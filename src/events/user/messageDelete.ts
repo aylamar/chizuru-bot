@@ -20,12 +20,18 @@ export const run: RunFunction = async (client: Bot, message: Message) => {
     if (message.partial) return
     if (message.author?.bot) return
 
+    // Trim message.content to be 1900 characters or less
+    let messageTrimmed = message.content
+    if (message.content.length > 1900) {
+        messageTrimmed = message.content.substring(0, 1900)
+    }
+
     logChannels.map((l) => {
         let channel = client.channels.resolve(l)
         if (channel.isText()) {
             let embed = new MessageEmbed()
                 .setAuthor(message.author.tag, message.author.avatarURL())
-                .setDescription(`Message from <@${message.author.id}> deleted in <#${message.channelId}>\n\n${message.content}`)
+                .setDescription(`Message from <@${message.author.id}> deleted in <#${message.channelId}>\n\n${messageTrimmed}`)
                 .setColor(client.colors.error)
                 .setFooter(`User ID: ${message.author.id}`)
                 .setTimestamp()

@@ -21,13 +21,25 @@ export const run: RunFunction = async (client: Bot, oldMessage: Message, newMess
     if (newMessage.author?.bot) return
     if (newMessage.content == oldMessage.content) return
 
+    // Trim oldMessage.content to be 1900 characters or less
+    let newMessageTrimmed = newMessage.content
+    if (newMessageTrimmed.length > 1900) {
+        newMessageTrimmed = newMessageTrimmed.substring(0, 1900)
+    }
+
+    // Trim oldMessage.content to be 1900 characters or less
+    let oldMessageTrimmed = newMessage.content
+    if (oldMessageTrimmed.length > 1900) {
+        oldMessageTrimmed = oldMessageTrimmed.substring(0, 1900)
+    }
+
     logChannels.map((l) => {
         let channel = client.channels.resolve(l)
         if (channel.isText()) {
             let embed = new MessageEmbed()
                 .setAuthor(newMessage.author.tag, newMessage.author.avatarURL())
                 .setDescription(
-                    `<@${newMessage.author.id}> edited a **[message](https://discord.com/channels/${newMessage.guildId}/${newMessage.channelId}/${newMessage.id})** in <#${newMessage.channelId}>\n\n**Old message**\n${oldMessage.content}\n\n**New message**\n${newMessage.content}`
+                    `<@${newMessage.author.id}> edited a **[message](https://discord.com/channels/${newMessage.guildId}/${newMessage.channelId}/${newMessage.id})** in <#${newMessage.channelId}>\n\n**Old message**\n${oldMessageTrimmed}\n\n**New message**\n${newMessageTrimmed}`
                 )
                 .setColor(client.colors.warn)
                 .setFooter(`User ID: ${newMessage.author.id}`)

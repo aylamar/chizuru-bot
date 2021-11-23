@@ -234,19 +234,37 @@ export class StarboardClient {
     }
 
     public async listener(reaction: MessageReaction) {
-        if (!this.validGuild) return
-        if (reaction.message.partial) await reaction.message.fetch()
-        if (reaction.partial) await reaction.fetch()
+        if (!this.validGuild) {
+            this.client.logger.info('invalid guild')
+            return
+        }
+        if (reaction.message.partial) {
+            this.client.logger.info('fetching message partial...')
+            await reaction.message.fetch()
+        }
+        if (reaction.partial) {
+            this.client.logger.info('fetching reaction partial...')
+            await reaction.fetch()
+        }reaction.fetch()
         const { guildId, id } = reaction.message
         if (this.getData(guildId)?.options.blacklistedChannels.includes(reaction.message.channelId)) return
         if (
             reaction.count < this.getData(guildId)?.options.starCount ||
             reaction.emoji.name !== this.getData(guildId)?.options.starEmote
-        ) return
-        if (reaction.users.cache) await reaction.users.fetch()
+        ) {
+            this.client.logger.info(`Reacts: ${reaction.count}/${this.getData(guildId)?.options.starCount} || ${reaction.emoji.name} : ${this.getData(guildId)?.options.starEmote}`)
+            return
+        }
+        if (reaction.users.cache) {
+            this.client.logger.info('Fetching users...')
+            await reaction.users.fetch()
+        }
 
         // Ignore messages from banned users
-        if(this.getData(guildId).options.bannedUsers.includes(reaction.message.author.id)) return
+        if(this.getData(guildId).options.bannedUsers.includes(reaction.message.author.id)) {
+            this.client.logger.info('check if includes banned user...')
+            return
+        }
 
         let count = 0
         // Do not count users who are banned
@@ -254,7 +272,10 @@ export class StarboardClient {
             if (!this.getData(guildId).options.bannedUsers.includes(usr.id))
                 count++
         })
-        if (count < this.getData(guildId)?.options.starCount) return
+        if (count < this.getData(guildId)?.options.starCount) {
+            this.client.logger.info('Total Counts: ', count, this.getData(guildId)?.options.starCount)
+            return
+        }
 
         const data = this.cache.get(guildId) || []
         const starboardChannel = this.client.channels.cache.get(

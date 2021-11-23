@@ -40,9 +40,21 @@ class Music extends DisTube {
 
         this.on('disconnect', (queue) => {})
 
-        this.on('empty', (queue) => {})
+        this.on('empty', (queue) => {
+            let embed = new MessageEmbed()
+                .setDescription(`${queue.voiceChannel.name} is empty, leaving the channel.`)
+                .setColor(this.colors.warn)
+            queue.textChannel.send({ embeds: [embed] })
+            queue.voice.leave()
+        })
 
-        this.on('finish', (queue) => {})
+        this.on('finish', (queue) => {
+            let embed = new MessageEmbed()
+                .setDescription(`The queue is empty, leaving the channel.`)
+                .setColor(this.colors.warn)
+            queue.textChannel.send({ embeds: [embed] })
+            queue.voice.leave()
+        })
 
         this.on('finishSong', (queue, song) => {})
 

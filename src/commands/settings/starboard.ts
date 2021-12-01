@@ -8,7 +8,7 @@ export const run: RunFunction = async (client, interaction) => {
     if (validGuild == false && option != 'create') {
         return interaction.reply({
             content: 'You need to create a starboard with "/starboard create" before running this command.',
-            ephemeral: true,
+            ephemeral: true
         })
     }
 
@@ -20,12 +20,12 @@ export const run: RunFunction = async (client, interaction) => {
                 let banEmbed = new MessageEmbed()
                     .setDescription(res)
                     .setColor(client.colors.success)
-                return interaction.reply({embeds: [banEmbed]})
+                return interaction.reply({ embeds: [banEmbed] })
             } catch (err) {
                 client.logger.error(err)
                 return interaction.reply({
                     content: 'Something went wrong, try again in a few minutes.',
-                    ephemeral: true,
+                    ephemeral: true
                 })
             }
         case 'blacklist':
@@ -34,7 +34,7 @@ export const run: RunFunction = async (client, interaction) => {
             if (blacklistChannel.type !== 'GUILD_TEXT') {
                 return interaction.reply({
                     content: 'Only text channels can be blacklisted, please select a different channel.',
-                    ephemeral: true,
+                    ephemeral: true
                 })
             }
 
@@ -43,12 +43,12 @@ export const run: RunFunction = async (client, interaction) => {
                 let blacklistEmbed = new MessageEmbed()
                     .setDescription(res)
                     .setColor(client.colors.success)
-                return interaction.reply({embeds: [blacklistEmbed]})
+                return interaction.reply({ embeds: [blacklistEmbed] })
             } catch (err) {
                 client.logger.error(err)
                 return interaction.reply({
                     content: 'Something went wrong, try again in a few minutes.',
-                    ephemeral: true,
+                    ephemeral: true
                 })
             }
         case 'create':
@@ -59,13 +59,13 @@ export const run: RunFunction = async (client, interaction) => {
             if (channel.type !== 'GUILD_TEXT') {
                 return interaction.reply({
                     content: 'Starboards can only be created for text channels, please select a different channel.',
-                    ephemeral: true,
+                    ephemeral: true
                 })
             }
 
             let res = await client.Starboard.config.create(client, interaction.guildId, channel.id, emote, starCount)
             if (typeof res === 'string') {
-                return interaction.reply({ content: res, ephemeral: true})
+                return interaction.reply({ content: res, ephemeral: true })
             } else {
                 let createEmbed = new MessageEmbed()
                     .setDescription(`Your starboard channel has been set to <#${channel}> with ${starCount} ${emote}s required to register the message`)
@@ -83,14 +83,14 @@ export const run: RunFunction = async (client, interaction) => {
                 } else {
                     return interaction.reply({
                         content: 'Something went wrong, try again in a few minutes.',
-                        ephemeral: true,
+                        ephemeral: true
                     })
                 }
             } catch (err) {
                 client.logger.error(err)
                 return interaction.reply({
                     content: 'Something went wrong, try again in a few minutes.',
-                    ephemeral: true,
+                    ephemeral: true
                 })
             }
     }
@@ -137,26 +137,26 @@ export const options: Array<any> = [
                 description:
                     'The number of reacts before the message gets sent to the starboard',
                 required: true,
-                type: 4,
+                type: 4
             },
             {
                 name: 'channel',
                 description: 'Channel to send starboard messages to',
                 required: true,
-                type: 7,
+                type: 7
             },
             {
                 name: 'emote',
                 description:
                     'Name of the emote to count as stars for the starboard',
                 required: true,
-                type: 3,
-            },
-        ],
+                type: 3
+            }
+        ]
     },
     {
         name: 'delete',
         type: 1,
-        description: 'Delete the startboard on this server',
-    },
+        description: 'Delete the startboard on this server'
+    }
 ]

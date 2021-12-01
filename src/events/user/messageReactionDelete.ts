@@ -1,4 +1,4 @@
-import { MessageReaction} from 'discord.js'
+import { MessageReaction } from 'discord.js'
 import { Bot } from '../../client/client'
 import { RunFunction } from '../../interfaces/Event'
 

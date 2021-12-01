@@ -6,12 +6,12 @@ export const run: RunFunction = async (client, interaction) => {
         let res = await client.Streams.getChannelByGuild(interaction.guildId, client.logger)
 
         const embed = new MessageEmbed()
-            .setTitle("Streams followed on this server:")
+            .setTitle('Streams followed on this server:')
             .setColor(client.colors.twitch)
-    
+
         res.map((e: any) => {
             e.followed_channels.map((f: any) => {
-                embed.addFields({name: `${f}`, value: `<#${e._id}>`, inline: true})
+                embed.addFields({ name: `${f}`, value: `<#${e._id}>`, inline: true })
             })
         })
         await interaction.reply({ embeds: [embed] })

@@ -38,7 +38,7 @@ export const run: RunFunction = async (client, interaction) => {
                     return
                 default:
                     return
-            }        
+            }
     }
 }
 
@@ -69,7 +69,7 @@ export const options: Array<any> = [
                 name: 'channel',
                 description: 'The channel to log things to',
                 type: 7,
-                required: true,
+                required: true
             },
             {
                 name: 'setting',
@@ -79,22 +79,22 @@ export const options: Array<any> = [
                 choices: [
                     {
                         name: 'message-delete',
-                        value: 'message-delete',
+                        value: 'message-delete'
                     },
                     {
                         name: 'message-edit',
-                        value: 'message-edit',
+                        value: 'message-edit'
                     },
                     {
                         name: 'ban',
-                        value: 'ban',
+                        value: 'ban'
                     },
                     {
                         name: 'voice-states',
                         value: 'voice'
                     }
-                ],
-            },
+                ]
+            }
         ]
     }
 ]

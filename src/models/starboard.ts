@@ -1,4 +1,4 @@
-import { model, Schema, Document } from 'mongoose'
+import { Document, model, Schema } from 'mongoose'
 
 export interface Starboard extends Document {
     _id: string
@@ -12,28 +12,28 @@ export interface Starboard extends Document {
 export const starboardSchema = new Schema({
     _id: {
         type: String,
-        required: true,
+        required: true
     },
     star_count: {
         type: Number,
-        required: true,
+        required: true
     },
     star_emote: {
         type: String,
-        required: true,
+        required: true
     },
     star_channel: {
         type: String,
-        required: true,
+        required: true
     },
     banned_users: {
         type: [String],
-        required: true,
+        required: true
     },
     blacklisted_channels: {
         type: [String],
-        required: true,
-    },
+        required: true
+    }
 })
 
 export default model<Starboard>('starboard', starboardSchema)

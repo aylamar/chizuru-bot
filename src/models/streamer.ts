@@ -1,4 +1,4 @@
-import { model, Schema, Document } from 'mongoose'
+import { Document, model, Schema } from 'mongoose'
 
 export interface streamer extends Document {
     _id: string
@@ -11,20 +11,20 @@ export const streamerSchema = new Schema(
     {
         _id: {
             type: String,
-            required: true,
+            required: true
         },
         channel_id: {
             type: String,
-            required: true,
+            required: true
         },
         profile_picture: {
             type: String,
-            required: true,
+            required: true
         },
         current_state: {
             type: Boolean,
-            required: true,
-        },
+            required: true
+        }
     },
     { timestamps: true }
 )

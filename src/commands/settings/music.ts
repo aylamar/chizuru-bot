@@ -11,19 +11,19 @@ export const run: RunFunction = async (client, interaction) => {
             if (client.channels.cache.get(channel.id).isText()) {
                 let musicChannel = await setMusicChannel(interaction.guildId, channel.id, client)
                 await interaction.reply({
-                    content: musicChannel,
+                    content: musicChannel
                 })
             } else {
                 await interaction.reply({
                     content: `This only works for text channels, please try again with a text channel.`,
-                    ephemeral: true,
+                    ephemeral: true
                 })
             }
             return
         case 'clear':
             let musicClear = await clearMusicChannel(interaction.guildId, client)
             await interaction.reply({
-                content: musicClear,
+                content: musicClear
             })
             return
     }
@@ -43,13 +43,13 @@ export const options: Array<any> = [
                 name: 'channel',
                 type: 7,
                 required: true,
-                description: 'The channel to lock music commands to',
-            },
-        ],
+                description: 'The channel to lock music commands to'
+            }
+        ]
     },
     {
         name: 'clear',
         description: 'Allow music commands to be used anywhere',
-        type: 1,
-    },
+        type: 1
+    }
 ]

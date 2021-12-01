@@ -3,12 +3,12 @@ import { Config } from '../interfaces/Config'
 import fetch from 'node-fetch'
 
 export default class Twitch {
+    public clientID: string
+    public token_type: string
     private config: Config
     private logger: Consola
     private access_token: string
     private expire_time: number
-    public clientID: string
-    public token_type: string
 
     public constructor(config: Config, logger: Consola) {
         this.config = config
@@ -46,8 +46,8 @@ export default class Twitch {
                 method: 'GET',
                 headers: {
                     'client-id': this.clientID,
-                    Authorization: `Bearer ${await this.getToken()}`,
-                },
+                    Authorization: `Bearer ${await this.getToken()}`
+                }
             })
 
             let parsedRes: any = await res.json()
@@ -71,8 +71,8 @@ export default class Twitch {
                 method: 'GET',
                 headers: {
                     'client-id': this.clientID,
-                    Authorization: `Bearer ${await this.getToken()}`,
-                },
+                    Authorization: `Bearer ${await this.getToken()}`
+                }
             })
             let parsedRes: any = await res.json()
             return parsedRes.data[0]

@@ -1,10 +1,10 @@
-import { Client, Intents, Collection } from 'discord.js'
+import { Client, Collection, Intents } from 'discord.js'
 import { Command } from '../interfaces/Command'
 import { Config } from '../interfaces/Config'
 import { Event } from '../interfaces/Event'
 import consola, { Consola } from 'consola'
 import { promisify } from 'util'
-import mongoose from "mongoose"
+import mongoose from 'mongoose'
 import _glob from 'glob'
 import { Music } from '../util/Music'
 import { DiscordTogether } from 'discord-together'
@@ -19,11 +19,6 @@ const glob = promisify(_glob)
 class Bot extends Client {
     public commands: Collection<string, Command> = new Collection()
     public events: Collection<string, Event> = new Collection()
-    public constructor() {
-        super({
-            intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_BANS],
-            partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
-        })}
     public config: Config
     public logger: Consola = consola
     public music: Music
@@ -33,6 +28,13 @@ class Bot extends Client {
     public cache: GuildCache
     public Starboard: StarboardClient
     public Streams: Streams
+
+    public constructor() {
+        super({
+            intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_BANS],
+            partials: ['MESSAGE', 'CHANNEL', 'REACTION']
+        })
+    }
 
     public async start(config: Config): Promise<void> {
         consola.info('Chizuru Bot is starting up...')
@@ -51,7 +53,7 @@ class Bot extends Client {
         this.activity = new DiscordTogether(this)
         this.twitch = new Twitch(this.config, this.logger)
         this.cache = {}
-        this.Starboard = new StarboardClient({client: this})
+        this.Starboard = new StarboardClient({ client: this })
 
         mongoose.connect(config.mongoURI)
             .then(() => {

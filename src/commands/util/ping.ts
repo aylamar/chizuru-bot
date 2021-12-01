@@ -7,7 +7,7 @@ export const run: RunFunction = async (client, interaction) => {
 
     await interaction.reply({
         content: `:ping_pong: ~${ping}ms delay between when you ran the command and when I recieved it.`,
-        ephemeral: true,
+        ephemeral: true
     })
 }
 

@@ -1,42 +1,12 @@
 import { Bot } from '../client/client'
-import { Collection, Message, MessageEmbed, MessageReaction, MessageOptions, Snowflake, TextChannel } from 'discord.js'
+import { Collection, Message, MessageEmbed, MessageOptions, MessageReaction, Snowflake, TextChannel } from 'discord.js'
 import Starboard from '../models/starboard'
-import { StarboardClientOptions, starMessageData, StarboardGuild } from '../interfaces/Starboard'
+import { StarboardClientOptions, StarboardGuild, starMessageData } from '../interfaces/Starboard'
 
 export class StarboardClient {
     public client: Bot
     public guilds: StarboardGuild[]
     public cache: Collection<Snowflake, starMessageData[]> = new Collection()
-
-    constructor(options: StarboardClientOptions) {
-        this.client = options.client
-        this.guilds = options.Guilds || []
-        this.client.on('ready', () => this.cacheData())
-    }
-
-    public async start(client: Bot) {
-        try {
-            const data = await Starboard.find()
-            this.config.set(
-                data.map((d: any) => {
-                    return {
-                        id: d._id,
-                        options: {
-                            starCount: d.star_count,
-                            starboardChannel: d.star_channel,
-                            starEmote: d.star_emote,
-                            bannedUsers: d.banned_users,
-                            blacklistedChannels: d.blacklisted_channels,
-                        },
-                    }
-                })
-            )
-            client.logger.success(`Initialized ${data.length} starboards`)
-        } catch (err) {
-            client.logger.error(err)
-        }
-    }
-
     public config = {
         set: (StarboardGuilds: StarboardGuild[]) => {
             this.guilds = StarboardGuilds
@@ -52,7 +22,7 @@ export class StarboardClient {
             this.cacheData()
         },
 
-        create: async ( client: Bot, guildId: Snowflake, channelId: Snowflake, emote: string, starCount: number ) => {
+        create: async (client: Bot, guildId: Snowflake, channelId: Snowflake, emote: string, starCount: number) => {
             try {
                 const data = await Starboard.findById(guildId)
                 if (data)
@@ -64,7 +34,7 @@ export class StarboardClient {
                     star_channel: channelId,
                     star_emote: emote,
                     banned_users: [],
-                    blacklisted_channels: [],
+                    blacklisted_channels: []
                 })
                 await newStarboard.save()
 
@@ -75,8 +45,8 @@ export class StarboardClient {
                         starboardChannel: channelId,
                         starEmote: emote,
                         bannedUsers: [],
-                        blacklistedChannels: [],
-                    },
+                        blacklistedChannels: []
+                    }
                 })
                 return true
             } catch (err) {
@@ -141,91 +111,40 @@ export class StarboardClient {
                 users.push(userId)
                 return `<@${userId}> has been banned from the starboard.`
             }
-        },
+        }
     }
 
-    private cacheData() {
-        this.guilds.forEach(async (guild) => {
-            const channel = this.client.channels.cache.get(
-                guild.options.starboardChannel
-            ) as TextChannel
-            if (!channel) return
+    constructor(options: StarboardClientOptions) {
+        this.client = options.client
+        this.guilds = options.Guilds || []
+        this.client.on('ready', () => this.cacheData())
+    }
 
-            const messages = await channel.messages.fetch({ limit: 100 })
-            if (!messages) return
-
-            const value = messages.reduce(
-                (accumulator: starMessageData[], message) => {
-                    if (
-                        message.author.id !== this.client.user.id ||
-                        message.embeds.length === 0 ||
-                        message.embeds[0].footer === null
-                    )
-                        return accumulator
-
-                    const starCount =
-                        message.embeds[0].footer.text.match(/\d+/)?.[0]
-                    const origin =
-                        message.embeds[0].footer.text.match(/(?!\()\d+(?=\))/)?.[0]
-
-                    if (!starCount || !origin) return accumulator
-
-                    const data: starMessageData = {
-                        id: message.id,
-                        origin,
+    public async start(client: Bot) {
+        try {
+            const data = await Starboard.find()
+            this.config.set(
+                data.map((d: any) => {
+                    return {
+                        id: d._id,
+                        options: {
+                            starCount: d.star_count,
+                            starboardChannel: d.star_channel,
+                            starEmote: d.star_emote,
+                            bannedUsers: d.banned_users,
+                            blacklistedChannels: d.blacklisted_channels
+                        }
                     }
-                    return [...accumulator, data]
-                },
-                []
+                })
             )
-            this.cache.set(guild.id, value)
-        })
+            client.logger.success(`Initialized ${data.length} starboards`)
+        } catch (err) {
+            client.logger.error(err)
+        }
     }
 
     public validGuild(guild: Snowflake) {
         return this.guilds.some((x) => x.id === guild)
-    }
-
-    private getData(guildId: Snowflake) {
-        return this.guilds.find((x) => x.id === guildId)
-    }
-
-    private generateEdit(starCount: number, message: Message): MessageOptions {
-        interface Data {
-            content: string,
-            imageURL: string,
-        }
-
-        let data: Data = {
-            content: '',
-            imageURL: ''
-        }
-
-        if (message.content.length < 3900) {
-            data.content = message.content
-        } else {
-            data.content = `${message.content.substring(0, 3920)} **[ ... ]**`
-        }
-        data.content += `\n\n→ [original message](${message.url}) in <#${message.channelId}>`
-
-        if (message.embeds.length) {
-            const images = message.embeds
-                .filter(embed => embed.thumbnail || embed.image)
-                .map(embed => (embed.thumbnail) ? embed.thumbnail.url : embed.image.url)
-            data.imageURL = images[0]
-        } else if (message.attachments.size) {
-            data.imageURL = message.attachments.first().url
-            data.content += `\n📎 [${message.attachments.first().name}](${message.attachments.first().proxyURL})`
-        }
-  
-        let embed = new MessageEmbed()
-            .setAuthor(message.author.tag, message.author.displayAvatarURL({ dynamic: true }))
-            .setColor(this.client.colors.purple)
-            .setDescription(data.content)
-            .setImage(data.imageURL)
-            .setFooter(`${starCount} ⭐ (${message.id}) • ${message.createdAt.toLocaleDateString()}`)
-
-        return {embeds: [embed],}
     }
 
     public async getConfig(guildId: Snowflake) {
@@ -264,7 +183,7 @@ export class StarboardClient {
         }
 
         // Ignore messages from banned users
-        if(this.getData(guildId).options.bannedUsers.includes(reaction.message.author.id)) {
+        if (this.getData(guildId).options.bannedUsers.includes(reaction.message.author.id)) {
             this.client.logger.info('check if includes banned user...')
             return
         }
@@ -291,7 +210,7 @@ export class StarboardClient {
             starboardChannel?.send(generateEdit).then((m) => {
                 this.cache.set(reaction.message.guildId, [
                     ...data,
-                    { id: m.id, origin: reaction.message.id },
+                    { id: m.id, origin: reaction.message.id }
                 ])
             })
         }
@@ -304,5 +223,82 @@ export class StarboardClient {
                 })
                 .catch(sendMessage)
         } else sendMessage()
+    }
+
+    private cacheData() {
+        this.guilds.forEach(async (guild) => {
+            const channel = this.client.channels.cache.get(
+                guild.options.starboardChannel
+            ) as TextChannel
+            if (!channel) return
+
+            const messages = await channel.messages.fetch({ limit: 100 })
+            if (!messages) return
+
+            const value = messages.reduce(
+                (accumulator: starMessageData[], message) => {
+                    if (
+                        message.author.id !== this.client.user.id ||
+                        message.embeds.length === 0 ||
+                        message.embeds[0].footer === null
+                    ) return accumulator
+
+                    const starCount = message.embeds[0].footer.text.match(/\d+/)?.[0]
+                    const origin = message.embeds[0].footer.text.match(/(?!\()\d+(?=\))/)?.[0]
+
+                    if (!starCount || !origin) return accumulator
+
+                    const data: starMessageData = {
+                        id: message.id,
+                        origin
+                    }
+                    return [...accumulator, data]
+                },
+                []
+            )
+            this.cache.set(guild.id, value)
+        })
+    }
+
+    private getData(guildId: Snowflake) {
+        return this.guilds.find((x) => x.id === guildId)
+    }
+
+    private generateEdit(starCount: number, message: Message): MessageOptions {
+        interface Data {
+            content: string,
+            imageURL: string,
+        }
+
+        let data: Data = {
+            content: '',
+            imageURL: ''
+        }
+
+        if (message.content.length < 3900) {
+            data.content = message.content
+        } else {
+            data.content = `${message.content.substring(0, 3920)} **[ ... ]**`
+        }
+        data.content += `\n\n→ [original message](${message.url}) in <#${message.channelId}>`
+
+        if (message.embeds.length) {
+            const images = message.embeds
+                .filter(embed => embed.thumbnail || embed.image)
+                .map(embed => (embed.thumbnail) ? embed.thumbnail.url : embed.image.url)
+            data.imageURL = images[0]
+        } else if (message.attachments.size) {
+            data.imageURL = message.attachments.first().url
+            data.content += `\n📎 [${message.attachments.first().name}](${message.attachments.first().proxyURL})`
+        }
+
+        let embed = new MessageEmbed()
+            .setAuthor(message.author.tag, message.author.displayAvatarURL({ dynamic: true }))
+            .setColor(this.client.colors.purple)
+            .setDescription(data.content)
+            .setImage(data.imageURL)
+            .setFooter(`${starCount} ⭐ (${message.id}) • ${message.createdAt.toLocaleDateString()}`)
+
+        return { embeds: [embed] }
     }
 }

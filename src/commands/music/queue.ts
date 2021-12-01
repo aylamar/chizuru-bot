@@ -55,7 +55,7 @@ export const run: RunFunction = async (client, interaction) => {
     } else {
         await interaction.reply({
             content: `This command can only be run in <#${musicChannel}>.`,
-            ephemeral: true,
+            ephemeral: true
         })
     }
 }

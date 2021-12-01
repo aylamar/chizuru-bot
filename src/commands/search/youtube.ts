@@ -1,4 +1,4 @@
-import { PermissionString} from 'discord.js'
+import { PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
 import ytSearch from 'yt-search'
 
@@ -25,7 +25,7 @@ export const run: RunFunction = async (client, interaction) => {
         await interaction.editReply(`${video.url}`)
     } else {
         await interaction.editReply({
-            content: `❌ Unable to find a video with this name`,
+            content: `❌ Unable to find a video with this name`
         })
     }
 }
@@ -38,7 +38,7 @@ export const options: Array<Object> = [
     {
         name: 'title',
         type: 3,
-        description: "Title of the video you'd like to search for",
-        required: true,
-    },
+        description: 'Title of the video you\'d like to search for',
+        required: true
+    }
 ]

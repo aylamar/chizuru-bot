@@ -3,7 +3,7 @@ import { Bot } from '../../client/client'
 import { RunFunction } from '../../interfaces/Event'
 import { getGuild } from '../../util/Guild'
 
-export const run: RunFunction = async (client: Bot, interaction: Interaction ) => {
+export const run: RunFunction = async (client: Bot, interaction: Interaction) => {
     if (!interaction.isCommand()) return
     if (!client.commands.has(interaction.commandName)) return
     if (!interaction.guild) return
@@ -27,14 +27,14 @@ export const run: RunFunction = async (client: Bot, interaction: Interaction ) =
             missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
             await interaction.reply({
                 content: `❌ I need the ${missing} permissions to run this command.`,
-                ephemeral: true,
+                ephemeral: true
             })
         } else {
             let missing = difference.toString()
             missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
             await interaction.reply({
                 content: `❌ I need the ${missing} permission to run this command.`,
-                ephemeral: true,
+                ephemeral: true
             })
         }
         return
@@ -54,14 +54,14 @@ export const run: RunFunction = async (client: Bot, interaction: Interaction ) =
             missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
             await interaction.reply({
                 content: `❌ You need the ${missing} permissions to run this command.`,
-                ephemeral: true,
+                ephemeral: true
             })
         } else {
             let missing = difference.toString()
             missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
             await interaction.reply({
                 content: `❌ You need the ${missing} permission to run this command.`,
-                ephemeral: true,
+                ephemeral: true
             })
         }
         return

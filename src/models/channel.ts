@@ -1,4 +1,4 @@
-import { model, Schema, Document } from 'mongoose'
+import { Document, model, Schema } from 'mongoose'
 
 export interface discordChannel extends Document {
     _id: string
@@ -10,16 +10,16 @@ export const discordChannelSchema = new Schema(
     {
         _id: {
             type: String,
-            required: true,
+            required: true
         },
         guild_id: {
             type: String,
-            required: true,
+            required: true
         },
         followed_channels: {
             type: [String],
-            required: true,
-        },
+            required: true
+        }
     },
     { timestamps: true }
 )

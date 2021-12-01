@@ -19,7 +19,7 @@ export const run: RunFunction = async (client, interaction) => {
     } catch (err) {
         await interaction.reply({
             content: 'Something went wrong, please try again in a few minutes.',
-            ephemeral: true,
+            ephemeral: true
         })
         client.logger.error(`Error sending help response in ${interaction.channelId}\n${err}`)
     }

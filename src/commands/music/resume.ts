@@ -27,9 +27,9 @@ export const run: RunFunction = async (client, interaction) => {
             await interaction.reply({ embeds: [embed] })
         }
     } else {
-        interaction.reply({
+        await interaction.reply({
             content: `This command can only be run in <#${musicChannel}>.`,
-            ephemeral: true,
+            ephemeral: true
         })
     }
 }

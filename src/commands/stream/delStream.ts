@@ -6,24 +6,24 @@ export const run: RunFunction = async (client, interaction) => {
 
     let res = await client.Streams.delStream(streamer, interaction.channelId, client.logger)
     try {
-        switch(res) {
+        switch (res) {
             case 'Success':
                 let successEmbed = new MessageEmbed()
                     .setDescription(`You'll no longer be notified when **${streamer}** goes online.`)
                     .setColor(client.colors.success)
-                await interaction.reply({embeds: [successEmbed]})
+                await interaction.reply({ embeds: [successEmbed] })
                 break
             case 'Does not exist':
                 let alreadyExistEmbed = new MessageEmbed()
                     .setDescription(`You won't receive any notifications for **${streamer}**.`)
                     .setColor(client.colors.success)
-                await interaction.reply({embeds: [alreadyExistEmbed]})
+                await interaction.reply({ embeds: [alreadyExistEmbed] })
                 break
             case 'Failure':
                 let failureEmbed = new MessageEmbed()
                     .setDescription('Something went wrong, try running this command again.')
                     .setColor(client.colors.error)
-                await interaction.reply({embeds: [failureEmbed]})
+                await interaction.reply({ embeds: [failureEmbed] })
                 break
         }
     } catch (err) {
@@ -40,7 +40,7 @@ export const options: Array<Object> = [
     {
         name: 'streamer',
         type: 3,
-        description: "The username of the streamer you'd like to unfollow",
-        required: true,
-    },
+        description: 'The username of the streamer you\'d like to unfollow',
+        required: true
+    }
 ]

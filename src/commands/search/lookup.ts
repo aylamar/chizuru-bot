@@ -12,13 +12,13 @@ export const run: RunFunction = async (client, interaction) => {
         switch (interaction.options.data[0].value) {
             case 'anime':
                 res = await Anilist.searchEntry.anime(interaction.options.data[1].value.toString())
-                if(res.pageInfo.total === 0) break
+                if (res.pageInfo.total === 0) break
                 parsedRes = await Anilist.media.anime(res.media[0].id)
                 type = 'Anime'
                 break
             case 'manga':
                 res = await Anilist.searchEntry.manga(interaction.options.data[1].value.toString())
-                if(res.pageInfo.total === 0) break
+                if (res.pageInfo.total === 0) break
                 parsedRes = await Anilist.media.manga(res.media[0].id)
                 type = 'Manga'
                 break
@@ -29,13 +29,13 @@ export const run: RunFunction = async (client, interaction) => {
             return
         }
 
-        if(parsedRes.isAdult && client.cache[interaction.guildId].lookupNSFW !== true) {
+        if (parsedRes.isAdult && client.cache[interaction.guildId].lookupNSFW !== true) {
             await interaction.reply({
                 content: 'Adult anime & manga is currently disabled on this server.',
                 ephemeral: true
             })
             return
-        } 
+        }
 
         let genre = parsedRes.genres.join(', ')
         let title: string
@@ -83,18 +83,18 @@ export const options: Array<Object> = [
         choices: [
             {
                 name: 'anime',
-                value: 'anime',
+                value: 'anime'
             },
             {
                 name: 'manga',
-                value: 'manga',
-            },
-        ],
+                value: 'manga'
+            }
+        ]
     },
     {
         name: 'series',
         type: 3,
         required: true,
-        description: 'The name of the anime or manga to lookup',
-    },
+        description: 'The name of the anime or manga to lookup'
+    }
 ]

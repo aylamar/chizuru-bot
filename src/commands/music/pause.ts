@@ -29,12 +29,12 @@ export const run: RunFunction = async (client, interaction) => {
     } else {
         await interaction.reply({
             content: `This command can only be run in <#${musicChannel}>.`,
-            ephemeral: true,
+            ephemeral: true
         })
     }
 }
 
 export const name: string = 'pause'
 export const description: string = 'Pauses the song that is currently playing'
-export const botPermissions: Array<PermissionString> = [ 'SEND_MESSAGES', 'VIEW_CHANNEL']
+export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
 export const userPermissions: Array<PermissionString> = ['SEND_MESSAGES']

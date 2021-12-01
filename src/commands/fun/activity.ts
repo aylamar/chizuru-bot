@@ -1,4 +1,4 @@
-import { PermissionString, GuildMember } from 'discord.js'
+import { GuildMember, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
 
 export const run: RunFunction = async (client, interaction) => {
@@ -8,7 +8,7 @@ export const run: RunFunction = async (client, interaction) => {
     if (!voiceChannel) {
         await interaction.reply({
             content: `❌ You need to be in a voice channel to run this command.`,
-            ephemeral: true,
+            ephemeral: true
         })
         return
     }
@@ -17,7 +17,7 @@ export const run: RunFunction = async (client, interaction) => {
     if (!permissions.has('CREATE_INSTANT_INVITE')) {
         await interaction.reply({
             content: `❌ I don't have permission to create an invite in that voice channel.`,
-            ephemeral: true,
+            ephemeral: true
         })
         return
     }
@@ -43,23 +43,23 @@ export const options: Array<Object> = [
         choices: [
             {
                 name: 'YouTube',
-                value: 'youtube',
+                value: 'youtube'
             },
             {
                 name: 'Poker',
-                value: 'poker',
+                value: 'poker'
             },
             {
                 name: 'Chess',
-                value: 'chess',
+                value: 'chess'
             },
             {
                 name: 'Betrayal',
-                value: 'betrayal',
+                value: 'betrayal'
             },
             {
                 name: 'Fishing',
-                value: 'fishing',
+                value: 'fishing'
             },
             {
                 name: 'Letter Tile',
@@ -72,7 +72,7 @@ export const options: Array<Object> = [
             {
                 name: 'Doodle Crew',
                 value: 'doodlecrew'
-            },
-        ],
-    },
+            }
+        ]
+    }
 ]

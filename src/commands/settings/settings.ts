@@ -7,7 +7,7 @@ export const run: RunFunction = async (client, interaction) => {
     const subCommand = interaction.options.getSubcommand()
     switch (subCommand) {
         case 'list':
-            if (!client.cache[interaction.guildId]) await getGuild(interaction.guildId)        
+            if (!client.cache[interaction.guildId]) await getGuild(interaction.guildId)
             const cache = client.cache[interaction.guildId]
             let embed = new MessageEmbed()
                 .setColor(client.colors.purple)
@@ -15,9 +15,11 @@ export const run: RunFunction = async (client, interaction) => {
             let msgDel = ''
             if (cache.messageDelete?.length > 0) {
                 let delList = cache.messageDelete
-                    .map((id) => {return `<#${id}>`})
+                    .map((id) => {
+                        return `<#${id}>`
+                    })
                     .join(', ')
-                    msgDel = `Deleted messages: ${delList}`
+                msgDel = `Deleted messages: ${delList}`
             } else {
                 msgDel = 'Deleted messages: Not currently logging'
             }
@@ -25,9 +27,11 @@ export const run: RunFunction = async (client, interaction) => {
             let msgEdit = ''
             if (cache.messageEdit?.length > 0) {
                 let delList = cache.messageEdit
-                    .map((id) => {return `<#${id}>`})
+                    .map((id) => {
+                        return `<#${id}>`
+                    })
                     .join(', ')
-                    msgEdit = `Edited messages: ${delList}`
+                msgEdit = `Edited messages: ${delList}`
             } else {
                 msgEdit = 'Edited messages: Not currently logging'
             }
@@ -35,7 +39,7 @@ export const run: RunFunction = async (client, interaction) => {
             embed.addField(`Log Settings`,
                 `${msgDel}
                 ${msgEdit}`)
-       
+
             if (cache.musicChannel) {
                 embed.addField('Music Settings',
                     `Music commands can only be run in <#${cache.musicChannel}>`
@@ -56,7 +60,7 @@ export const run: RunFunction = async (client, interaction) => {
 
                 if (sbData.bannedUsers.length > 0) {
                     let userList = sbData.bannedUsers
-                        .map((id) => {return `<@${id}>`})
+                        .map((id) => { return `<@${id}>` })
                         .join(', ')
                     bannedUsers = `Banned Users: ${userList}`
                 } else {
@@ -65,8 +69,8 @@ export const run: RunFunction = async (client, interaction) => {
 
                 if (sbData.blacklistedChannels.length > 0) {
                     let userList = sbData.blacklistedChannels
-                    .map((id) => {return `<#${id}>`})
-                    .join(', ')
+                        .map((id) => { return `<#${id}>` })
+                        .join(', ')
                     blacklistedChannels = `Blacklisted Channels: ${userList}`
                 } else {
                     blacklistedChannels = 'Blacklisted Channels: None'
@@ -109,18 +113,18 @@ export const options: Array<any> = [
     {
         name: 'list',
         description: 'List the current server settings',
-        type: 1,
+        type: 1
     },
     {
         name: 'lookup',
         description: 'Toggles on or off the NSFW setting for this server',
-        type: 1,
+        type: 1
     },
     {
         name: 'stream-ping',
         description: 'Toggles on or off @everyone when a stream goes life',
-        type: 1,
-    },
+        type: 1
+    }
 ]
 
 function lookupVal(cache: GuildData) {

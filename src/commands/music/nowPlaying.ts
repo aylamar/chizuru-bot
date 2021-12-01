@@ -25,16 +25,16 @@ export const run: RunFunction = async (client, interaction) => {
     } else {
         await interaction.reply({
             content: `This command can only be run in <#${musicChannel}>.`,
-            ephemeral: true,
+            ephemeral: true
         })
     }
 }
 
-async function beautifySeconds(sec: number ) {
+async function beautifySeconds(sec: number) {
     let minutes: number
     let seconds: number | string
 
-    minutes = Math.floor(sec/60)
+    minutes = Math.floor(sec / 60)
     seconds = Math.floor(sec % 60)
 
     if (seconds < 10) {

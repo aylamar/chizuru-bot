@@ -33,7 +33,7 @@ export async function createGuild(guildID: string) {
         // if guild does not exist
         try {
             const guildDB = new Guild({
-                _id: guildID,
+                _id: guildID
             })
             await guildDB.save()
             consola.success(`Successfully added ${guildID} to the database.`)
@@ -45,7 +45,7 @@ export async function createGuild(guildID: string) {
                 logVoice: undefined,
                 messageDelete: undefined,
                 messageEdit: undefined,
-                streamPing: undefined,
+                streamPing: undefined
             }
             return data
         } catch (err) {

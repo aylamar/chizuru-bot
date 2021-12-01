@@ -5,7 +5,7 @@ import { getGuild } from '../../util/Guild'
 
 export const run: RunFunction = async (client: Bot, oldMessage: Message, newMessage: Message) => {
     let guildID: string = oldMessage.guildId
-    let logChannels: string[] = null
+    let logChannels: string[]
 
     if (!client.cache[guildID]) {
         let data = await getGuild(guildID)
@@ -21,13 +21,13 @@ export const run: RunFunction = async (client: Bot, oldMessage: Message, newMess
     if (newMessage.author?.bot) return
     if (newMessage.content == oldMessage.content) return
 
-    // Trim oldMessage.content to be 1900 characters or less
+    // Trim oldMessage.content to be 1900 characters or fewer
     let newMessageTrimmed = newMessage.content
     if (newMessageTrimmed.length > 1900) {
         newMessageTrimmed = newMessageTrimmed.substring(0, 1900)
     }
 
-    // Trim oldMessage.content to be 1900 characters or less
+    // Trim oldMessage.content to be 1900 characters or fewer
     let oldMessageTrimmed = oldMessage.content
     if (oldMessageTrimmed.length > 1900) {
         oldMessageTrimmed = oldMessageTrimmed.substring(0, 1900)

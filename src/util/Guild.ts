@@ -22,8 +22,7 @@ export async function getGuild(guildID: string) {
         return data
     } else {
         // if no guild exists
-        let data = await createGuild(guildID)
-        return data
+        return await createGuild(guildID)
     }
 }
 

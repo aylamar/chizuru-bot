@@ -4,7 +4,7 @@ import { getGuild } from '../../util/Guild'
 
 export const run: RunFunction = async (client, ban: GuildBan) => {
     let guildID: string = ban.guild.id
-    let logChannels: string[] = null
+    let logChannels: string[]
 
     if (!client.cache[guildID]) {
         let data = await getGuild(guildID)

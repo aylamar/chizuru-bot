@@ -12,13 +12,13 @@ export const run: RunFunction = async (client, interaction) => {
                 let embed = new MessageEmbed()
                     .setDescription('Repeating the current queue.')
                     .setColor(client.colors.success)
-                interaction.reply({ embeds: [embed] })
+                await interaction.reply({ embeds: [embed] })
             } else {
                 queue.repeatMode = 0
                 let embed = new MessageEmbed()
                     .setDescription(`No longer repeating the queue.`)
                     .setColor(client.colors.success)
-                interaction.reply({ embeds: [embed] })
+                await interaction.reply({ embeds: [embed] })
             }
         } else {
             let embed = new MessageEmbed()
@@ -27,7 +27,7 @@ export const run: RunFunction = async (client, interaction) => {
             await interaction.reply({ embeds: [embed] })
         }
     } else {
-        interaction.reply({
+        await interaction.reply({
             content: `This command can only be run in <#${musicChannel}>.`,
             ephemeral: true,
         })

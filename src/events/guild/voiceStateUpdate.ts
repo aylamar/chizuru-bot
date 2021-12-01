@@ -4,7 +4,7 @@ import { getGuild } from '../../util/Guild'
 
 export const run: RunFunction = async (client, oldState: VoiceState, newState: VoiceState) => {
     let guildID: string = newState.guild.id
-    let logChannels: string[] = null
+    let logChannels: string[]
 
     if (!client.cache[guildID]) {
         let data = await getGuild(guildID)
@@ -21,7 +21,7 @@ export const run: RunFunction = async (client, oldState: VoiceState, newState: V
     logChannels.map((l) => {
         let channel = client.channels.resolve(l)
 
-        let curState = ''
+        let curState: string
         if (newState.selfMute.valueOf() === true) {
             curState = 'muted'
         } else {

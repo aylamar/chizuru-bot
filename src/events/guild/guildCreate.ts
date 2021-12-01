@@ -5,7 +5,7 @@ import { createGuild } from '../../util/Guild'
 
 export const run: RunFunction = async (client: Bot, guild: Guild) => {
     if (!(guild instanceof Guild)) return
-    createGuild(guild.id)
+    await createGuild(guild.id)
 }
 
 export const name: string = 'guildCreate'

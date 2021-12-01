@@ -13,7 +13,7 @@ export const run: RunFunction = async (client, interaction) => {
 
         // Play specific permission checks
         if (!voiceChannel) {
-            interaction.reply({
+            await interaction.reply({
                 content: `❌ You need to be in a voice channel to run this command.`,
                 ephemeral: true,
             })
@@ -22,7 +22,7 @@ export const run: RunFunction = async (client, interaction) => {
 
         const permissions = voiceChannel.permissionsFor(client.user)
         if (!permissions.has('CONNECT')) {
-            interaction.reply({
+            await interaction.reply({
                 content: `❌ I don't have permission to join that voice channel.`,
                 ephemeral: true,
             })
@@ -30,14 +30,14 @@ export const run: RunFunction = async (client, interaction) => {
         }
 
         if (!permissions.has('SPEAK')) {
-            interaction.reply({
+            await interaction.reply({
                 content: `❌ I don't have permission to speak in that voice channel.`,
                 ephemeral: true,
             })
             return
         }
 
-        interaction.deferReply()
+        await interaction.deferReply()
         let args = interaction.options.getString('song') as string
         await client.music.playVoiceChannel(voiceChannel, args, {
             member,
@@ -46,7 +46,7 @@ export const run: RunFunction = async (client, interaction) => {
         await interaction.deleteReply()
 
     } else {
-        interaction.reply({
+        await interaction.reply({
             content: `This command can only be run in <#${musicChannel}>.`,
             ephemeral: true,
         })

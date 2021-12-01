@@ -85,15 +85,15 @@ export class Streams {
                     // should be set to false, set to true for testing
                     this.streamerCache[streamer].currentState = false
 
-                    let offlineEmbed = this.genGoOfflineEmbed(this.streamerCache[streamer], client.colors)
-                    this.postStreams(streamer, offlineEmbed, client, false)
+                    let offlineEmbed = Streams.genGoOfflineEmbed(this.streamerCache[streamer], client.colors)
+                    await this.postStreams(streamer, offlineEmbed, client, false)
                 } else if (res != undefined && this.streamerCache[streamer].currentState === false) {
                     // if streamer comes online
                     // should be set to true, set to false for testing
                     this.streamerCache[streamer].currentState = true
 
-                    let onlineEmbed = this.genGoLiveEmbed(this.streamerCache[streamer].profilePicture, res, client.colors)
-                    this.postStreams(streamer, onlineEmbed, client, true)
+                    let onlineEmbed = Streams.genGoLiveEmbed(this.streamerCache[streamer].profilePicture, res, client.colors)
+                    await this.postStreams(streamer, onlineEmbed, client, true)
                 }
             } catch (err) {
                 client.logger.error(err)
@@ -110,7 +110,7 @@ export class Streams {
                     try {
                         let guildId = this.watchingCache[channel].guildId
                         if (goLive === true) {
-                            let notify = false
+                            let notify: boolean
                             if (!client.cache[guildId]) {
                                 let data = await getGuild(guildId)
                                 client.cache[guildId] = data
@@ -175,7 +175,7 @@ export class Streams {
                             guild_id: guild_id,
                             followed_channels: streamer_name,
                         })
-                        channel.save()
+                        await channel.save()
 
                         this.watchingCache[channel_id] = {
                             channelId: channel_id,
@@ -251,7 +251,7 @@ export class Streams {
 
             let channelList = await Channel.find({followed_channels: streamer_name})
             if (channelList.length === 0) {
-                this.delStreamer(streamer_name, logger)
+                await this.delStreamer(streamer_name, logger)
             }
             return 'Success'
         } catch (err) {
@@ -283,16 +283,15 @@ export class Streams {
 
     public async getChannelByGuild(guild_id: string, logger: Consola) {
         try {
-            let res = await Channel.find({ guild_id }).lean()
-            return res
+            return await Channel.find({ guild_id }).lean()
         } catch (err) {
             logger.error(err)
             return null
         }
     }
 
-    private genGoLiveEmbed(profile_picture: string, data: any, colors: EmbedColors): MessageEmbed {
-        const liveEmbed = new MessageEmbed()
+    private static genGoLiveEmbed(profile_picture: string, data: any, colors: EmbedColors): MessageEmbed {
+        return new MessageEmbed()
             .setAuthor(data.title, '', `https://twitch.tv/${data.user_login}`)
             .setTitle(data.user_name)
             .setColor(colors.success)
@@ -318,15 +317,13 @@ export class Streams {
             )
             .setThumbnail(profile_picture)
             .setTimestamp()
-        return liveEmbed
     }
 
-    private genGoOfflineEmbed(streamer: streamer, colors: EmbedColors): MessageEmbed {
-        const offlineEmbed = new MessageEmbed()
+    private static genGoOfflineEmbed(streamer: streamer, colors: EmbedColors): MessageEmbed {
+        return new MessageEmbed()
             .setTitle(`${streamer.username} has gone offline`)
             .setDescription(`https://twitch.tv/${streamer.username}`)
             .setThumbnail(streamer.profilePicture)
             .setColor(colors.error)
-        return offlineEmbed
     }
 }

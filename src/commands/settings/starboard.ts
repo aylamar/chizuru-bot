@@ -52,7 +52,7 @@ export const run: RunFunction = async (client, interaction) => {
                 })
             }
         case 'create':
-            const starcount = interaction.options.getInteger('starcount')
+            const starCount = interaction.options.getInteger('starcount')
             const channel = interaction.options.getChannel('channel')
             const emote = interaction.options.getString('emote')
 
@@ -63,12 +63,12 @@ export const run: RunFunction = async (client, interaction) => {
                 })
             }
 
-            let res = await client.Starboard.config.create(client, interaction.guildId, channel.id, emote, starcount)
+            let res = await client.Starboard.config.create(client, interaction.guildId, channel.id, emote, starCount)
             if (typeof res === 'string') {
                 return interaction.reply({ content: res, ephemeral: true})
             } else {
                 let createEmbed = new MessageEmbed()
-                    .setDescription(`Your starboard channel has been set to <#${channel}> with ${starcount} ${emote}s required to register the message`)
+                    .setDescription(`Your starboard channel has been set to <#${channel}> with ${starCount} ${emote}s required to register the message`)
                     .setColor(client.colors.success)
                 return interaction.reply({ embeds: [createEmbed] })
             }
@@ -122,7 +122,7 @@ export const options: Array<any> = [
             {
                 name: 'channel',
                 description: 'Channel to blacklist or unblacklist',
-                requred: true,
+                required: true,
                 type: 7
             }
         ]

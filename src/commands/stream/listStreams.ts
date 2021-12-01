@@ -14,9 +14,9 @@ export const run: RunFunction = async (client, interaction) => {
                 embed.addFields({name: `${f}`, value: `<#${e._id}>`, inline: true})
             })
         })
-        interaction.reply({embeds: [embed]})
+        await interaction.reply({ embeds: [embed] })
     } catch (err) {
-        interaction.reply({content: 'Something went wrong, try running this command again.', ephemeral: true})
+        await interaction.reply({ content: 'Something went wrong, try running this command again.', ephemeral: true })
         client.logger.error(err)
     }
 }

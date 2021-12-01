@@ -25,14 +25,14 @@ export const run: RunFunction = async (client: Bot, interaction: Interaction ) =
                 ' and ' +
                 difference.slice(-1)
             missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
-            interaction.reply({
+            await interaction.reply({
                 content: `❌ I need the ${missing} permissions to run this command.`,
                 ephemeral: true,
             })
         } else {
             let missing = difference.toString()
             missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
-            interaction.reply({
+            await interaction.reply({
                 content: `❌ I need the ${missing} permission to run this command.`,
                 ephemeral: true,
             })
@@ -52,14 +52,14 @@ export const run: RunFunction = async (client: Bot, interaction: Interaction ) =
                 ' and ' +
                 difference.slice(-1)
             missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
-            interaction.reply({
+            await interaction.reply({
                 content: `❌ You need the ${missing} permissions to run this command.`,
                 ephemeral: true,
             })
         } else {
             let missing = difference.toString()
             missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
-            interaction.reply({
+            await interaction.reply({
                 content: `❌ You need the ${missing} permission to run this command.`,
                 ephemeral: true,
             })
@@ -73,7 +73,7 @@ export const run: RunFunction = async (client: Bot, interaction: Interaction ) =
     }
 
     try {
-        command.run(client, interaction)
+        await command.run(client, interaction)
     } catch (err) {
         client.logger.error(err)
     }

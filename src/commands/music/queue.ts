@@ -23,7 +23,7 @@ export const run: RunFunction = async (client, interaction) => {
             )
 
             let page = 0
-            interaction.reply({ content: pages[0], components: [row] })
+            await interaction.reply({ content: pages[0], components: [row] })
 
             const filter = (i: any) => i.customId === 'previous' || i.customId === 'next'
             const collector = interaction.channel.createMessageComponentCollector({ filter, time: 120000 })
@@ -53,7 +53,7 @@ export const run: RunFunction = async (client, interaction) => {
             await interaction.reply({ embeds: [embed] })
         }
     } else {
-        interaction.reply({
+        await interaction.reply({
             content: `This command can only be run in <#${musicChannel}>.`,
             ephemeral: true,
         })

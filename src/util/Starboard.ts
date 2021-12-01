@@ -1,6 +1,6 @@
 import { Bot } from '../client/client'
 import { Collection, Message, MessageEmbed, MessageReaction, MessageOptions, Snowflake, TextChannel } from 'discord.js'
-import starboard from '../models/starboard'
+import Starboard from '../models/starboard'
 import { StarboardClientOptions, starMessageData, StarboardGuild } from '../interfaces/Starboard'
 
 export class StarboardClient {
@@ -16,7 +16,7 @@ export class StarboardClient {
 
     public async start(client: Bot) {
         try {
-            const data = await starboard.find()
+            const data = await Starboard.find()
             this.config.set(
                 data.map((d: any) => {
                     return {
@@ -52,15 +52,15 @@ export class StarboardClient {
             this.cacheData()
         },
 
-        create: async ( client: Bot, guildId: Snowflake, channelId: Snowflake, emote: string, starcount: number ) => {
+        create: async ( client: Bot, guildId: Snowflake, channelId: Snowflake, emote: string, starCount: number ) => {
             try {
-                const data = await starboard.findById(guildId)
+                const data = await Starboard.findById(guildId)
                 if (data)
                     return 'A starboard has already been created for this server, delete it first to create a new one'
 
-                const newStarboard = new starboard({
+                const newStarboard = new Starboard({
                     _id: guildId,
-                    star_count: starcount,
+                    star_count: starCount,
                     star_channel: channelId,
                     star_emote: emote,
                     banned_users: [],
@@ -71,7 +71,7 @@ export class StarboardClient {
                 this.config.add({
                     id: guildId,
                     options: {
-                        starCount: starcount,
+                        starCount: starCount,
                         starboardChannel: channelId,
                         starEmote: emote,
                         bannedUsers: [],
@@ -87,9 +87,9 @@ export class StarboardClient {
 
         delete: async (guildId: Snowflake, client: Bot): Promise<Boolean> => {
             try {
-                const data = await starboard.findById(guildId)
+                const data = await Starboard.findById(guildId)
                 if (data) data.delete()
-                this.start(client)
+                await this.start(client)
                 return true
             } catch (err) {
                 client.logger.error(err)
@@ -98,7 +98,7 @@ export class StarboardClient {
         },
 
         blacklistChannel: async (guildId: Snowflake, channelId: Snowflake) => {
-            const data = await starboard.findById(guildId)
+            const data = await Starboard.findById(guildId)
 
             if (data.blacklisted_channels.includes(channelId)) {
                 let idx = data.blacklisted_channels.indexOf(channelId)
@@ -121,7 +121,7 @@ export class StarboardClient {
         },
 
         banUser: async (guildId: Snowflake, userId: Snowflake) => {
-            const data = await starboard.findById(guildId)
+            const data = await Starboard.findById(guildId)
 
             if (data.banned_users.includes(userId)) {
                 let idx = data.banned_users.indexOf(userId)
@@ -209,10 +209,10 @@ export class StarboardClient {
         data.content += `\n\n→ [original message](${message.url}) in <#${message.channelId}>`
 
         if (message.embeds.length) {
-            const imgs = message.embeds
+            const images = message.embeds
                 .filter(embed => embed.thumbnail || embed.image)
                 .map(embed => (embed.thumbnail) ? embed.thumbnail.url : embed.image.url)
-            data.imageURL = imgs[0]
+            data.imageURL = images[0]
         } else if (message.attachments.size) {
             data.imageURL = message.attachments.first().url
             data.content += `\n📎 [${message.attachments.first().name}](${message.attachments.first().proxyURL})`
@@ -242,10 +242,13 @@ export class StarboardClient {
             this.client.logger.info('fetching message partial...')
             await reaction.message.fetch()
         }
+
         if (reaction.partial) {
             this.client.logger.info('fetching reaction partial...')
             await reaction.fetch()
-        }reaction.fetch()
+        }
+
+        await reaction.fetch()
         const { guildId, id } = reaction.message
         if (this.getData(guildId)?.options.blacklistedChannels.includes(reaction.message.channelId)) return
         if (
@@ -292,6 +295,7 @@ export class StarboardClient {
                 ])
             })
         }
+
         if (getMessage) {
             starboardChannel.messages
                 .fetch(getMessage.id)

@@ -1,6 +1,6 @@
 import { model, Schema, Document } from 'mongoose'
 
-export interface starboard extends Document {
+export interface Starboard extends Document {
     _id: string
     star_count: number
     star_emote: string
@@ -36,4 +36,4 @@ export const starboardSchema = new Schema({
     },
 })
 
-export default model<starboard>('starboard', starboardSchema)
+export default model<Starboard>('starboard', starboardSchema)

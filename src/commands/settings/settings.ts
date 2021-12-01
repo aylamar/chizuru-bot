@@ -92,11 +92,11 @@ export const run: RunFunction = async (client, interaction) => {
             break
         case 'lookup':
             let lookupSetting = await toggleLookupNSFW(interaction.guildId, client)
-            interaction.reply({ content: `${lookupSetting}`, ephemeral: true })
+            await interaction.reply({ content: `${lookupSetting}`, ephemeral: true })
             break
         case 'stream-ping':
             let streamPingSetting = await toggleStreamPing(interaction.guildId, client)
-            interaction.reply({ content: `${streamPingSetting}`, ephemeral: true })
+            await interaction.reply({ content: `${streamPingSetting}`, ephemeral: true })
             break
     }
 }

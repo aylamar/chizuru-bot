@@ -15,7 +15,7 @@ export const run: RunFunction = async (client, interaction) => {
             let embed = new MessageEmbed()
                 .setDescription(`**[${song.name}](${song.url})** (${curTime}/${dur}) requested by ${song.user}.`)
                 .setColor(client.colors.purple)
-            interaction.reply({ embeds: [embed] })
+            await interaction.reply({ embeds: [embed] })
         } else {
             let embed = new MessageEmbed()
                 .setDescription('Nothing is currently playing in this server.')
@@ -23,7 +23,7 @@ export const run: RunFunction = async (client, interaction) => {
             await interaction.reply({ embeds: [embed] })
         }
     } else {
-        interaction.reply({
+        await interaction.reply({
             content: `This command can only be run in <#${musicChannel}>.`,
             ephemeral: true,
         })
@@ -31,8 +31,8 @@ export const run: RunFunction = async (client, interaction) => {
 }
 
 async function beautifySeconds(sec: number ) {
-    let minutes: number = 0
-    let seconds: number | string = 0
+    let minutes: number
+    let seconds: number | string
 
     minutes = Math.floor(sec/60)
     seconds = Math.floor(sec % 60)

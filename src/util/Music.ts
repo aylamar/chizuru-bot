@@ -9,12 +9,11 @@ class Music extends DisTube {
     public constructor(client: Bot) {
         super(client, { youtubeDL: false, leaveOnEmpty: true })
         this.colors = client.colors
+        // noinspection JSIgnoredPromiseFromCall
         this.start()
     }
 
     public async start(): Promise<void> {
-        this.on('playSong', (queue, song) => {})
-
         this.on('addSong', (queue, song) => {
             let embed = new MessageEmbed()
                 .setDescription(`Adding **${song.name}** to the queue, requested by **${song.user}**`)
@@ -36,10 +35,6 @@ class Music extends DisTube {
             channel.send({ embeds: [embed] })
         })
 
-        this.on('deleteQueue', (queue) => {})
-
-        this.on('disconnect', (queue) => {})
-
         this.on('empty', (queue) => {
             let embed = new MessageEmbed()
                 .setDescription(`${queue.voiceChannel.name} is empty, leaving the channel.`)
@@ -55,12 +50,6 @@ class Music extends DisTube {
             queue.textChannel.send({ embeds: [embed] })
             queue.voice.leave()
         })
-
-        this.on('finishSong', (queue, song) => {})
-
-        this.on('initQueue', (queue) => {})
-
-        this.on('noRelated', (queue) => {})
     }
 }
 

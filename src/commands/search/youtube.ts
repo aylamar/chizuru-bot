@@ -1,10 +1,10 @@
-import { PermissionString, MessageEmbed } from 'discord.js'
+import { PermissionString} from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
 import ytSearch from 'yt-search'
 
 export const run: RunFunction = async (client, interaction) => {
     let args = interaction.options.getString('title') as string
-    interaction.deferReply()
+    await interaction.deferReply()
 
     const videoSearch = async (query: any) => {
         try {

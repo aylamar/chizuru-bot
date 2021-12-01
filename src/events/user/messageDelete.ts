@@ -5,7 +5,7 @@ import { getGuild } from '../../util/Guild'
 
 export const run: RunFunction = async (client: Bot, message: Message) => {
     let guildID: string = message.guildId
-    let logChannels: string[] = null
+    let logChannels: string[]
 
     if (!client.cache[guildID]) {
         let data = await getGuild(guildID)
@@ -20,7 +20,7 @@ export const run: RunFunction = async (client: Bot, message: Message) => {
     if (message.partial) return
     if (message.author?.bot) return
 
-    // Trim message.content to be 1900 characters or less
+    // Trim message.content to be 1900 characters or fewer
     let messageTrimmed = message.content
     if (message.content.length > 1900) {
         messageTrimmed = message.content.substring(0, 1900)

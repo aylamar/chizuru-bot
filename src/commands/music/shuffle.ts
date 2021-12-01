@@ -7,7 +7,7 @@ export const run: RunFunction = async (client, interaction) => {
         let queue = client.music.getQueue(interaction.guild)
 
         if (queue) {
-            queue.shuffle()
+            await queue.shuffle()
             let embed = new MessageEmbed()
                 .setDescription('The queue has been shuffled.')
                 .setColor(client.colors.success)
@@ -19,7 +19,7 @@ export const run: RunFunction = async (client, interaction) => {
             await interaction.reply({ embeds: [embed] })
         }
     } else {
-        interaction.reply({
+        await interaction.reply({
             content: `This command can only be run in <#${musicChannel}>.`,
             ephemeral: true,
         })

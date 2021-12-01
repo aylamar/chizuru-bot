@@ -14,6 +14,7 @@ export default class Twitch {
         this.config = config
         this.logger = logger
         this.clientID = config.twitchClientID
+        // noinspection JSIgnoredPromiseFromCall
         this.getToken()
     }
 

@@ -24,18 +24,21 @@ export const run: RunFunction = async (client, interaction) => {
                 break
         }
 
-        if (res.pageInfo.total === 0) {
-            interaction.reply({ content: 'Nothing found, try searching for something else.', ephemeral: true })
+        if (res.pageInfo.total === 0 || parsedRes == null) {
+            await interaction.reply({ content: 'Nothing found, try searching for something else.', ephemeral: true })
             return
         }
-        
+
         if(parsedRes.isAdult && client.cache[interaction.guildId].lookupNSFW !== true) {
-            interaction.reply({ content: 'Adult anime & manga is currently disabled on this server.', ephemeral: true })
+            await interaction.reply({
+                content: 'Adult anime & manga is currently disabled on this server.',
+                ephemeral: true
+            })
             return
         } 
 
         let genre = parsedRes.genres.join(', ')
-        let title = ''
+        let title: string
         if (parsedRes.title.english == null) {
             title = `${parsedRes.title.romaji}`
         } else {
@@ -45,7 +48,7 @@ export const run: RunFunction = async (client, interaction) => {
 
         let descRaw = parsedRes.description.replace(/<br>/g, '').replace(/\n/g, ' ')
         let descArr = descRaw.split(' ')
-        let desc = ''
+        let desc: string
         if (descArr.length > 30) {
             desc = `${descArr.splice(0, 30).join(' ')}... [(more)](${parsedRes.siteUrl})`
         } else {
@@ -60,7 +63,7 @@ export const run: RunFunction = async (client, interaction) => {
             .setTimestamp(date)
             .setColor(client.colors.anilist)
             .setFooter(`${type}`, 'https://anilist.co/img/icons/android-chrome-512x512.png')
-        interaction.reply({ embeds: [embed] })                
+        await interaction.reply({ embeds: [embed] })
 
     } catch (err) {
         client.logger.error(err)

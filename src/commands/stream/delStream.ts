@@ -15,7 +15,7 @@ export const run: RunFunction = async (client, interaction) => {
                 break
             case 'Does not exist':
                 let alreadyExistEmbed = new MessageEmbed()
-                    .setDescription(`You won't recieve any notifications for **${streamer}**.`)
+                    .setDescription(`You won't receive any notifications for **${streamer}**.`)
                     .setColor(client.colors.success)
                 await interaction.reply({embeds: [alreadyExistEmbed]})
                 break

@@ -9,12 +9,12 @@ export const run: RunFunction = async (client, interaction) => {
     switch (option) {
         case 'blacklist':
             let blacklistMsg = await logBlacklist(interaction.guildId, channel.id, client)
-            interaction.reply({ content: blacklistMsg, ephemeral: true })
+            await interaction.reply({ content: blacklistMsg, ephemeral: true })
             return
         case 'toggle':
             let resolvedChannel = client.channels.resolve(channel.id)
             if (!resolvedChannel.isText()) {
-                interaction.reply({ content: 'Changes can only be logged ot ext channel.', ephemeral: true })
+                await interaction.reply({ content: 'Changes can only be logged ot ext channel.', ephemeral: true })
                 return
             }
 
@@ -22,19 +22,19 @@ export const run: RunFunction = async (client, interaction) => {
             switch (setting) {
                 case 'message-delete':
                     let msgDelete = await logMessageDelete(interaction.guildId, channel.id, client)
-                    interaction.reply({ content: msgDelete, ephemeral: true })
+                    await interaction.reply({ content: msgDelete, ephemeral: true })
                     return
                 case 'message-edit':
                     let msgEdit = await logMessageEdit(interaction.guildId, channel.id, client)
-                    interaction.reply({ content: msgEdit, ephemeral: true })
+                    await interaction.reply({ content: msgEdit, ephemeral: true })
                     return
                 case 'ban':
                     let msgBan = await logBan(interaction.guildId, channel.id, client)
-                    interaction.reply({ content: msgBan, ephemeral: true })
+                    await interaction.reply({ content: msgBan, ephemeral: true })
                     return
                 case 'voice':
                     let msgVoice = await logVoice(interaction.guildId, channel.id, client)
-                    interaction.reply({ content: msgVoice, ephemeral: true })
+                    await interaction.reply({ content: msgVoice, ephemeral: true })
                     return
                 default:
                     return

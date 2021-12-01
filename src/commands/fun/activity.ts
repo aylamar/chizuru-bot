@@ -6,7 +6,7 @@ export const run: RunFunction = async (client, interaction) => {
     const voiceChannel = interaction.member.voice.channel
 
     if (!voiceChannel) {
-        interaction.reply({
+        await interaction.reply({
             content: `❌ You need to be in a voice channel to run this command.`,
             ephemeral: true,
         })
@@ -15,7 +15,7 @@ export const run: RunFunction = async (client, interaction) => {
 
     const permissions = voiceChannel.permissionsFor(client.user)
     if (!permissions.has('CREATE_INSTANT_INVITE')) {
-        interaction.reply({
+        await interaction.reply({
             content: `❌ I don't have permission to create an invite in that voice channel.`,
             ephemeral: true,
         })
@@ -26,7 +26,7 @@ export const run: RunFunction = async (client, interaction) => {
 
     client.activity.createTogetherCode(voiceChannel.id, `${activity}`)
         .then(async (invite) => {
-            interaction.reply(`Click this link to join the activity in ${voiceChannel.name}: ${invite.code}`)
+            await interaction.reply(`Click this link to join the activity in ${voiceChannel.name}: ${invite.code}`)
         })
 }
 

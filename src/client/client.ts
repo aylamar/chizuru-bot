@@ -46,7 +46,7 @@ class Bot extends Client {
             anilist: 4172286
         }
         this.config = config
-        this.login(config.discordToken)
+        await this.login(config.discordToken)
         this.music = new Music(this)
         this.activity = new DiscordTogether(this)
         this.twitch = new Twitch(this.config, this.logger)
@@ -54,7 +54,7 @@ class Bot extends Client {
         this.Starboard = new StarboardClient({client: this})
 
         mongoose.connect(config.mongoURI)
-            .then((result: any) => {
+            .then(() => {
                 this.logger.success('Connected with Mongoose')
                 this.Streams = new Streams(this)
                 this.Starboard.start(this)

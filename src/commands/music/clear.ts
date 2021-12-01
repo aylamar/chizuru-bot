@@ -7,11 +7,11 @@ export const run: RunFunction = async (client, interaction) => {
         let queue = client.music.getQueue(interaction.guild)
 
         if (queue) {
-            client.music.stop(interaction.guild)
+            await client.music.stop(interaction.guild)
             let embed = new MessageEmbed()
                 .setDescription(`The current queue has been cleared.`)
                 .setColor(client.colors.success)
-            interaction.reply({ embeds: [embed] })
+            await interaction.reply({ embeds: [embed] })
         } else {
             let embed = new MessageEmbed()
                 .setDescription('Nothing is currently playing in this server.')
@@ -19,7 +19,7 @@ export const run: RunFunction = async (client, interaction) => {
             await interaction.reply({ embeds: [embed] })
         }
     } else {
-        interaction.reply({
+        await interaction.reply({
             content: `This command can only be run in <#${musicChannel}>.`,
             ephemeral: true,
         })

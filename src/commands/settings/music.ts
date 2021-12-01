@@ -10,7 +10,7 @@ export const run: RunFunction = async (client, interaction) => {
 
             if (client.channels.cache.get(channel.id).isText()) {
                 let musicChannel = await setMusicChannel(interaction.guildId, channel.id, client)
-                interaction.reply({
+                await interaction.reply({
                     content: musicChannel,
                 })
             } else {
@@ -22,7 +22,7 @@ export const run: RunFunction = async (client, interaction) => {
             return
         case 'clear':
             let musicClear = await clearMusicChannel(interaction.guildId, client)
-            interaction.reply({
+            await interaction.reply({
                 content: musicClear,
             })
             return

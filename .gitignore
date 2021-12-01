@@ -4,6 +4,9 @@ config.json
 # lib folder
 lib/
 
+# idea folder
+.idea/
+
 # Logs
 logs
 *.log

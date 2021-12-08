@@ -211,7 +211,7 @@ export class StarboardClient {
             ) as TextChannel
             if (!channel) return
 
-            const messages = await channel.messages.fetch({ limit: 250 })
+            const messages = await channel.messages.fetch({ limit: 100 })
             if (!messages) return
 
             const value = messages.reduce(

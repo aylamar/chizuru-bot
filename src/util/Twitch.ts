@@ -75,9 +75,16 @@ export default class Twitch {
                 }
             })
             let parsedRes: any = await res.json()
-            return parsedRes.data[0]
+            if (parsedRes.data[0] == undefined) return undefined
+
+            if (parsedRes.data[0].user_name.toLowerCase() == channel_name.toLowerCase()) {
+                return parsedRes.data[0]
+            } else {
+                return undefined
+            }
         } catch (err) {
             this.logger.error(err)
+            return undefined
         }
     }
 }

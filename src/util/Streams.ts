@@ -283,6 +283,7 @@ export class Streams {
                         current_state: res.is_live
                     })
                     await streamer.save()
+                    this.streamers.push(streamer_name)
 
                     this.streamerCache[streamer_name] = {
                         username: streamer_name,

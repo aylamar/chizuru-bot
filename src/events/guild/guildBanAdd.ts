@@ -22,7 +22,7 @@ export const run: RunFunction = async (client, ban: GuildBan) => {
         if (channel.isText()) {
             let embed = new MessageEmbed()
                 .setAuthor(ban.user.tag, ban.user.avatarURL())
-                .setDescription(`<@${ban.user.id}> was unbanned`)
+                .setDescription(`<@${ban.user.id}> was banned`)
                 .setColor(client.colors.error)
                 .setTimestamp()
             try {

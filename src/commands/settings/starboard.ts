@@ -31,7 +31,7 @@ export const run: RunFunction = async (client, interaction) => {
         case 'blacklist':
             const blacklistChannel = interaction.options.getChannel('channel')
 
-            if (blacklistChannel.type !== 'GUILD_TEXT') {
+            if (blacklistChannel.type !== 'GUILD_TEXT' && blacklistChannel.type !== 'GUILD_NEWS') {
                 return interaction.reply({
                     content: 'Only text channels can be blacklisted, please select a different channel.',
                     ephemeral: true

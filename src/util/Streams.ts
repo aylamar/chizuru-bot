@@ -207,6 +207,7 @@ export class Streams {
         this.streamers.map(async (streamer) => {
             try {
                 let res = await client.twitch.checkStream(streamer)
+                if (res == 'error') return false
                 if (res == undefined && this.streamerCache[streamer].currentState === true) {
                     // if streamer goes offline
                     // should be set to false, set to true for testing
@@ -223,6 +224,7 @@ export class Streams {
                     await this.postStreams(streamer, onlineEmbed, client, true)
                 }
             } catch (err) {
+                client.logger.error('Error updating streamer state', streamer)
                 client.logger.error(err)
             }
         })

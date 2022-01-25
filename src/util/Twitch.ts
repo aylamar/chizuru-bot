@@ -83,8 +83,9 @@ export default class Twitch {
                 return undefined
             }
         } catch (err) {
+            this.logger.error('Unable to check stream', channel_name)
             this.logger.error(err)
-            return undefined
+            return 'error'
         }
     }
 }

@@ -67,15 +67,27 @@ export default class Twitch {
 
     public async checkStream(channel_name: string) {
         try {
-            let res: any = await fetch(`https://api.twitch.tv/helix/streams?user_login=${channel_name}`, {
-                method: 'GET',
-                headers: {
-                    'client-id': this.clientID,
-                    Authorization: `Bearer ${await this.getToken()}`
-                }
-            })
+            let res: any
+            try {
+                res = await fetch(`https://api.twitch.tv/helix/streams?user_login=${channel_name}`, {
+                    method: 'GET',
+                    headers: {
+                        'client-id': this.clientID,
+                        Authorization: `Bearer ${await this.getToken()}`
+                    }
+                })
+            } catch (err) {
+                this.logger.error(err)
+                return 'error'
+            }
             let parsedRes: any = await res.json()
-            if (parsedRes.data[0] == undefined) return undefined
+            try {
+                if (parsedRes.data[0] == undefined) {
+                    return undefined
+                }
+            } catch (err) {
+                return undefined
+            }
 
             if (parsedRes.data[0].user_name.toLowerCase() == channel_name.toLowerCase()) {
                 return parsedRes.data[0]

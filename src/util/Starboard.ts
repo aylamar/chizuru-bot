@@ -272,11 +272,11 @@ export class StarboardClient {
         }
 
         let embed = new MessageEmbed()
-            .setAuthor(message.author.tag, message.author.displayAvatarURL({ dynamic: true }))
+            .setAuthor({name: message.author.tag, iconURL: message.author.displayAvatarURL({dynamic: true})})
             .setColor(this.client.colors.purple)
             .setDescription(data.content)
             .setImage(data.imageURL)
-            .setFooter(`${starCount} ⭐ (${message.id}) • ${message.createdAt.toLocaleDateString()}`)
+            .setFooter({text: `${starCount} ⭐ (${message.id}) • ${message.createdAt.toLocaleDateString()}`})
 
         return { embeds: [embed] }
     }

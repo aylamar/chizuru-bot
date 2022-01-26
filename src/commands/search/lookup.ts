@@ -62,7 +62,7 @@ export const run: RunFunction = async (client, interaction) => {
             .setImage(`https://img.anili.st/media/${parsedRes.id}`)
             .setTimestamp(date)
             .setColor(client.colors.anilist)
-            .setFooter(`${type}`, 'https://anilist.co/img/icons/android-chrome-512x512.png')
+            .setFooter({ text: type, iconURL: 'https://anilist.co/img/icons/android-chrome-512x512.png' })
         await interaction.reply({ embeds: [embed] })
 
     } catch (err) {

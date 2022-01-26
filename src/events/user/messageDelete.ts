@@ -30,10 +30,10 @@ export const run: RunFunction = async (client: Bot, message: Message) => {
         let channel = client.channels.resolve(l)
         if (channel.isText()) {
             let embed = new MessageEmbed()
-                .setAuthor(message.author.tag, message.author.avatarURL())
+                .setAuthor({name: message.author.tag, iconURL: message.author.avatarURL()})
                 .setDescription(`Message from <@${message.author.id}> deleted in <#${message.channelId}>\n\n${messageTrimmed}`)
                 .setColor(client.colors.error)
-                .setFooter(`User ID: ${message.author.id}`)
+                .setFooter({text: `User ID: ${message.author.id}`})
                 .setTimestamp()
 
             try {
@@ -44,9 +44,9 @@ export const run: RunFunction = async (client: Bot, message: Message) => {
 
             if (message.attachments.first() !== undefined) {
                 let imgEmbed = new MessageEmbed()
-                    .setAuthor(message.author.tag, message.author.avatarURL())
+                    .setAuthor({name: message.author.tag, iconURL: message.author.avatarURL()})
                     .setColor(client.colors.error)
-                    .setFooter(`User ID: ${message.author.id}`)
+                    .setFooter({text: `User ID: ${message.author.id}`})
                     .setTimestamp()
                     .setDescription(`${message.author.tag}'s message included the following attachments:`)
                 message.attachments.forEach((test) => {

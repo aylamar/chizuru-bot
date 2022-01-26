@@ -37,12 +37,12 @@ export const run: RunFunction = async (client: Bot, oldMessage: Message, newMess
         let channel = client.channels.resolve(l)
         if (channel.isText()) {
             let embed = new MessageEmbed()
-                .setAuthor(newMessage.author.tag, newMessage.author.avatarURL())
+                .setAuthor({ name: newMessage.author.tag, iconURL: newMessage.author.avatarURL() })
                 .setDescription(
                     `<@${newMessage.author.id}> edited a **[message](https://discord.com/channels/${newMessage.guildId}/${newMessage.channelId}/${newMessage.id})** in <#${newMessage.channelId}>\n\n**Old message**\n${oldMessageTrimmed}\n\n**New message**\n${newMessageTrimmed}`
                 )
                 .setColor(client.colors.warn)
-                .setFooter(`User ID: ${newMessage.author.id}`)
+                .setFooter({text: `User ID: ${newMessage.author.id}`})
                 .setTimestamp()
 
             try {

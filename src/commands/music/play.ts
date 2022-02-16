@@ -39,7 +39,7 @@ export const run: RunFunction = async (client, interaction) => {
 
         await interaction.deferReply()
         let args = interaction.options.getString('song') as string
-        await client.music.playVoiceChannel(voiceChannel, args, {
+        await client.music.play(voiceChannel, args, {
             member,
             textChannel
         })

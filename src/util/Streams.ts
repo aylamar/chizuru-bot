@@ -43,7 +43,7 @@ export class Streams {
 
     private static genGoLiveEmbed(profile_picture: string, data: any, colors: EmbedColors): MessageEmbed {
         return new MessageEmbed()
-            .setAuthor(data.title, '', `https://twitch.tv/${data.user_login}`)
+            .setAuthor({ name: data.title, url: `https://twitch.tv/${data.user_login}`})
             .setTitle(data.user_name)
             .setColor(colors.success)
             .setDescription(`https://twitch.tv/${data.user_login}`)

@@ -81,7 +81,7 @@ export class Streams {
     public async addStream(streamer_name: string, channel_id: string, guild_id: string, client: Bot) {
         try {
             let res = await Channel.exists({ _id: channel_id })
-            if (res === true) {
+            if (res) {
                 // If channel exists, check to see if ID has already been added
                 let channel = await Channel.findById(channel_id)
                 if (channel.followed_channels.includes(streamer_name)) {

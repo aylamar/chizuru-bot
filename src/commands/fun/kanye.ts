@@ -8,11 +8,11 @@ export const run: RunFunction = async (client, interaction) => {
         let parsed: any = await res.json()
 
         const embed = new MessageEmbed()
-            .setAuthor(
-                'Kanye West',
-                'https://i.imgur.com/ywPk81X.jpeg',
-                'https://twitter.com/kanyewest/'
-            )
+            .setAuthor({
+                name: 'Kanye West',
+                iconURL: 'https://i.imgur.com/ywPk81X.jpeg',
+                url: 'https://twitter.com/kanyewest/'
+        })
             .setColor(client.colors.success)
             .setDescription(`"${parsed.quote}"`)
         await interaction.reply({ embeds: [embed] })

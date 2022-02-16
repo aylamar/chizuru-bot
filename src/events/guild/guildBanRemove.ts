@@ -4,7 +4,7 @@ import { getGuild } from '../../util/Guild'
 
 export const run: RunFunction = async (client, ban: GuildBan) => {
     let guildID: string = ban.guild.id
-    let logChannels: string[] = null
+    let logChannels: string[]
 
     if (!client.cache[guildID]) {
         let data = await getGuild(guildID)
@@ -21,7 +21,7 @@ export const run: RunFunction = async (client, ban: GuildBan) => {
 
         if (channel.isText()) {
             let embed = new MessageEmbed()
-                .setAuthor(ban.user.tag, ban.user.avatarURL())
+                .setAuthor({ name: ban.user.tag, iconURL: ban.user.avatarURL() })
                 .setDescription(`<@${ban.user.id}> was unbanned`)
                 .setColor(client.colors.error)
                 .setTimestamp()

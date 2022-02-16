@@ -30,11 +30,13 @@ export const run: RunFunction = async (client, oldState: VoiceState, newState: V
 
         if (channel.isText()) {
             let embed = new MessageEmbed()
-                .setAuthor(newState.member.user.tag,
-                    newState.member.user.avatarURL())
+                .setAuthor({
+                    name: newState.member.user.tag,
+                    iconURL: newState.member.user.avatarURL()
+                })
                 .setDescription(`${newState.member.user.tag} is now ${curState} in ${newState.channel.name}.`)
                 .setColor(client.colors.blurple)
-                .setFooter(`User ID: ${newState.member.id}`)
+                .setFooter({text: `User ID: ${newState.member.id}`})
                 .setTimestamp()
             try {
                 channel.send({ embeds: [embed] })

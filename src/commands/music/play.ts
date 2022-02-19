@@ -37,6 +37,18 @@ export const run: RunFunction = async (client, interaction) => {
             return
         }
 
+        // Ensure that user is in the same voice channel as the bot when queueing music
+        const queue = client.music.getQueue(interaction.guildId)
+        if (queue) {
+            if (voiceChannel.id !== queue.voiceChannel.id) {
+                await interaction.reply({
+                    content: `❌ You need to be in the same voice channel as the bot to run this command.`,
+                    ephemeral: true
+                })
+                return
+            }
+        }
+
         await interaction.deferReply()
         let args = interaction.options.getString('song') as string
         await client.music.play(voiceChannel, args, {

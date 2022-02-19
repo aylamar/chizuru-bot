@@ -1,37 +1,25 @@
-import { GuildBan, MessageEmbed } from 'discord.js'
+import { GuildBan, TextChannel } from 'discord.js'
 import { RunFunction } from '../../interfaces/Event'
-import { getGuild } from '../../util/Guild'
+import { getGuildLogBanChannels, sendEmbed } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, ban: GuildBan) => {
     let guildID: string = ban.guild.id
-    let logChannels: string[]
+    let logChannels = await getGuildLogBanChannels(client, guildID)
 
-    if (!client.cache[guildID]) {
-        let data = await getGuild(guildID)
-        client.cache[guildID] = data
-        logChannels = data.logBan
-    } else {
-        logChannels = client.cache[guildID].logBan
-    }
     if (!logChannels) return
     if (!client.cache[guildID].logBan) return
 
-    logChannels.map((l) => {
-        let channel = client.channels.resolve(l)
+    logChannels.map(async (l) => {
+        let channel = client.channels.resolve(l) as TextChannel
+        if (!channel.isText()) return
 
-        if (channel.isText()) {
-            let embed = new MessageEmbed()
-                .setAuthor({ name: ban.user.tag, iconURL: ban.user.avatarURL() })
-                .setDescription(`<@${ban.user.id}> was unbanned`)
-                .setColor(client.colors.error)
-                .setTimestamp()
-            try {
-                channel.send({ embeds: [embed] })
-            } catch (err) {
-                client.logger.error(err)
-            }
-        }
-        return
+        return await sendEmbed(client, channel, {
+            author: ban.user.tag,
+            authorUrl: ban.user.avatarURL(),
+            msg: `<@${ban.user.id}> was unbanned`,
+            timestamp: true,
+            color: client.colors.error
+        })
     })
 }
 

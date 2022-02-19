@@ -1,6 +1,7 @@
 import { RunFunction } from '../../interfaces/Command'
 import { PermissionString } from 'discord.js'
 import { logBan, logBlacklist, logMessageDelete, logMessageEdit, logVoice } from '../../util/Guild'
+import { replyMessage } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     const option = interaction.options.getSubcommand()
@@ -8,34 +9,29 @@ export const run: RunFunction = async (client, interaction) => {
 
     switch (option) {
         case 'blacklist':
-            let blacklistMsg = await logBlacklist(interaction.guildId, channel.id, client)
-            await interaction.reply({ content: blacklistMsg, ephemeral: true })
-            return
+            let msg = await logBlacklist(interaction.guildId, channel.id, client)
+            return await replyMessage(client, interaction, msg)
         case 'toggle':
             let resolvedChannel = client.channels.resolve(channel.id)
             if (!resolvedChannel.isText()) {
-                await interaction.reply({ content: 'Changes can only be logged ot ext channel.', ephemeral: true })
-                return
+                let msg = 'Changes can only be logged ot ext channel.'
+                return await replyMessage(client, interaction, msg)
             }
 
             const setting = interaction.options.getString('setting')
             switch (setting) {
                 case 'message-delete':
                     let msgDelete = await logMessageDelete(interaction.guildId, channel.id, client)
-                    await interaction.reply({ content: msgDelete, ephemeral: true })
-                    return
+                    return await replyMessage(client, interaction, msgDelete)
                 case 'message-edit':
                     let msgEdit = await logMessageEdit(interaction.guildId, channel.id, client)
-                    await interaction.reply({ content: msgEdit, ephemeral: true })
-                    return
+                    return await replyMessage(client, interaction, msgEdit)
                 case 'ban':
                     let msgBan = await logBan(interaction.guildId, channel.id, client)
-                    await interaction.reply({ content: msgBan, ephemeral: true })
-                    return
+                    return await replyMessage(client, interaction, msgBan)
                 case 'voice':
                     let msgVoice = await logVoice(interaction.guildId, channel.id, client)
-                    await interaction.reply({ content: msgVoice, ephemeral: true })
-                    return
+                    return await replyMessage(client, interaction, msgVoice)
                 default:
                     return
             }

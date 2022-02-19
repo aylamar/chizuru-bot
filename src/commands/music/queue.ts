@@ -1,7 +1,7 @@
 import { PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
 import { Song } from 'distube'
-import { replyEphemeral, replyPages } from '../../util/CommonUtils'
+import { replyMessage, replyPages } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     const musicChannel = client.cache[interaction.guildId].musicChannel
@@ -12,14 +12,14 @@ export const run: RunFunction = async (client, interaction) => {
             let pageCount = Math.floor(queue.songs.length / 10) + 1
             let pages = generatePages(pageCount, queue.songs)
 
-            return await replyPages(interaction, pages)
+            return await replyPages(client, interaction, pages)
         } else {
             let msg = 'Nothing is currently playing in this server.'
-            return await replyEphemeral(interaction, msg)
+            return await replyMessage(client, interaction, msg)
         }
     } else {
         let msg = `This command can only be run in <#${musicChannel}>.`
-        return await replyEphemeral(interaction, msg)
+        return await replyMessage(client, interaction, msg)
     }
 }
 

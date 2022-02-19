@@ -1,6 +1,7 @@
 import { RunFunction } from '../../interfaces/Command'
 import { PermissionString } from 'discord.js'
 import { clearMusicChannel, setMusicChannel } from '../../util/Guild'
+import { replyEmbed, replyMessage } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     const subCommand = interaction.options.getSubcommand()
@@ -9,23 +10,19 @@ export const run: RunFunction = async (client, interaction) => {
             const channel = interaction.options.getChannel('channel')
 
             if (client.channels.cache.get(channel.id).isText()) {
-                let musicChannel = await setMusicChannel(interaction.guildId, channel.id, client)
-                await interaction.reply({
-                    content: musicChannel
+                return await replyEmbed(client, interaction, {
+                    msg: await setMusicChannel(interaction.guildId, channel.id, client),
+                    color: client.colors.blurple
                 })
             } else {
-                await interaction.reply({
-                    content: `This only works for text channels, please try again with a text channel.`,
-                    ephemeral: true
-                })
+                let msg = `This only works for text channels, please try again with a text channel.`
+                return await replyMessage(client, interaction, msg)
             }
-            return
         case 'clear':
-            let musicClear = await clearMusicChannel(interaction.guildId, client)
-            await interaction.reply({
-                content: musicClear
+            return await replyEmbed(client, interaction, {
+                msg: await clearMusicChannel(interaction.guildId, client),
+                color: client.colors.blurple
             })
-            return
     }
 }
 

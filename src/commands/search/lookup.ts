@@ -1,6 +1,7 @@
-import { MessageEmbed, PermissionString } from 'discord.js'
+import { PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
 import anilist, { AnimeEntry, MangaEntry, MediaSearchEntry } from 'anilist-node'
+import { replyEmbed } from '../../util/CommonUtils'
 
 const Anilist = new anilist()
 
@@ -44,7 +45,7 @@ export const run: RunFunction = async (client, interaction) => {
         } else {
             title = `${parsedRes.title.english}`
         }
-        let date = new Date(parsedRes.startDate.year, parsedRes.startDate.month, parsedRes.startDate.day, 0, 0, 0, 0)
+        let date = new Date(parsedRes.startDate.year, parsedRes.startDate.month, parsedRes.startDate.day, 0, 0, 0, 0).toString()
 
         let descRaw = parsedRes.description.replace(/<br>/g, '').replace(/\n/g, ' ')
         let descArr = descRaw.split(' ')
@@ -55,15 +56,16 @@ export const run: RunFunction = async (client, interaction) => {
             desc = descArr.join(' ')
         }
 
-        let embed = new MessageEmbed()
-            .setTitle(`${title}`)
-            .setURL(parsedRes.siteUrl)
-            .setDescription(`**_${genre}_**\n${desc}`)
-            .setImage(`https://img.anili.st/media/${parsedRes.id}`)
-            .setTimestamp(date)
-            .setColor(client.colors.anilist)
-            .setFooter({ text: type, iconURL: 'https://anilist.co/img/icons/android-chrome-512x512.png' })
-        await interaction.reply({ embeds: [embed] })
+        return await replyEmbed(client, interaction, {
+            title: `${title}`,
+            titleUrl: `${parsedRes.siteUrl}`,
+            msg: `**_${genre}_**\n${desc}`,
+            image: `https://img.anili.st/media/${parsedRes.id}`,
+            color: client.colors.anilist,
+            timestamp: date,
+            footer: `${type}`,
+            footerIcon: 'https://anilist.co/img/icons/android-chrome-512x512.png'
+        })
 
     } catch (err) {
         client.logger.error(err)

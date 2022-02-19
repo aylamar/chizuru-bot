@@ -2,6 +2,7 @@ import { Interaction } from 'discord.js'
 import { Bot } from '../../client/client'
 import { RunFunction } from '../../interfaces/Event'
 import { getGuild } from '../../util/Guild'
+import { replyMessage } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client: Bot, interaction: Interaction) => {
     if (!interaction.isCommand()) return
@@ -25,19 +26,16 @@ export const run: RunFunction = async (client: Bot, interaction: Interaction) =>
                 ' and ' +
                 difference.slice(-1)
             missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
-            await interaction.reply({
-                content: `❌ I need the ${missing} permissions to run this command.`,
-                ephemeral: true
-            })
+
+            let msg = `❌ I need the ${missing} permissions to run this command.`
+            return await replyMessage(client, interaction, msg)
         } else {
             let missing = difference.toString()
             missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
-            await interaction.reply({
-                content: `❌ I need the ${missing} permission to run this command.`,
-                ephemeral: true
-            })
+
+            let msg = `❌ I need the ${missing} permission to run this command.`
+            return await replyMessage(client, interaction, msg)
         }
-        return
     }
 
     // Check if user has required permissions
@@ -52,19 +50,17 @@ export const run: RunFunction = async (client: Bot, interaction: Interaction) =>
                 ' and ' +
                 difference.slice(-1)
             missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
-            await interaction.reply({
-                content: `❌ You need the ${missing} permissions to run this command.`,
-                ephemeral: true
-            })
+
+            let msg = `❌ You need the ${missing} permissions to run this command.`
+            return await replyMessage(client, interaction, msg)
         } else {
             let missing = difference.toString()
             missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
-            await interaction.reply({
-                content: `❌ You need the ${missing} permission to run this command.`,
-                ephemeral: true
-            })
+
+            let msg = `❌ You need the ${missing} permission to run this command.`
+            return await replyMessage(client, interaction, msg)
+
         }
-        return
     }
 
     // Check if guild has been cached, if it hasn't, get data

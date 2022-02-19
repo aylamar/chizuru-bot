@@ -1,6 +1,6 @@
 import { GuildMember, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
-import { replyBasicEmbed, replyEphemeral } from '../../util/CommonUtils'
+import { replyEmbed, replyMessage } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     if (!(interaction.member instanceof GuildMember)) return
@@ -9,13 +9,13 @@ export const run: RunFunction = async (client, interaction) => {
     const queue = client.music.getQueue(interaction.guildId)
     if (!queue) {
         let msg = '❌ Nothing is currently playing on the server.'
-        return await replyEphemeral(interaction, msg)
+        return await replyMessage(client, interaction, msg)
     }
 
     const voiceChannel = interaction.member.voice.channel
     if (!voiceChannel) {
         let msg = '❌ You must be in a voice channel to use this command'
-        return await replyEphemeral(interaction, msg)
+        return await replyMessage(client, interaction, msg)
     }
 
     /*
@@ -24,7 +24,7 @@ export const run: RunFunction = async (client, interaction) => {
     if (queue) {
         if (voiceChannel.id !== queue.voiceChannel.id) {
             let msg = '❌ You must be in the same voice channel as the bot to use this command'
-            await replyEphemeral(interaction, msg)
+            await replyMessage(client, interaction, msg)
         }
     }
 
@@ -32,9 +32,8 @@ export const run: RunFunction = async (client, interaction) => {
         Generates and sends embed when removing a song and sends it to the channel
      */
     async function genEmbed(songName: string) {
-        let description = `Removed ${songName} from the queue.`
-        await replyBasicEmbed(interaction, description, client.colors.success)
-        return
+        let msg = `Removed ${songName} from the queue.`
+        return await replyEmbed(client, interaction, { msg: msg, color: client.colors.success })
     }
 
     let args = interaction.options.getInteger('song') as number
@@ -51,7 +50,7 @@ export const run: RunFunction = async (client, interaction) => {
     } else {
         if (queue.songs.length < args) {
             let msg = `❌ The queue only has ${queue.songs.length} songs.`
-            return await replyEphemeral(interaction, msg)
+            return await replyMessage(client, interaction, msg)
         }
 
         let song: string = queue.songs[args - 1].name

@@ -1,23 +1,31 @@
-import { MessageEmbed, PermissionString } from 'discord.js'
+import { PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
+import { replyEmbed, replyMessage } from '../../util/CommonUtils'
+import { Field } from '../../interfaces/MessageData'
 
 export const run: RunFunction = async (client, interaction) => {
     try {
         let res = await client.Streams.getChannelByGuild(interaction.guildId, client.logger)
 
-        const embed = new MessageEmbed()
-            .setTitle('Streams followed on this server:')
-            .setColor(client.colors.twitch)
-
+        let fields: Field[] = []
         res.map((e: any) => {
             e.followed_channels.map((f: any) => {
-                embed.addFields({ name: `${f}`, value: `<#${e._id}>`, inline: true })
+                fields.push({
+                    name: `${f}`,
+                    value: `<#${e._id}>`,
+                    inline: true
+                })
             })
         })
-        await interaction.reply({ embeds: [embed] })
+        return await replyEmbed(client, interaction, {
+            title: 'Streams followed on this server:',
+            color: client.colors.twitch,
+            fields: fields
+        })
     } catch (err) {
-        await interaction.reply({ content: 'Something went wrong, try running this command again.', ephemeral: true })
         client.logger.error(err)
+        let msg = 'Something went wrong, try running this command again'
+        return await replyMessage(client, interaction, msg)
     }
 }
 

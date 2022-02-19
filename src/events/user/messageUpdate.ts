@@ -1,19 +1,12 @@
-import { Message, MessageEmbed } from 'discord.js'
+import { Message, TextChannel } from 'discord.js'
 import { Bot } from '../../client/client'
 import { RunFunction } from '../../interfaces/Event'
-import { getGuild } from '../../util/Guild'
+import { getGuildLogMsgEditChannels, sendEmbed } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client: Bot, oldMessage: Message, newMessage: Message) => {
-    let guildID: string = oldMessage.guildId
-    let logChannels: string[]
+    let guildID: string = newMessage.guildId
+    let logChannels = await getGuildLogMsgEditChannels(client, guildID)
 
-    if (!client.cache[guildID]) {
-        let data = await getGuild(guildID)
-        client.cache[guildID] = data
-        logChannels = data.messageEdit
-    } else {
-        logChannels = client.cache[guildID].messageEdit
-    }
     if (!logChannels) return
     if (!client.cache[guildID].messageDelete) return
     if (client.cache[guildID].logBlacklist?.includes(newMessage.channelId)) return
@@ -21,39 +14,30 @@ export const run: RunFunction = async (client: Bot, oldMessage: Message, newMess
     if (newMessage.author?.bot) return
     if (newMessage.content == oldMessage.content) return
 
-    // Trim oldMessage.content to be 1900 characters or fewer
+    // Trim newMessage.content to be 1900 characters or fewer due to Discord message limitations
     let newMessageTrimmed = newMessage.content
-    if (newMessageTrimmed.length > 1900) {
-        newMessageTrimmed = newMessageTrimmed.substring(0, 1900)
+    if (newMessageTrimmed.length > 1850) {
+        newMessageTrimmed = newMessageTrimmed.substring(0, 1850) + '...'
     }
 
     // Trim oldMessage.content to be 1900 characters or fewer
     let oldMessageTrimmed = oldMessage.content
-    if (oldMessageTrimmed.length > 1900) {
-        oldMessageTrimmed = oldMessageTrimmed.substring(0, 1900)
+    if (oldMessageTrimmed.length > 1850) {
+        oldMessageTrimmed = oldMessageTrimmed.substring(0, 1850) + '...'
     }
 
-    logChannels.map((l) => {
-        let channel = client.channels.resolve(l)
-        if (channel.isText()) {
-            let embed = new MessageEmbed()
-                .setAuthor({ name: newMessage.author.tag, iconURL: newMessage.author.avatarURL() })
-                .setDescription(
-                    `<@${newMessage.author.id}> edited a **[message](https://discord.com/channels/${newMessage.guildId}/${newMessage.channelId}/${newMessage.id})** in <#${newMessage.channelId}>\n\n**Old message**\n${oldMessageTrimmed}\n\n**New message**\n${newMessageTrimmed}`
-                )
-                .setColor(client.colors.warn)
-                .setFooter({text: `User ID: ${newMessage.author.id}`})
-                .setTimestamp()
+    // Iterate through log channels sending out messages as needed due to Discord message limitations
+    logChannels.map(async (l) => {
+        let channel = client.channels.resolve(l) as TextChannel
 
-            try {
-                channel.send({ embeds: [embed] })
-            } catch (err) {
-                client.logger.error(err)
-            }
-            return
-        } else {
-            return
-        }
+        return await sendEmbed(client, channel, {
+            author: newMessage.author.tag,
+            authorUrl: newMessage.author.avatarURL(),
+            msg: `<@${newMessage.author.id}> edited a **[message](https://discord.com/channels/${newMessage.guildId}/${newMessage.channelId}/${newMessage.id})** in <#${newMessage.channelId}>\n\n**Old message**\n${oldMessageTrimmed}\n\n**New message**\n${newMessageTrimmed}`,
+            footer: `User ID: ${newMessage.author.id}`,
+            timestamp: true,
+            color: client.colors.warn
+        })
     })
 }
 

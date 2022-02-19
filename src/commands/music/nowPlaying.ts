@@ -1,12 +1,14 @@
 import { PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
-import { replyBasicEmbed, replyEphemeral } from '../../util/CommonUtils'
+import { replyEmbed, replyMessage } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     const musicChannel = client.cache[interaction.guildId].musicChannel
+    // Check to see if the server has a defined music channel and ensure command is run in channel if it does
     if (musicChannel === interaction.channelId || musicChannel == undefined) {
         let queue = client.music.getQueue(interaction.guild)
 
+        // If queue exists, send a message containing the current song
         if (queue) {
             const song = queue.songs[0]
 
@@ -14,14 +16,14 @@ export const run: RunFunction = async (client, interaction) => {
             let dur = await beautifySeconds(song.duration)
 
             let msg = `**[${song.name}](${song.url})** (${curTime}/${dur}) requested by ${song.user}.`
-            return await replyBasicEmbed(interaction, msg, client.colors.purple)
+            return await replyEmbed(client, interaction, { msg: msg, color: client.colors.purple })
         } else {
             let msg = 'Nothing is currently playing in this server.'
-            return await replyBasicEmbed(interaction, msg, client.colors.error)
+            return await replyEmbed(client, interaction, { msg: msg, color: client.colors.error })
         }
     } else {
         let msg = `This command can only be run in <#${musicChannel}>.`
-        return await replyEphemeral(interaction, msg)
+        return await replyMessage(client, interaction, msg)
     }
 }
 

@@ -1,6 +1,6 @@
 import { PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
-import { replyBasicEmbed, replyEphemeral } from '../../util/CommonUtils'
+import { replyEmbed, replyMessage } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     const musicChannel = client.cache[interaction.guildId].musicChannel
@@ -10,14 +10,14 @@ export const run: RunFunction = async (client, interaction) => {
         if (queue) {
             await queue.shuffle()
             let msg = 'The queue has been shuffled.'
-            return await replyBasicEmbed(interaction, msg, client.colors.success)
+            return await replyEmbed(client, interaction, { msg: msg, color: client.colors.success })
         } else {
             let msg = 'Nothing is currently playing in this server.'
-            return await replyBasicEmbed(interaction, msg, client.colors.error)
+            return await replyEmbed(client, interaction, { msg: msg, color: client.colors.error })
         }
     } else {
         let msg = `This command can only be run in <#${musicChannel}>.`
-        return await replyEphemeral(interaction, msg)
+        return await replyMessage(client, interaction, msg)
     }
 }
 

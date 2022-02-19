@@ -1,25 +1,18 @@
-import { MessageEmbed, VoiceState } from 'discord.js'
+import { TextChannel, VoiceState } from 'discord.js'
 import { RunFunction } from '../../interfaces/Event'
-import { getGuild } from '../../util/Guild'
+import { getGuildLogVoiceChannels, sendEmbed } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, oldState: VoiceState, newState: VoiceState) => {
     let guildID: string = newState.guild.id
-    let logChannels: string[]
+    let logChannels = await getGuildLogVoiceChannels(client, guildID)
 
-    if (!client.cache[guildID]) {
-        let data = await getGuild(guildID)
-        client.cache[guildID] = data
-        logChannels = data.logVoice
-    } else {
-        logChannels = client.cache[guildID].logVoice
-    }
     if (!logChannels) return
     if (!client.cache[guildID].logVoice) return
 
     if (newState.selfMute.valueOf() === oldState.selfMute?.valueOf()) return
 
-    logChannels.map((l) => {
-        let channel = client.channels.resolve(l)
+    logChannels.map(async (l) => {
+        let channel = client.channels.resolve(l) as TextChannel
 
         let curState: string
         if (newState.selfMute.valueOf() === true) {
@@ -28,23 +21,14 @@ export const run: RunFunction = async (client, oldState: VoiceState, newState: V
             curState = 'unmuted'
         }
 
-        if (channel.isText()) {
-            let embed = new MessageEmbed()
-                .setAuthor({
-                    name: newState.member.user.tag,
-                    iconURL: newState.member.user.avatarURL()
-                })
-                .setDescription(`${newState.member.user.tag} is now ${curState} in ${newState.channel.name}.`)
-                .setColor(client.colors.blurple)
-                .setFooter({text: `User ID: ${newState.member.id}`})
-                .setTimestamp()
-            try {
-                channel.send({ embeds: [embed] })
-            } catch (err) {
-                client.logger.error(err)
-            }
-        }
-        return
+        return await sendEmbed(client, channel, {
+            author: newState.member.user.tag,
+            authorIcon: newState.member.user.avatarURL(),
+            footer: `User ID: ${newState.member.id}`,
+            msg: `${newState.member.user.tag} is now ${curState} in ${newState.channel.name}.`,
+            timestamp: true,
+            color: client.colors.blurple
+        })
     })
 }
 

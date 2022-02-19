@@ -1,55 +1,43 @@
 import { RunFunction } from '../../interfaces/Command'
-import { MessageEmbed, PermissionString } from 'discord.js'
+import { PermissionString } from 'discord.js'
+import { replyEmbed, replyMessage } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     const option = interaction.options.getSubcommand()
     let validGuild = client.Starboard.validGuild(interaction.guildId)
 
     if (validGuild == false && option != 'create') {
-        return interaction.reply({
-            content: 'You need to create a starboard with "/starboard create" before running this command.',
-            ephemeral: true
-        })
+        let msg = 'You need to create a starboard with "/starboard create" before running this command.'
+        return await replyMessage(client, interaction, msg)
     }
 
     switch (option) {
         case 'ban':
             const bannedUser = interaction.options.getUser('user')
             try {
-                let res = await client.Starboard.config.banUser(interaction.guildId, bannedUser.id)
-                let banEmbed = new MessageEmbed()
-                    .setDescription(res)
-                    .setColor(client.colors.success)
-                return interaction.reply({ embeds: [banEmbed] })
+                let msg = await client.Starboard.config.banUser(interaction.guildId, bannedUser.id)
+                return await replyEmbed(client, interaction, { msg: msg, color: client.colors.success })
             } catch (err) {
                 client.logger.error(err)
-                return interaction.reply({
-                    content: 'Something went wrong, try again in a few minutes.',
-                    ephemeral: true
-                })
+                let msg = 'Something went wrong, try again in a few minutes.'
+                return await replyMessage(client, interaction, msg)
             }
         case 'blacklist':
             const blacklistChannel = interaction.options.getChannel('channel')
 
             if (blacklistChannel.type !== 'GUILD_TEXT' && blacklistChannel.type !== 'GUILD_NEWS') {
-                return interaction.reply({
-                    content: 'Only text channels can be blacklisted, please select a different channel.',
-                    ephemeral: true
-                })
+                let msg = 'Only text channels can be blacklisted, please select a different channel.'
+                return await replyMessage(client, interaction, msg)
+
             }
 
             try {
-                let res = await client.Starboard.config.blacklistChannel(interaction.guildId, blacklistChannel.id)
-                let blacklistEmbed = new MessageEmbed()
-                    .setDescription(res)
-                    .setColor(client.colors.success)
-                return interaction.reply({ embeds: [blacklistEmbed] })
+                let msg = await client.Starboard.config.blacklistChannel(interaction.guildId, blacklistChannel.id)
+                return await replyEmbed(client, interaction, { msg: msg, color: client.colors.success })
             } catch (err) {
                 client.logger.error(err)
-                return interaction.reply({
-                    content: 'Something went wrong, try again in a few minutes.',
-                    ephemeral: true
-                })
+                let msg = 'Something went wrong, try again in a few minutes.'
+                return await replyMessage(client, interaction, msg)
             }
         case 'create':
             const starCount = interaction.options.getInteger('starcount')
@@ -57,41 +45,31 @@ export const run: RunFunction = async (client, interaction) => {
             const emote = interaction.options.getString('emote')
 
             if (channel.type !== 'GUILD_TEXT') {
-                return interaction.reply({
-                    content: 'Starboards can only be created for text channels, please select a different channel.',
-                    ephemeral: true
-                })
+                let msg = 'Starboards can only be created for text channels, please select a different channel.'
+                return await replyMessage(client, interaction, msg)
             }
 
             let res = await client.Starboard.config.create(client, interaction.guildId, channel.id, emote, starCount)
             if (typeof res === 'string') {
-                return interaction.reply({ content: res, ephemeral: true })
+                return await replyMessage(client, interaction, res)
             } else {
-                let createEmbed = new MessageEmbed()
-                    .setDescription(`Your starboard channel has been set to <#${channel}> with ${starCount} ${emote}s required to register the message`)
-                    .setColor(client.colors.success)
-                return interaction.reply({ embeds: [createEmbed] })
+                let msg = `Your starboard channel has been set to <#${channel}> with ${starCount} ${emote}s required to register the message`
+                return await replyEmbed(client, interaction, { msg: msg, color: client.colors.success })
             }
         case 'delete':
             try {
                 let delRes = await client.Starboard.config.delete(interaction.guildId, client)
                 if (delRes) {
-                    let delEmbed = new MessageEmbed()
-                        .setDescription('The starboard has successfully been deleted.')
-                        .setColor(client.colors.success)
-                    return interaction.reply({ embeds: [delEmbed] })
+                    let msg = 'The starboard has successfully been deleted.'
+                    return await replyEmbed(client, interaction, { msg: msg, color: client.colors.success })
                 } else {
-                    return interaction.reply({
-                        content: 'Something went wrong, try again in a few minutes.',
-                        ephemeral: true
-                    })
+                    let msg = 'Something went wrong, try again in a few minutes.'
+                    return await replyMessage(client, interaction, msg)
                 }
             } catch (err) {
                 client.logger.error(err)
-                return interaction.reply({
-                    content: 'Something went wrong, try again in a few minutes.',
-                    ephemeral: true
-                })
+                let msg = 'Something went wrong, try again in a few minutes.'
+                return await replyMessage(client, interaction, msg)
             }
     }
 }

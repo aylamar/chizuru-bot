@@ -3,6 +3,11 @@ import { DisTube } from 'distube'
 import { Bot } from '../client/client'
 import { EmbedColors } from '../interfaces/EmbedColors'
 
+/*
+    Contains all the music related commands and event listener
+    This mainly exits to change the music reply messages that Distube provides
+ */
+
 class Music extends DisTube {
     public colors: EmbedColors
 

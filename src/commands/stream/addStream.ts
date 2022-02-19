@@ -1,37 +1,26 @@
-import { MessageEmbed, PermissionString } from 'discord.js'
+import { PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
+import { deferReply, replyEmbed } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
-    await interaction.deferReply()
+    await deferReply(client, interaction)
     let streamer = interaction.options.getString('streamer')
 
     let res = await client.Streams.addStream(streamer, interaction.channelId, interaction.guildId, client)
     try {
         switch (res) {
             case 'Success':
-                let successEmbed = new MessageEmbed()
-                    .setDescription(`You'll be notified when **${streamer}** goes online.`)
-                    .setColor(client.colors.success)
-                await interaction.editReply({ embeds: [successEmbed] })
-                break
+                let msgSuccess = `You'll be notified when **${streamer}** goes online.`
+                return await replyEmbed(client, interaction, { msg: msgSuccess, color: client.colors.success })
             case 'Already exists':
-                let alreadyExistEmbed = new MessageEmbed()
-                    .setDescription(`You already get notifications for **${streamer}** here.`)
-                    .setColor(client.colors.error)
-                await interaction.editReply({ embeds: [alreadyExistEmbed] })
-                break
+                let msgExists = `You already get notifications for **${streamer}** here.`
+                return await replyEmbed(client, interaction, { msg: msgExists, color: client.colors.error })
             case 'Unable to locate':
-                let unableEmbed = new MessageEmbed()
-                    .setDescription(`Unable to locate **${streamer}** for some reason, is this the right channel name?`)
-                    .setColor(client.colors.error)
-                await interaction.editReply({ embeds: [unableEmbed] })
-                break
+                let msgUnable = `Unable to locate **${streamer}** for some reason, is this the right channel name?`
+                return await replyEmbed(client, interaction, { msg: msgUnable, color: client.colors.error })
             case 'Failure':
-                let failureEmbed = new MessageEmbed()
-                    .setDescription('Something went wrong, try running this command again.')
-                    .setColor(client.colors.error)
-                await interaction.reply({ embeds: [failureEmbed] })
-                break
+                let msgFailure = 'Something went wrong, try running this command again.'
+                return await replyEmbed(client, interaction, { msg: msgFailure, color: client.colors.error })
         }
     } catch (err) {
         client.logger.error(err)

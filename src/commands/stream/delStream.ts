@@ -1,5 +1,6 @@
-import { MessageEmbed, PermissionString } from 'discord.js'
+import { PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
+import { replyEmbed } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     let streamer = interaction.options.getString('streamer')
@@ -8,22 +9,15 @@ export const run: RunFunction = async (client, interaction) => {
     try {
         switch (res) {
             case 'Success':
-                let successEmbed = new MessageEmbed()
-                    .setDescription(`You'll no longer be notified when **${streamer}** goes online.`)
-                    .setColor(client.colors.success)
-                await interaction.reply({ embeds: [successEmbed] })
-                break
+                let msgRemove = `You'll no longer be notified when **${streamer}** goes online.`
+                return await replyEmbed(client, interaction, { msg: msgRemove, color: client.colors.success })
             case 'Does not exist':
-                let alreadyExistEmbed = new MessageEmbed()
-                    .setDescription(`You won't receive any notifications for **${streamer}**.`)
-                    .setColor(client.colors.success)
-                await interaction.reply({ embeds: [alreadyExistEmbed] })
-                break
+                let msgDel = `You won't receive any notifications for **${streamer}**.`
+                return await replyEmbed(client, interaction, { msg: msgDel, color: client.colors.success })
             case 'Failure':
-                let failureEmbed = new MessageEmbed()
-                    .setDescription('Something went wrong, try running this command again.')
-                    .setColor(client.colors.error)
-                await interaction.reply({ embeds: [failureEmbed] })
+                let msgFail = `Something went wrong, try running this command again.`
+                return await replyEmbed(client, interaction, { msg: msgFail, color: client.colors.error })
+            default:
                 break
         }
     } catch (err) {

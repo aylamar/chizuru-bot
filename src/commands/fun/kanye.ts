@@ -1,27 +1,25 @@
-import { MessageEmbed, PermissionString } from 'discord.js'
+import { PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
 import fetch from 'node-fetch'
+import { replyEmbed, replyMessage } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     try {
+        // Get quote from kanye.rest
         let res = await fetch('https://api.kanye.rest')
         let parsed: any = await res.json()
 
-        const embed = new MessageEmbed()
-            .setAuthor({
-                name: 'Kanye West',
-                iconURL: 'https://i.imgur.com/ywPk81X.jpeg',
-                url: 'https://twitter.com/kanyewest/'
+        return await replyEmbed(client, interaction, {
+            author: 'Kanye West',
+            authorIcon: 'https://i.imgur.com/ywPk81X.jpeg',
+            authorUrl: 'https://twitter.com/kanyewest/',
+            color: client.colors.success,
+            msg: `"${parsed.quote}"`
         })
-            .setColor(client.colors.success)
-            .setDescription(`"${parsed.quote}"`)
-        await interaction.reply({ embeds: [embed] })
     } catch (err) {
-        await interaction.reply({
-            content: 'Something went wrong, please try again in a few minutes.',
-            ephemeral: true
-        })
+        let msg = 'Something went wrong, please try again in a few minutes'
         client.logger.error(`Error sending help response in ${interaction.channelId}\n${err}`)
+        return await replyMessage(client, interaction, msg)
     }
 }
 

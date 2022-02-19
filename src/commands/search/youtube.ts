@@ -1,11 +1,11 @@
 import { PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
 import ytSearch from 'yt-search'
-import { deferReply, editReply } from '../../util/CommonUtils'
+import { deferReply, replyMessage } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     let args = interaction.options.getString('title') as string
-    await deferReply(interaction)
+    await deferReply(client, interaction)
 
     const videoSearch = async (query: any) => {
         try {
@@ -24,10 +24,10 @@ export const run: RunFunction = async (client, interaction) => {
     const video = await videoSearch(args)
     if (video) {
         let msg = `${video.url}`
-        return await editReply(interaction, msg)
+        return await replyMessage(client, interaction, msg)
     } else {
         let msg = '❌ Unable to find a video with this name'
-        return await editReply(interaction, msg)
+        return await replyMessage(client, interaction, msg)
     }
 }
 

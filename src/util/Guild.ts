@@ -96,7 +96,7 @@ export async function clearMusicChannel(guildID: string, client: Bot) {
         guild.music_channel = undefined
         await guild.save()
         client.cache[guildID].musicChannel = undefined
-        return 'Music commands can now be used anywhere on the server'
+        return 'Music commands can now be used anywhere on the server.'
     } catch (err) {
         client.logger.error(err)
         return 'Something went wrong, please try again later.'

@@ -1,14 +1,13 @@
 import { RunFunction } from '../../interfaces/Command'
 import { PermissionString } from 'discord.js'
+import { replyMessage } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     let curTime = Date.now()
     let ping = curTime - interaction.createdTimestamp
 
-    await interaction.reply({
-        content: `:ping_pong: ~${ping}ms delay between when you ran the command and when I recieved it.`,
-        ephemeral: true
-    })
+    let msg = `:ping_pong: ~${ping}ms delay between when you ran the command and when I received it.`
+    return await replyMessage(client, interaction, msg)
 }
 
 export const name: string = 'ping'

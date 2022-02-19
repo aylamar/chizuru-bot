@@ -16,6 +16,10 @@ import { StarboardClient } from '../util/Starboard'
 
 const glob = promisify(_glob)
 
+/*
+    This is the main bot client, everything stems from this file.
+*/
+
 class Bot extends Client {
     public commands: Collection<string, Command> = new Collection()
     public events: Collection<string, Event> = new Collection()
@@ -30,6 +34,17 @@ class Bot extends Client {
     public Streams: Streams
 
     public constructor() {
+        /*
+            Intents:
+            FLAGS.GUILDS: Required for the bot to work.
+            FLAGS.GUILD_VOICE_STATES: required for voice state logging, without it, voice state logging will not work
+            FLAGS.GUILD_MESSAGES: required for message logging and starboard, without it, neither will not work
+            FLAGS.GUILD_MESSAGE_REACTIONS: required for starboard, without it, starboard will not work
+            FLAGS.GUILD_BANS: required for ban logging, without it, ban logging will not work
+
+            Partials:
+            MESSAGE, CHANNEL, REACTION are required for the starboard and message logging to work since the bot might not have the message cached.
+         */
         super({
             intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_BANS],
             partials: ['MESSAGE', 'CHANNEL', 'REACTION']
@@ -37,7 +52,9 @@ class Bot extends Client {
     }
 
     public async start(config: Config): Promise<void> {
-        consola.info('Chizuru Bot is starting up...')
+        this.logger.info('Chizuru Bot is starting up...')
+
+        // note: Discord requires decimal color codes
         this.colors = {
             error: 15158332,
             warn: 15651330,
@@ -49,27 +66,30 @@ class Bot extends Client {
         }
         this.config = config
         await this.login(config.discordToken)
+
+        // Start required modules
         this.music = new Music(this)
         this.activity = new DiscordTogether(this)
         this.twitch = new Twitch(this.config, this.logger)
         this.cache = {}
         this.Starboard = new StarboardClient({ client: this })
 
+        // Connect to MongoDB, then start the starboard and stream watcher
         mongoose.connect(config.mongoURI)
             .then(() => {
                 this.logger.success('Connected with Mongoose')
                 this.Streams = new Streams(this)
                 this.Starboard.start(this)
-            }).catch((err: any) => consola.error(err))
+            }).catch((err: any) => this.logger.error(err))
 
-        /* Commands */
+        // Load all commands in the /commands/ folder
         const commandFiles: string[] = await glob(`${__dirname}/../commands/**/*{.ts,.js}`)
         commandFiles.map(async (val: string) => {
             const file: Command = await import(val)
             this.commands.set(file.name, file)
         })
 
-        /* Events */
+        // Load all events in the /events/ folder
         const eventFiles: string[] = await glob(`${__dirname}/../events/**/*{.ts,.js}`)
         eventFiles.map(async (val: string) => {
             const file: Event = await import(val)

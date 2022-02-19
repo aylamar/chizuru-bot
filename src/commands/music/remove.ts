@@ -1,6 +1,6 @@
-import { GuildMember,PermissionString } from 'discord.js'
+import { GuildMember, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
-import { replyEphemeral, replyBasicEmbed } from '../../util/CommonUtils'
+import { replyBasicEmbed, replyEphemeral } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     if (!(interaction.member instanceof GuildMember)) return

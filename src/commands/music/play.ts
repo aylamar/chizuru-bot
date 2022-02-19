@@ -1,5 +1,6 @@
 import { GuildMember, PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
+import { replyEphemeral } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     if (!(interaction.member instanceof GuildMember)) return
@@ -13,39 +14,27 @@ export const run: RunFunction = async (client, interaction) => {
 
         // Play specific permission checks
         if (!voiceChannel) {
-            await interaction.reply({
-                content: `❌ You need to be in a voice channel to run this command.`,
-                ephemeral: true
-            })
-            return
+            let msg = '❌ You need to be in a voice channel to run this command.'
+            return await replyEphemeral(interaction, msg)
         }
 
         const permissions = voiceChannel.permissionsFor(client.user)
         if (!permissions.has('CONNECT')) {
-            await interaction.reply({
-                content: `❌ I don't have permission to join that voice channel.`,
-                ephemeral: true
-            })
-            return
+            let msg = `❌ I don't have permission to join that voice channel.`
+            return await replyEphemeral(interaction, msg)
         }
 
         if (!permissions.has('SPEAK')) {
-            await interaction.reply({
-                content: `❌ I don't have permission to speak in that voice channel.`,
-                ephemeral: true
-            })
-            return
+            let msg = `❌ I don't have permission to speak in that voice channel.`
+            return await replyEphemeral(interaction, msg)
         }
 
         // Ensure that user is in the same voice channel as the bot when queueing music
         const queue = client.music.getQueue(interaction.guildId)
         if (queue) {
             if (voiceChannel.id !== queue.voiceChannel.id) {
-                await interaction.reply({
-                    content: `❌ You need to be in the same voice channel as the bot to run this command.`,
-                    ephemeral: true
-                })
-                return
+                let msg = `❌ You need to be in the same voice channel as the bot to run this command.`
+                return await replyEphemeral(interaction, msg)
             }
         }
 
@@ -58,10 +47,8 @@ export const run: RunFunction = async (client, interaction) => {
         await interaction.deleteReply()
 
     } else {
-        await interaction.reply({
-            content: `This command can only be run in <#${musicChannel}>.`,
-            ephemeral: true
-        })
+        let msg = `This command can only be run in <#${musicChannel}>.`
+        return await replyEphemeral(interaction, msg)
     }
 }
 

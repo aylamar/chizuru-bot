@@ -1,5 +1,6 @@
-import { MessageEmbed, PermissionString } from 'discord.js'
+import { PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
+import { replyBasicEmbed, replyEphemeral } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     const musicChannel = client.cache[interaction.guildId].musicChannel
@@ -9,28 +10,20 @@ export const run: RunFunction = async (client, interaction) => {
         if (queue) {
             if (!queue.paused) {
                 client.music.pause(interaction.guild)
-                let embed = new MessageEmbed()
-                    .setDescription('Pausing the current song.')
-                    .setColor(client.colors.success)
-                await interaction.reply({ embeds: [embed] })
+                let msg = 'Pausing the current song'
+                return await replyBasicEmbed(interaction, msg, client.colors.success)
             } else {
                 client.music.resume(interaction.guild)
-                let embed = new MessageEmbed()
-                    .setDescription('Resuming the the current song.')
-                    .setColor(client.colors.success)
-                await interaction.reply({ embeds: [embed] })
+                let msg = 'Resuming the current song'
+                return await replyBasicEmbed(interaction, msg, client.colors.success)
             }
         } else {
-            let embed = new MessageEmbed()
-                .setDescription('Nothing is currently playing in this server.')
-                .setColor(client.colors.error)
-            await interaction.reply({ embeds: [embed] })
+            let msg = 'Nothing is currently playing in this server.'
+            return await replyBasicEmbed(interaction, msg, client.colors.error)
         }
     } else {
-        await interaction.reply({
-            content: `This command can only be run in <#${musicChannel}>.`,
-            ephemeral: true
-        })
+        let msg = `This command can only be run in the <#${musicChannel}>.`
+        return await replyEphemeral(interaction, msg)
     }
 }
 

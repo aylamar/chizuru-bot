@@ -1,5 +1,6 @@
-import { MessageEmbed, PermissionString } from 'discord.js'
+import { PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
+import { replyBasicEmbed, replyEphemeral } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     const musicChannel = client.cache[interaction.guildId].musicChannel
@@ -12,23 +13,22 @@ export const run: RunFunction = async (client, interaction) => {
             let curTime = await beautifySeconds(queue.currentTime)
             let dur = await beautifySeconds(song.duration)
 
-            let embed = new MessageEmbed()
-                .setDescription(`**[${song.name}](${song.url})** (${curTime}/${dur}) requested by ${song.user}.`)
-                .setColor(client.colors.purple)
-            await interaction.reply({ embeds: [embed] })
+            let msg = `**[${song.name}](${song.url})** (${curTime}/${dur}) requested by ${song.user}.`
+            return await replyBasicEmbed(interaction, msg, client.colors.purple)
         } else {
-            let embed = new MessageEmbed()
-                .setDescription('Nothing is currently playing in this server.')
-                .setColor(client.colors.error)
-            await interaction.reply({ embeds: [embed] })
+            let msg = 'Nothing is currently playing in this server.'
+            return await replyBasicEmbed(interaction, msg, client.colors.error)
         }
     } else {
-        await interaction.reply({
-            content: `This command can only be run in <#${musicChannel}>.`,
-            ephemeral: true
-        })
+        let msg = `This command can only be run in <#${musicChannel}>.`
+        return await replyEphemeral(interaction, msg)
     }
 }
+
+export const name: string = 'nowplaying'
+export const description: string = 'Show what song is currently playing'
+export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
+export const userPermissions: Array<PermissionString> = ['SEND_MESSAGES']
 
 async function beautifySeconds(sec: number) {
     let minutes: number
@@ -43,8 +43,3 @@ async function beautifySeconds(sec: number) {
 
     return `${minutes}:${seconds}`
 }
-
-export const name: string = 'nowplaying'
-export const description: string = 'Show what song is currently playing'
-export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
-export const userPermissions: Array<PermissionString> = ['SEND_MESSAGES']

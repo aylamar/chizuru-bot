@@ -1,6 +1,7 @@
-import { MessageActionRow, MessageButton, MessageEmbed, PermissionString } from 'discord.js'
+import { PermissionString } from 'discord.js'
 import { RunFunction } from '../../interfaces/Command'
 import { Song } from 'distube'
+import { replyEphemeral, replyPages } from '../../util/CommonUtils'
 
 export const run: RunFunction = async (client, interaction) => {
     const musicChannel = client.cache[interaction.guildId].musicChannel
@@ -11,52 +12,14 @@ export const run: RunFunction = async (client, interaction) => {
             let pageCount = Math.floor(queue.songs.length / 10) + 1
             let pages = generatePages(pageCount, queue.songs)
 
-            const row = new MessageActionRow().addComponents(
-                new MessageButton()
-                    .setCustomId('previous')
-                    .setLabel('Previous')
-                    .setStyle('PRIMARY'),
-                new MessageButton()
-                    .setCustomId('next')
-                    .setLabel('Next')
-                    .setStyle('PRIMARY')
-            )
-
-            let page = 0
-            await interaction.reply({ content: pages[0], components: [row] })
-
-            const filter = (i: any) => i.customId === 'previous' || i.customId === 'next'
-            const collector = interaction.channel.createMessageComponentCollector({ filter, time: 120000 })
-
-            collector.on('collect', async (i) => {
-                if (i.customId === 'previous') {
-                    if (page > 0) {
-                        page--
-                    } else {
-                        page = pages.length - 1
-                    }
-                } else if (i.customId === 'next') {
-                    if (page + 1 < pages.length) {
-                        page++
-                    } else {
-                        page = 0
-                    }
-                }
-                await i.deferUpdate()
-                await i.editReply({ content: pages[page], components: [row] })
-                collector.resetTimer()
-            })
+            return await replyPages(interaction, pages)
         } else {
-            let embed = new MessageEmbed()
-                .setDescription('Nothing is currently playing in this server.')
-                .setColor(client.colors.error)
-            await interaction.reply({ embeds: [embed] })
+            let msg = 'Nothing is currently playing in this server.'
+            return await replyEphemeral(interaction, msg)
         }
     } else {
-        await interaction.reply({
-            content: `This command can only be run in <#${musicChannel}>.`,
-            ephemeral: true
-        })
+        let msg = `This command can only be run in <#${musicChannel}>.`
+        return await replyEphemeral(interaction, msg)
     }
 }
 

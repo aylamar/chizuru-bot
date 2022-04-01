@@ -154,6 +154,7 @@ export class StarboardClient {
 
     public async listener(reaction: MessageReaction) {
         if (!this.validGuild) return
+        // Fetch partial messages if message is not cached
         if (reaction.message.partial) await reaction.message.fetch()
         if (reaction.partial) await reaction.fetch()
 
@@ -182,9 +183,15 @@ export class StarboardClient {
         const starboardChannel = this.client.channels.cache.get(
             this.guilds.find((x) => x.id === guildId)?.options.starboardChannel
         ) as TextChannel
+
+        // Check if starred message is in cache, then generate starboard message
         const getMessage = data.find((x) => x.origin === id)
         const generateEdit = this.generateEdit(count, reaction.message as Message)
 
+        /*
+            Define send message function
+            Sends message to starboard channel then updates cache
+         */
         const sendMessage = () => {
             starboardChannel?.send(generateEdit).then((m) => {
                 this.cache.set(reaction.message.guildId, [
@@ -194,6 +201,7 @@ export class StarboardClient {
             })
         }
 
+        // If message is in cache, edit it. Otherwise, send message to channel
         if (getMessage) {
             starboardChannel.messages
                 .fetch(getMessage.id)
@@ -201,7 +209,13 @@ export class StarboardClient {
                     publishedMessage.edit(generateEdit)
                 })
                 .catch(sendMessage)
-        } else sendMessage()
+        } else {
+            let d = new Date()
+            d.setDate(d.getDate() - 3)
+            if (reaction.message.createdAt <= d) return
+
+            sendMessage()
+        }
     }
 
     private cacheData() {
@@ -239,10 +253,20 @@ export class StarboardClient {
         })
     }
 
+    /*
+        @param guildId: Discord guild id
+        @returns: Starboard data for guild
+     */
     private getData(guildId: Snowflake) {
         return this.guilds.find((x) => x.id === guildId)
     }
 
+    /*
+        Generates starboard message
+        @param starCount: number of stars the message has
+        @param message: Discord Message, the content of the message that was starred
+        @returns: Discord Embed, the embed to be sent to the starboard channel
+     */
     private generateEdit(starCount: number, message: Message): MessageOptions {
         interface Data {
             content: string,

@@ -22,7 +22,7 @@ A full list of commands and how to use them can be found [here](https://github.c
 
 ## Configuration
 
-To configure this bot, rename the included `config.default.json` file to `config.json`, then enter in the values.
+To configure this bot, rename the included `config.default.json` file to `config.json`, then enter the values.
 
 ```json
 {
@@ -31,7 +31,7 @@ To configure this bot, rename the included `config.default.json` file to `config
     "mongoURI": "",
     "discordToken": "",
     "twitchClientID": "",
-    "twitchClientSecret": "",
+    "twitchClientSecret": ""
 }
 ```
 

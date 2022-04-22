@@ -6,7 +6,7 @@ export const run: RunFunction = async (client, interaction) => {
     await deferReply(client, interaction)
     let streamer = interaction.options.getString('streamer')
 
-    let res = await client.Streams.addStream(streamer, interaction.channelId, interaction.guildId, client)
+    let res = await client.Streams.addStream(streamer.toLowerCase(), interaction.channelId, interaction.guildId, client)
     try {
         switch (res) {
             case 'Success':

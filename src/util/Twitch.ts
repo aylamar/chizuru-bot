@@ -89,7 +89,7 @@ export default class Twitch {
                 return undefined
             }
 
-            if (parsedRes.data[0].user_name.toLowerCase() == channel_name.toLowerCase()) {
+            if (parsedRes.data[0].user_login.toLowerCase() == channel_name.toLowerCase()) {
                 return parsedRes.data[0]
             } else {
                 return undefined

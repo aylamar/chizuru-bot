@@ -77,6 +77,7 @@ export default class Twitch {
                     }
                 })
             } catch (err) {
+                this.logger.error('Error fetching stream data for', channel_name)
                 this.logger.error(err)
                 return 'error'
             }
@@ -86,6 +87,8 @@ export default class Twitch {
                     return undefined
                 }
             } catch (err) {
+                this.logger.error('Error parsing stream data for', channel_name)
+                this.logger.error(err)
                 return undefined
             }
 

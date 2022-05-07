@@ -224,7 +224,7 @@ export class Streams {
                     await this.postStreams(streamer, onlineEmbed, client, true)
                 }
             } catch (err) {
-                client.logger.error('Error updating streamer state', streamer)
+                client.logger.error('Error updating streamer state', streamer, this.streamerCache[streamer])
                 client.logger.error(err)
             }
         })
@@ -257,6 +257,7 @@ export class Streams {
                             return discChannel.send({ embeds: [embed] })
                         }
                     } catch (err) {
+                        client.logger.error('Error posting stream', streamerName, channel)
                         client.logger.error(err)
                         return
                     }
@@ -265,6 +266,7 @@ export class Streams {
                     return
                 }
             } catch (err) {
+                client.logger.error('Error posting stream', streamerName, channel)
                 client.logger.error(err)
                 return
             }

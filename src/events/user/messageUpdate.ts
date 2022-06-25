@@ -22,7 +22,7 @@ export const run: RunFunction = async (client: Bot, oldMessage: Message, newMess
 
     // Trim oldMessage.content to be 1900 characters or fewer
     let oldMessageTrimmed = oldMessage.content
-    if (oldMessageTrimmed.length > 1850) {
+    if (oldMessageTrimmed && oldMessageTrimmed.length > 1850) {
         oldMessageTrimmed = oldMessageTrimmed.substring(0, 1850) + '...'
     }
 

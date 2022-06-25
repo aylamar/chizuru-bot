@@ -1,5 +1,5 @@
 import { Bot } from '../client/client'
-import { Collection, Message, MessageEmbed, MessageOptions, MessageReaction, Snowflake, TextChannel } from 'discord.js'
+import { Collection, Message, MessageEmbed, MessageReaction, Snowflake, TextChannel } from 'discord.js'
 import Starboard from '../models/starboard'
 import { StarboardClientOptions, StarboardGuild, starMessageData } from '../interfaces/Starboard'
 
@@ -83,10 +83,10 @@ export class StarboardClient {
             if (channels.includes(channelId)) {
                 let idx = channels.indexOf(channelId)
                 channels.splice(idx, 1)
-                return `Messages from <#${channelId}> will now appear in the starboard.`
+                return `Messages from <#${ channelId }> will now appear in the starboard.`
             } else {
                 channels.push(channelId)
-                return `Messages from <#${channelId}> will no longer appear in the starboard.`
+                return `Messages from <#${ channelId }> will no longer appear in the starboard.`
             }
         },
 
@@ -106,10 +106,10 @@ export class StarboardClient {
             if (users.includes(userId)) {
                 let idx = users.indexOf(userId)
                 users.splice(idx, 1)
-                return `<@${userId}> is no longer banned from the starboard.`
+                return `<@${ userId }> is no longer banned from the starboard.`
             } else {
                 users.push(userId)
-                return `<@${userId}> has been banned from the starboard.`
+                return `<@${ userId }> has been banned from the starboard.`
             }
         }
     }
@@ -137,7 +137,7 @@ export class StarboardClient {
                     }
                 })
             )
-            client.logger.success(`Initialized ${data.length} starboards`)
+            client.logger.success(`Initialized ${ data.length } starboards`)
         } catch (err) {
             client.logger.error(err)
         }
@@ -186,14 +186,14 @@ export class StarboardClient {
 
         // Check if starred message is in cache, then generate starboard message
         const getMessage = data.find((x) => x.origin === id)
-        const generateEdit = this.generateEdit(count, reaction.message as Message)
+        const embeds = this.generateEdit(count, reaction.message as Message)
 
         /*
             Define send message function
             Sends message to starboard channel then updates cache
          */
         const sendMessage = () => {
-            starboardChannel?.send(generateEdit).then((m) => {
+            starboardChannel?.send(embeds).then((m) => {
                 this.cache.set(reaction.message.guildId, [
                     ...data,
                     { id: m.id, origin: reaction.message.id }
@@ -206,7 +206,7 @@ export class StarboardClient {
             starboardChannel.messages
                 .fetch(getMessage.id)
                 .then((publishedMessage) => {
-                    publishedMessage.edit(generateEdit)
+                    publishedMessage.edit(embeds)
                 })
                 .catch(sendMessage)
         } else {
@@ -267,7 +267,7 @@ export class StarboardClient {
         @param message: Discord Message, the content of the message that was starred
         @returns: Discord Embed, the embed to be sent to the starboard channel
      */
-    private generateEdit(starCount: number, message: Message): MessageOptions {
+    private generateEdit(starCount: number, message: Message) {
         interface Data {
             content: string,
             imageURL: string,
@@ -281,9 +281,9 @@ export class StarboardClient {
         if (message.content.length < 3900) {
             data.content = message.content
         } else {
-            data.content = `${message.content.substring(0, 3920)} **[ ... ]**`
+            data.content = `${ message.content.substring(0, 3920) } **[ ... ]**`
         }
-        data.content += `\n\n→ [original message](${message.url}) in <#${message.channelId}>`
+        data.content += `\n\n→ [original message](${ message.url }) in <#${ message.channelId }>`
 
         if (message.embeds.length) {
             const images = message.embeds
@@ -292,15 +292,15 @@ export class StarboardClient {
             data.imageURL = images[0]
         } else if (message.attachments.size) {
             data.imageURL = message.attachments.first().url
-            data.content += `\n📎 [${message.attachments.first().name}](${message.attachments.first().proxyURL})`
+            data.content += `\n📎 [${ message.attachments.first().name }](${ message.attachments.first().proxyURL })`
         }
 
         let embed = new MessageEmbed()
-            .setAuthor({name: message.author.tag, iconURL: message.author.displayAvatarURL({dynamic: true})})
+            .setAuthor({ name: message.author.tag, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
             .setColor(this.client.colors.purple)
             .setDescription(data.content)
             .setImage(data.imageURL)
-            .setFooter({text: `${starCount} ⭐ (${message.id}) • ${message.createdAt.toLocaleDateString()}`})
+            .setFooter({ text: `${ starCount } ⭐ (${ message.id }) • ${ message.createdAt.toLocaleDateString() }` })
 
         return { embeds: [embed] }
     }

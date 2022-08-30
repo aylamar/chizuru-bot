@@ -1,44 +1,51 @@
-import { Message, TextChannel } from 'discord.js'
-import { Bot } from '../../client/client'
-import { RunFunction } from '../../interfaces/Event'
-import { getGuildLogMsgEditChannels, sendEmbed } from '../../util/CommonUtils'
+import { Guild } from '@prisma/client';
+import { Message } from 'discord.js';
+import { Bot } from '../../classes/bot';
+import { RunEvent } from '../../interfaces';
+import { prisma } from '../../services';
+import { generateEmbed, sendEmbedToChannelArr } from '../../utils';
 
-export const run: RunFunction = async (client: Bot, oldMessage: Message, newMessage: Message) => {
-    let guildID: string = newMessage.guildId
-    let logChannels = await getGuildLogMsgEditChannels(client, guildID)
+export const run: RunEvent = async (client: Bot, oldMessage: Message, newMessage: Message) => {
+    const start = process.hrtime.bigint();
+    if (newMessage.partial) await newMessage.fetch();
+    if (oldMessage.partial) await oldMessage.fetch();
+    if (!newMessage.inGuild()) return;
+    if (newMessage.author?.bot) return;
+    if (newMessage.content == oldMessage.content) return;
 
-    if (!logChannels) return
-    if (!client.cache[guildID].messageDelete) return
-    if (client.cache[guildID].logBlacklist?.includes(newMessage.channelId)) return
-    if (newMessage.partial) await oldMessage.fetch()
-    if (newMessage.author?.bot) return
-    if (newMessage.content == oldMessage.content) return
-
-    // Trim newMessage.content to be 1900 characters or fewer due to Discord message limitations
-    let newMessageTrimmed = newMessage.content
-    if (newMessageTrimmed.length > 1850) {
-        newMessageTrimmed = newMessageTrimmed.substring(0, 1850) + '...'
+    let guildId: string = newMessage.guildId;
+    let guild: Guild | null;
+    try {
+        guild = await prisma.guild.findUnique({ where: { guildId: guildId } });
+    } catch (err) {
+        client.logger.error(err);
+        return;
     }
 
-    // Trim oldMessage.content to be 1900 characters or fewer
-    let oldMessageTrimmed = oldMessage.content
-    if (oldMessageTrimmed && oldMessageTrimmed.length > 1850) {
-        oldMessageTrimmed = oldMessageTrimmed.substring(0, 1850) + '...'
-    }
+    if (!guild || !guild.logEditedMessagesChannels) return;
+    if (guild.logBlacklistedChannels.includes(newMessage.channelId)) return;
 
-    // Iterate through log channels sending out messages as needed due to Discord message limitations
-    logChannels.map(async (l) => {
-        let channel = client.channels.resolve(l) as TextChannel
+    // trim messages to be 900 characters or fewer
+    let newMsgTrimmed = newMessage.content;
+    if (newMsgTrimmed.length > 900) newMsgTrimmed = newMsgTrimmed.substring(0, 900) + '...';
 
-        return await sendEmbed(client, channel, {
-            author: newMessage.author.tag,
-            authorUrl: newMessage.author.avatarURL(),
-            msg: `<@${newMessage.author.id}> edited a **[message](https://discord.com/channels/${newMessage.guildId}/${newMessage.channelId}/${newMessage.id})** in <#${newMessage.channelId}>\n\n**Old message**\n${oldMessageTrimmed}\n\n**New message**\n${newMessageTrimmed}`,
-            footer: `User ID: ${newMessage.author.id}`,
-            timestamp: true,
-            color: client.colors.warn
-        })
-    })
-}
+    let oldMsgTrimmed = newMessage.content;
+    if (oldMsgTrimmed.length > 900) oldMsgTrimmed = oldMsgTrimmed.substring(0, 900) + '...';
 
-export const name: string = 'messageUpdate'
+    let embed = await generateEmbed({
+        author: newMessage.author.tag,
+        authorIcon: newMessage.author.avatarURL() || newMessage.author.defaultAvatarURL,
+        msg: `<@${ newMessage.author.id }> edited a **[message](https://discord.com/channels/${ newMessage.guildId }/`
+            + `${ newMessage.channelId }/${ newMessage.id })** in <#${ newMessage.channelId }>`
+            + `\n\n**Old message**\n${ oldMsgTrimmed }\n\n**New message**\n${ newMsgTrimmed }`,
+        footer: `User ID: ${ newMessage.author.id }`,
+        timestamp: true,
+        color: client.colors.warn,
+    });
+
+    await sendEmbedToChannelArr(client, guild.logEditedMessagesChannels, embed);
+    const result = process.hrtime.bigint();
+    client.logger.debug(`Spent ${ ((result - start) / BigInt(1000000)) }ms processing message update in ${ newMessage.channel.name } by ${ newMessage.author.tag }`, { label: 'event' });
+};
+
+export const name: string = 'messageUpdate';

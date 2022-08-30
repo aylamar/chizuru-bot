@@ -1,78 +1,45 @@
-import { Interaction } from 'discord.js'
-import { Bot } from '../../client/client'
-import { RunFunction } from '../../interfaces/Event'
-import { getGuild } from '../../util/Guild'
-import { replyMessage } from '../../util/CommonUtils'
+import { Channel, ChatInputCommandInteraction } from 'discord.js';
+import { Bot } from '../../classes/bot.js';
+import { RunEvent } from '../../interfaces';
+import { replyMessage } from '../../utils';
 
-export const run: RunFunction = async (client: Bot, interaction: Interaction) => {
-    if (!interaction.isCommand()) return
-    if (!client.commands.has(interaction.commandName)) return
-    if (!interaction.guild) return
-
-    const command = client.commands.get(interaction.commandName)
-
-    // Check if bot has required permissions
-    if (!interaction.guild.me.permissionsIn(interaction.channelId).has(command.botPermissions, true)) {
-        let difference = command.botPermissions.filter((x) =>
-            !interaction.guild.me
-                .permissionsIn(interaction.channelId)
-                .toArray()
-                .includes(x)
-        )
-
-        if (difference.length > 1) {
-            let missing =
-                difference.slice(0, -1).join(',') +
-                ' and ' +
-                difference.slice(-1)
-            missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
-
-            let msg = `❌ I need the ${missing} permissions to run this command.`
-            return await replyMessage(client, interaction, msg)
-        } else {
-            let missing = difference.toString()
-            missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
-
-            let msg = `❌ I need the ${missing} permission to run this command.`
-            return await replyMessage(client, interaction, msg)
-        }
+export const run: RunEvent = async (client: Bot, interaction: ChatInputCommandInteraction) => {
+    const start = process.hrtime.bigint();
+    if (!interaction.isChatInputCommand() || !client.isReady()) return;
+    const command = client.commands.get(interaction.commandName);
+    if (!command) {
+        client.logger.info(`No command found named ${ interaction.commandName }`, { label: 'event' });
+        return;
     }
 
-    // Check if user has required permissions
-    if (typeof interaction.member.permissions === 'string') return
-    if (!interaction.member.permissions.has(command.userPermissions, true)) {
-        let arr = interaction.member.permissions.toArray()
-        let difference = command.userPermissions.filter((x) => !arr.includes(x))
+    const channel: Channel | undefined = client.channels.cache.get(interaction.channelId);
+    if (!channel || !channel.isTextBased() || channel.isDMBased() || !interaction.inCachedGuild()) return;
 
-        if (difference.length > 1) {
-            let missing =
-                difference.slice(0, -1).join(',') +
-                ' and ' +
-                difference.slice(-1)
-            missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
-
-            let msg = `❌ You need the ${missing} permissions to run this command.`
-            return await replyMessage(client, interaction, msg)
-        } else {
-            let missing = difference.toString()
-            missing = missing.toLocaleLowerCase().replace(/_/g, ' ')
-
-            let msg = `❌ You need the ${missing} permission to run this command.`
-            return await replyMessage(client, interaction, msg)
-
-        }
-    }
-
-    // Check if guild has been cached, if it hasn't, get data
-    if (!client.cache[interaction.guildId]) {
-        client.cache[interaction.guildId] = await getGuild(interaction.guildId)
-    }
+    // check for permissions
+    // let botMember = await interaction.guild.members.cache.get(client.user.id)?.fetch();
+    // if (!botMember) return;
+    //
+    // // check if the bot has the required permissions
+    // let messingPerms = [];
+    // const botPerms = botMember.permissions.toArray();
+    // for (const idx in command.permissions) {
+    //     if (!botPerms.includes(command.permissions[idx])) messingPerms.push(command.permissions[idx]);
+    // }
+    //
+    // if (messingPerms.length > 0) {
+    //     let msg = `❌ I need the these permissions to run this command: ${ messingPerms.join(', ') }`;
+    //     return await replyMessage(interaction, msg, true);
+    // }
 
     try {
-        await command.run(client, interaction)
+        await command.run(client, interaction);
     } catch (err) {
-        client.logger.error(err)
+        client.logger.error(`Error sending message in ${ interaction.channelId }`, { label: 'event' });
+        client.logger.error(err);
+        return await replyMessage(interaction, `❌ Something went wrong, please try again in a few minutes`);
     }
-}
+    const result = process.hrtime.bigint();
+    client.logger.debug(`Spent ${ ((result - start) / BigInt(1000000)) }ms processing ${ command.name } interaction for ${ interaction.user.tag }`, { label: 'event' });
+};
 
-export const name: string = 'interactionCreate'
+export const name = 'interactionCreate';

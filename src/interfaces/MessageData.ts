@@ -1,7 +1,7 @@
 export interface Field {
-    name: string
-    value: string
-    inline: boolean
+    name: string;
+    value: string;
+    inline: boolean;
 }
 
 export interface MessageData {

@@ -1,29 +1,39 @@
-import { PermissionString } from 'discord.js'
-import { RunFunction } from '../../interfaces/Command'
-import fetch from 'node-fetch'
-import { replyEmbed, replyMessage } from '../../util/CommonUtils'
+import { PermissionFlagsBits, PermissionsString, SlashCommandBuilder } from 'discord.js';
+import fetch, { Response } from 'node-fetch';
+import { RunCommand } from '../../interfaces';
+import { generateEmbed, generateErrorEmbed, replyEmbed } from '../../utils';
 
-export const run: RunFunction = async (client, interaction) => {
+export const run: RunCommand = async (client, interaction) => {
+    let res: Response;
+    let parsedRes: KanyeResponse;
     try {
-        // Get quote from kanye.rest
-        let res = await fetch('https://api.kanye.rest')
-        let parsed: any = await res.json()
-
-        return await replyEmbed(client, interaction, {
-            author: 'Kanye West',
-            authorIcon: 'https://i.imgur.com/ywPk81X.jpeg',
-            authorUrl: 'https://twitter.com/kanyewest/',
-            color: client.colors.success,
-            msg: `"${parsed.quote}"`
-        })
-    } catch (err) {
-        let msg = 'Something went wrong, please try again in a few minutes'
-        client.logger.error(`Error sending help response in ${interaction.channelId}\n${err}`)
-        return await replyMessage(client, interaction, msg)
+        res = await fetch('https://api.kanye.rest');
+        parsedRes = await res.json();
+    } catch (err: any) {
+        let embed = await generateErrorEmbed(err, client.colors.error, client.logger);
+        return await replyEmbed(interaction, embed);
     }
-}
 
-export const name: string = 'kanye'
-export const description: string = 'Need some words of wisdom from Kanye?'
-export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
-export const userPermissions: Array<PermissionString> = ['SEND_MESSAGES']
+    const embed = await generateEmbed({
+        author: 'Kanye West',
+        authorIcon: 'https://i.imgur.com/ywPk81X.jpeg',
+        authorUrl: 'https://twitter.com/kanyewest/',
+        color: client.colors.success,
+        msg: `"${ parsedRes.quote }"`,
+    });
+    await replyEmbed(interaction, embed);
+};
+
+export const name: string = 'kanye';
+export const permissions: PermissionsString[] = ['ViewChannel', 'SendMessages'];
+
+export const data: SlashCommandBuilder = new SlashCommandBuilder()
+    .setName('kanye')
+    .setDescription('Need some words of wisdom from Kanye?')
+    .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages | PermissionFlagsBits.ViewChannel)
+    .setDMPermission(false);
+
+
+interface KanyeResponse {
+    quote: string;
+}

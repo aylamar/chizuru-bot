@@ -1,71 +1,150 @@
-import { GuildMember, PermissionString } from 'discord.js'
-import { RunFunction } from '../../interfaces/Command'
-import { deferReply, replyMessage } from '../../util/CommonUtils'
+import { Playlist, Queue, Song } from 'discord-music-player';
+import {
+    EmbedBuilder,
+    InteractionResponse,
+    PermissionFlagsBits,
+    PermissionsString,
+    SlashCommandBuilder,
+    SlashCommandSubcommandsOnlyBuilder,
+} from 'discord.js';
+import { Field, RunCommand } from '../../interfaces';
+import { deferReply, generateEmbed, replyEmbed, replyMessage } from '../../utils';
 
-export const run: RunFunction = async (client, interaction) => {
-    if (!(interaction.member instanceof GuildMember)) return
-    if (!(interaction.channel.type === 'GUILD_TEXT')) return
+export const run: RunCommand = async (client, interaction) => {
+    if (!interaction.inCachedGuild()) return;
+    if (!interaction.member.voice.channelId) {
+        return await replyMessage(interaction, 'You must be in a voice channel to use this command.', true);
+    }
 
-    const musicChannel = client.cache[interaction.guildId].musicChannel
-    // Check to see if the server has a defined music channel and ensure command is run in channel if it does
-    if (musicChannel === interaction.channelId || musicChannel == undefined) {
-        const voiceChannel = interaction.member.voice.channel
-        const member = interaction.member
-        const textChannel = interaction.channel
+    let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
+    // make sure interaction was executed in a text channel
+    let interactionChannel = interaction.channel;
+    if (!interactionChannel || !interactionChannel.isTextBased() || interactionChannel.isDMBased() || interactionChannel.isThread()) {
+        return await replyMessage(interaction, 'You must be in a text channel to use this command.', true);
+    }
 
-        // Check to see if the user is in a voice channel
-        if (!voiceChannel) {
-            let msg = '❌ You need to be in a voice channel to run this command.'
-            return await replyMessage(client, interaction, msg)
-        }
-
-        // Ensure that user is in the same voice channel as the bot when queueing music
-        const queue = client.music.getQueue(interaction.guildId)
-        if (queue) {
-            if (voiceChannel.id !== queue.voiceChannel.id) {
-                let msg = `❌ You need to be in the same voice channel as the bot to run this command.`
-                return await replyMessage(client, interaction, msg)
-            }
-        }
-
-        // Check to see if the bot has permission to join the channel
-        const permissions = voiceChannel.permissionsFor(client.user)
-        if (!permissions.has('CONNECT')) {
-            let msg = `❌ I don't have permission to join that voice channel.`
-            return await replyMessage(client, interaction, msg)
-        }
-
-        // Check to see if the bot has permission to speak in the channel
-        if (!permissions.has('SPEAK')) {
-            let msg = `❌ I don't have permission to speak in that voice channel.`
-            return await replyMessage(client, interaction, msg)
-        }
-
-        // Defer reply while searching for song
-        await deferReply(client, interaction)
-        let args = interaction.options.getString('song') as string
-        // Search for the song and queue it if found
-        await client.music.play(voiceChannel, args, {
-            member,
-            textChannel
-        })
-        await interaction.deleteReply()
-
+    if (!queue) {
+        queue = client.player.createQueue(interaction.guildId, { data: { channelId: interaction.channelId } });
+        await queue.join(interaction.member.voice.channelId);
+        client.logger.info(`No queue found for guild ${ interaction.guild.name } (${ interaction.guildId }), creating new queue.`);
     } else {
-        let msg = `This command can only be run in <#${musicChannel}>.`
-        return await replyMessage(client, interaction, msg)
-    }
-}
+        // check to see if the user is in the same voice channel as the bot
+        if (queue.connection?.channel.id !== interaction.member.voice.channelId) {
+            return await replyMessage(interaction, 'You must be in the same voice channel as the bot to use this command.', true);
+        }
 
-export const name: string = 'play'
-export const description: string = 'Queue music for the voice channel you\'re connected to'
-export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
-export const userPermissions: Array<PermissionString> = ['SEND_MESSAGES']
-export const options: Array<Object> = [
-    {
-        name: 'song',
-        type: 3,
-        description: 'Song you\'d like to play or search for',
-        required: true
+        let data = queue.data as any;
+        let queueChannelId = data.channelId;
+        // check to see if this command is being executed as the queueChannelId
+        if (queueChannelId !== interaction.channelId) {
+            return await replyMessage(interaction, `You need to use this command in <#${ queueChannelId }>.`, true);
+        }
     }
-]
+
+    const subCommand = interaction.options.getSubcommand();
+    let embed: Promise<EmbedBuilder>;
+    let defer: Promise<InteractionResponse<boolean>> | undefined;
+
+    switch (subCommand) {
+        case 'song':
+            let songReq = interaction.options.getString('song', true);
+            let queuedSong: Song;
+            // check to see if songReq includes "playlist", if it does, direct to playlist command
+            if (songReq.includes('playlist')) {
+                return await replyMessage(interaction, 'You can\'t use playlists with this command.', true);
+            }
+            defer = deferReply(interaction);
+
+            try {
+                queuedSong = await queue.play(songReq, { requestedBy: interaction.user });
+            } catch (err: any) {
+                client.logger.warn(`Failed to find song ${ songReq } for guild ${ interaction.guild.name } (${ interaction.guildId })`);
+                client.logger.warn(err);
+                embed = generateEmbed({
+                    msg: err.message,
+                    color: client.colors.error,
+                });
+                break;
+            }
+
+            embed = generateEmbed({
+                author: interaction.user.tag,
+                authorIcon: interaction.user.avatarURL() || interaction.user.defaultAvatarURL,
+                msg: `[${ queuedSong.name }](${ queuedSong.url }) has been added to the queue by ${ interaction.user.tag }.`,
+                color: client.colors.success,
+            });
+            break;
+        case 'playlist':
+            let playlistReq = interaction.options.getString('playlist', true);
+            let queuedPlaylist: Playlist;
+            if (!playlistReq.includes('playlist')) {
+                return await replyMessage(interaction, 'Only playlists can be queued with this command.', true);
+            }
+            defer = deferReply(interaction);
+
+            try {
+                queuedPlaylist = await queue.playlist(playlistReq, { requestedBy: interaction.user });
+            } catch (err: any) {
+                client.logger.warn(`Failed to find song ${ playlistReq } for guild ${ interaction.guild.name } (${ interaction.guildId })`);
+                client.logger.warn(err);
+                embed = generateEmbed({
+                    msg: err.message,
+                    color: client.colors.error,
+                });
+                break;
+            }
+
+            let fields: Field[] = [];
+            queuedPlaylist.songs.slice(0, 9).map((song, index) => {
+                fields.push({
+                    name: `${ index + 1 }. ${ song.name }`,
+                    value: `Duration: ${ song.duration }`,
+                    inline: false,
+                });
+            });
+
+            // if more than 10 songs are in queuedPlaylist, add a field for the remaining songs
+            if (queuedPlaylist.songs.length > 9) {
+                fields.push({
+                    name: 'Additional songs',
+                    value: `${ queuedPlaylist.songs.length - 9 } more songs`,
+                    inline: false,
+                });
+            }
+
+            embed = generateEmbed({
+                author: interaction.user.tag,
+                authorIcon: interaction.user.avatarURL() || interaction.user.defaultAvatarURL,
+                msg: `${ queuedPlaylist.songs.length } songs from ${ queuedPlaylist.name } has been added to the queue by ${ interaction.user.tag }.`,
+                fields: fields,
+                color: client.colors.success,
+            });
+            break;
+        default:
+            embed = generateEmbed({
+                title: 'Error',
+            });
+    }
+
+    if (defer) await defer;
+    return await replyEmbed(interaction, await embed);
+};
+
+export const name: string = 'play';
+export const permissions: PermissionsString[] = ['ViewChannel', 'SendMessages'];
+
+export const data: SlashCommandSubcommandsOnlyBuilder = new SlashCommandBuilder()
+    .setName('play')
+    .setDescription('Queue a song to be played')
+    .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages | PermissionFlagsBits.ViewChannel | PermissionFlagsBits.Speak)
+    .setDMPermission(false)
+    .addSubcommand(subcommand => subcommand.setName('song')
+        .setDescription('Queue a song to be played')
+        .addStringOption(option => option.setName('song')
+            .setDescription('The song to be played')
+            .setRequired(true)))
+    .addSubcommand(subcommand => subcommand.setName('playlist')
+        .setDescription('Queue a playlist to be played')
+        .addStringOption(option => option.setName('playlist')
+            .setDescription('The playlist to be played')
+            .setRequired(true)));

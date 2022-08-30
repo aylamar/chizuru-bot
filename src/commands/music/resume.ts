@@ -1,33 +1,35 @@
-import { PermissionString } from 'discord.js'
-import { RunFunction } from '../../interfaces/Command'
-import { replyEmbed, replyMessage } from '../../util/CommonUtils'
+import { Queue } from 'discord-music-player';
+import {
+    PermissionFlagsBits,
+    PermissionsString,
+    SlashCommandBuilder,
+    SlashCommandSubcommandsOnlyBuilder,
+} from 'discord.js';
+import { RunCommand } from '../../interfaces';
+import { generateEmbed, inVoiceChannel, replyEmbed, replyMessage } from '../../utils';
 
-export const run: RunFunction = async (client, interaction) => {
-    const musicChannel = client.cache[interaction.guildId].musicChannel
-    if (musicChannel === interaction.channelId || musicChannel == undefined) {
-        let queue = client.music.getQueue(interaction.guild)
+export const run: RunCommand = async (client, interaction) => {
+    if (!interaction.inCachedGuild()) return false;
+    if (!await inVoiceChannel(client, interaction)) return;
+    let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
+    if (!queue || !queue.nowPlaying) return await replyMessage(interaction, 'Nothing is currently queued, why not queue something with /play?', true);
 
-        if (queue) {
-            if (!queue.paused) {
-                client.music.pause(interaction.guild)
-                let msg = 'Pausing the current song'
-                return await replyEmbed(client, interaction, { msg: msg, color: client.colors.success })
-            } else {
-                client.music.resume(interaction.guild)
-                let msg = 'Resuming the current song'
-                return await replyEmbed(client, interaction, { msg: msg, color: client.colors.success })
-            }
-        } else {
-            let msg = 'Nothing is currently playing in this server.'
-            return await replyEmbed(client, interaction, { msg: msg, color: client.colors.error })
-        }
-    } else {
-        let msg = `This command can only be run in the <#${musicChannel}>.`
-        return await replyMessage(client, interaction, msg)
-    }
-}
+    queue.setPaused(false);
+    let embed = generateEmbed({
+        author: interaction.user.tag,
+        authorIcon: interaction.user.avatarURL() || interaction.user.defaultAvatarURL,
+        msg: `The queue has been resumed by ${ interaction.user.tag }.`,
+        color: client.colors.success,
+    });
 
-export const name: string = 'resume'
-export const description: string = 'Resumes playback of the current song'
-export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
-export const userPermissions: Array<PermissionString> = ['SEND_MESSAGES']
+    await replyEmbed(interaction, await embed);
+};
+
+export const name: string = 'resume';
+export const permissions: PermissionsString[] = ['ViewChannel', 'SendMessages'];
+
+export const data: SlashCommandSubcommandsOnlyBuilder = new SlashCommandBuilder()
+    .setName('resume')
+    .setDescription('Resume the queue')
+    .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages | PermissionFlagsBits.ViewChannel | PermissionFlagsBits.Speak)
+    .setDMPermission(false);

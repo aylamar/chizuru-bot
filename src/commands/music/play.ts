@@ -123,7 +123,9 @@ export const run: RunCommand = async (client, interaction) => {
         default:
             embed = generateEmbed({
                 title: 'Error',
+                msg: 'Invalid subcommand.',
             });
+            break;
     }
 
     if (defer) await defer;

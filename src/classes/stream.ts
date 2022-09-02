@@ -3,6 +3,7 @@ import { EmbedBuilder, TextChannel } from 'discord.js';
 import { Logger } from 'winston';
 import { prisma } from '../services';
 import { generateEmbed, sendEmbed } from '../utils';
+import { NoStreamerError } from '../utils/errors';
 import { Bot } from './bot';
 import Twitch from './twitch';
 
@@ -57,6 +58,7 @@ export class Streams {
                 },
             },
         });
+        if (!res) throw new NoStreamerError('No streamers found');
 
         let streamers: StreamerData[] = [];
         res.forEach(streamer => {
@@ -82,7 +84,13 @@ export class Streams {
     }
 
     private async initState() {
-        let streamers = await this.getStreamers();
+        let streamers: StreamerData[]
+        try {
+            streamers = await this.getStreamers();
+        } catch (err) {
+            if (err instanceof NoStreamerError) this.logger.info(`No streamers found while initialing state, continuing`, { label: 'streams' });
+            return;
+        }
 
         let liveStreamIds: number[] = [];
         let offlineStreamIds: number[] = [];
@@ -108,7 +116,14 @@ export class Streams {
     }
 
     private async updateState() {
-        let streamers = await this.getStreamers();
+        let streamers: StreamerData[]
+        try {
+            streamers = await this.getStreamers();
+        } catch (err) {
+            if (err instanceof NoStreamerError) this.logger.info(`No streamers found, continuing`, { label: 'streams' });
+            return;
+        }
+
         if (streamers.length === 0) {
             this.logger.info('No streamers found', { label: 'streams' });
             return;
@@ -187,7 +202,7 @@ export class Streams {
                 let message: string | undefined;
 
                 if (isLive && channel.streamPingRoleId === '@everyone') message = `@everyone`;
-                else if (isLive && channel.streamPingRoleId !== '@everyone') message = `<@&${ channel.streamPingRoleId }>`;
+                else if (isLive && channel.streamPingRoleId) message = `<@&${ channel.streamPingRoleId }>`;
 
                 if (isLive && channel.pingRandomUser) {
                     // get a random user online in the text channel

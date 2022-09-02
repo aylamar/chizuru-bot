@@ -18,3 +18,10 @@ export class NonTextChannelError extends Error {
         this.name = 'NonTextChannelError';
     }
 }
+
+export class NoStreamerError extends Error {
+    public constructor(message: string) {
+        super(message);
+        this.name = 'NoStreamerError';
+    }
+}

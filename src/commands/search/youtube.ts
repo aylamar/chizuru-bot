@@ -14,7 +14,7 @@ export const run: RunCommand = async (client, interaction) => {
         video = null;
     }
 
-    if (video) return await replyMessage(interaction, video.url);
+    if (video) return await replyMessage(interaction, video.url, false);
     await replyMessage(interaction, `No results found for ${ searchTitle }, try searching for something else.`, true);
 };
 

@@ -1,5 +1,5 @@
 import { Guild } from '@prisma/client';
-import { AuditLogEvent, Message } from 'discord.js';
+import { AuditLogEvent, GuildAuditLogs, Message } from 'discord.js';
 import { Bot } from '../../classes/bot';
 import { Field, RunEvent } from '../../interfaces';
 import { prisma } from '../../services';
@@ -29,13 +29,19 @@ export const run: RunEvent = async (client: Bot, message: Message) => {
         messageTrimmed = message.content.substring(0, 1024) + '...';
     }
 
-    const fetchedLogs = await message.guild.fetchAuditLogs({
-        limit: 1,
-        type: AuditLogEvent.MessageDelete,
-    });
+    let fetchedLogs:  GuildAuditLogs<AuditLogEvent.MessageDelete>
+    try {
+        fetchedLogs = await message.guild.fetchAuditLogs({
+            limit: 1,
+            type: AuditLogEvent.MessageDelete,
+        });
+    } catch (err) {
+        client.logger.error(`Failed to fetch audit logs for message delete in guild ${ message.guild.name } (${ message.guildId })`, { label: 'event' });
+        client.logger.error(err);
+        return;
+    }
 
     let actionBy = getRecentAuditLog(fetchedLogs, message.author.id);
-
     let fields: Field[] = [];
     if (message.attachments.size > 0) {
         for (let attachment of message.attachments.values()) {

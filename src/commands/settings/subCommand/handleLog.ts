@@ -2,7 +2,7 @@ import { GuildBasedChannel } from 'discord.js';
 import { Bot } from '../../../classes/bot';
 import { prisma } from '../../../services';
 import { generateEmbed, generateErrorEmbed } from '../../../utils';
-import { convertSettingToName, getCurrentChannels } from './util';
+import { convertSettingToName, getCurrentChannels, updateArray } from './util';
 
 export async function handleLog(setting: string | null, enabled: boolean | null, channel: GuildBasedChannel | null, client: Bot) {
     if (!setting || !channel || enabled === undefined) {
@@ -15,17 +15,7 @@ export async function handleLog(setting: string | null, enabled: boolean | null,
 
     let settingName = convertSettingToName(setting);
     let currentChannels = await getCurrentChannels(setting, channel.guildId);
-    let updatedChannels: string[];
-    // remove the channel if it is already in the list and enabled is false
-    // otherwise, add the channel to the list if it is not in the list and enabled is true
-    if (currentChannels.includes(channel.id) && !enabled) {
-        currentChannels.splice(currentChannels.indexOf(channel.id), 1);
-        updatedChannels = currentChannels;
-    } else if (!currentChannels.includes(channel.id) && enabled) {
-        updatedChannels = [...currentChannels, channel.id];
-    } else {
-        updatedChannels = currentChannels;
-    }
+    let updatedChannels = await updateArray(currentChannels, channel.id, enabled);
 
     if (!channel.isTextBased() || channel.isDMBased() || channel.isThread()) {
         return generateEmbed({

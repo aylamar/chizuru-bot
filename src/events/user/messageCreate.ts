@@ -25,7 +25,14 @@ export const run: RunEvent = async (client: Bot, message: Message) => {
             user: {
                 connectOrCreate: {
                     where: { userId: userId },
-                    create: { userId: userId },
+                    create: { userId: userId,
+                        guilds: {
+                        connectOrCreate: {
+                            where: { guildId: guildId },
+                            create: { guildId: guildId },
+                            },
+                        }
+                    },
                 },
             },
             channel: {

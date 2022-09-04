@@ -74,7 +74,6 @@ model User {
   id           Int            @id @unique @default(autoincrement())
   userId       String         @unique
   guilds       Guild[]
-  messageCount Int?
   messageStats MessageStats[]
 
   created DateTime @default(now())

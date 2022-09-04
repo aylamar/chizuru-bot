@@ -25,12 +25,11 @@ export class Starboard {
         if (starboards.length === 0) return;
 
         for (const starboard of starboards) {
-            if (starboard.emote.toLowerCase() !== reaction.emoji.name?.toLowerCase()) continue;
             if (starboard.blacklistedChannelIds.includes(message.channelId)) continue;
             if (starboard.blacklistedUserIds.includes(author.id)) continue;
 
             // count all reactions by userIds that are not blacklisted
-            if (reaction.users.cache) await reaction.users.fetch();
+            if (!reaction.users.cache) await reaction.users.fetch();
             const count = reaction.users.cache.map(user => user.id)
                 .filter(userId => !starboard.blacklistedUserIds.includes(userId)).length;
             if (count < starboard.emoteCount) continue;

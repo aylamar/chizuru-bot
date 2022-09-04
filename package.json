@@ -5,9 +5,7 @@
   "main": "app.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "launch": "node build/app.js",
-    "rebuild": "npm run build",
-    "start": "npm run build && npm run launch",
+    "start": "node build/app.js",
     "deploy": "npm run build && node build/deploy.js"
   },
   "keywords": [],

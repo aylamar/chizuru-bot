@@ -27,7 +27,7 @@ model Guild {
 
 model Starboard {
   id                    Int                @id @unique @default(autoincrement())
-  Guild                 Guild              @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+  guild                 Guild              @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
   guildId               String
   channelId             String             @unique
   emote                 String
@@ -73,7 +73,7 @@ model Channel {
 model User {
   id           Int            @id @unique @default(autoincrement())
   userId       String         @unique
-  Guilds       Guild[]
+  guilds       Guild[]
   messageCount Int?
   MessageStats MessageStats[]
 

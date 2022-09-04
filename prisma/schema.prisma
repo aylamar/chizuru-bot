@@ -26,19 +26,35 @@ model Guild {
 }
 
 model Starboard {
-  id               Int      @id @unique @default(autoincrement())
-  Guild            Guild    @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
-  guildId          String
-  channelId        String   @unique
-  emote            String
-  emoteCount       Int?
-  maxMessageAge    Int?
-  bannedChannelIds String[]
-  bannedRoleIds    String[]
-  bannedUserIds    String[]
+  id                    Int                @id @unique @default(autoincrement())
+  Guild                 Guild              @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+  guildId               String
+  channelId             String             @unique
+  emote                 String
+  emoteCount            Int                @default(5)
+  maxMessageAge         Int                @default(72)
+  blacklistedChannelIds String[]
+  blacklistedRoleIds    String[]
+  blacklistedUserIds    String[]
+  StarboardMessage      StarboardMessage[]
 
   created DateTime @default(now())
   updated DateTime @default(now()) @updatedAt
+}
+
+model StarboardMessage {
+  id            Int       @id @unique @default(autoincrement())
+  starboard     Starboard @relation(fields: [starboardId], references: [id], onDelete: Cascade)
+  starboardId   Int
+  messageId     String    @unique
+  userMessageId String
+  emoteCount    Int
+  deleted       Boolean   @default(false)
+
+  created DateTime @default(now())
+  updated DateTime @default(now()) @updatedAt
+
+  @@unique([starboardId, userMessageId])
 }
 
 model Channel {

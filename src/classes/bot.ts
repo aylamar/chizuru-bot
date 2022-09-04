@@ -5,6 +5,7 @@ import { Command, EmbedColors, Event, PlayerEvent } from '../interfaces';
 import { getLogger } from '../services';
 import { getFiles } from '../utils';
 import { Streams } from './stream';
+import { Starboard } from './starboard';
 import Twitch from './twitch';
 
 export class Bot extends Client {
@@ -13,6 +14,7 @@ export class Bot extends Client {
     commands: Collection<string, Command> = new Collection();
     public player: Player;
     public twitch: Twitch;
+    public starboard: Starboard;
     private streams: Streams;
     private events: Collection<string, Event> = new Collection;
 
@@ -49,6 +51,7 @@ export class Bot extends Client {
         this.player = new Player(this, { deafenOnJoin: true, volume: 125 });
         this.twitch = new Twitch(process.env.TWITCH_CLIENT_ID, process.env.TWITCH_SECRET, this.logger);
         this.streams = new Streams(this);
+        this.starboard = new Starboard(this);
 
         // note: Discord requires decimal color codes
         this.colors = {

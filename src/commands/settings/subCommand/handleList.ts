@@ -62,13 +62,13 @@ async function generateSettingsFields(guild: (Guild & { starboards: Starboard[] 
         for (let starboard of guild.starboards) {
             let starboardField: Field = {
                 name: 'Starboard Settings',
-                value: `Channel: ${ starboard.channelId }`
+                value: `Channel: <#${ starboard.channelId }>`
                     + `\nEmote: ${ starboard.emote }`
                     + `\nRequired ${ starboard.emote }: ${ starboard.emoteCount }`
-                    + `\nBanned Users: ${ starboard.bannedUserIds ? starboard.bannedUserIds.map((id) => {
+                    + `\nBanned Users: ${ starboard.blacklistedUserIds ? starboard.blacklistedUserIds.map((id) => {
                         return `<@${ id }>`;
                     }).join(', ') : 'None' }`
-                    + `\nBlacklisted Channels: ${ starboard.bannedChannelIds ? starboard.bannedChannelIds.map((id) => {
+                    + `\nBlacklisted Channels: ${ starboard.blacklistedChannelIds ? starboard.blacklistedChannelIds.map((id) => {
                         return `<#${ id }>`;
                     }).join(', ') : 'None' }`,
                 inline: false,

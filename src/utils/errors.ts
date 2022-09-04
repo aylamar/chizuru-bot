@@ -25,3 +25,10 @@ export class NoStreamerError extends Error {
         this.name = 'NoStreamerError';
     }
 }
+
+export class NoStarboardError extends Error {
+    public constructor(message: string) {
+        super(message);
+        this.name = 'NoStarboardError';
+    }
+}

@@ -1,4 +1,6 @@
+import { Starboard } from '@prisma/client';
 import { prisma } from '../../../services';
+import { NoStarboardError } from '../../../utils';
 
 export async function convertSettingToName(setting: string): Promise<string> {
     switch (setting) {
@@ -47,5 +49,30 @@ export async function updateArray(idArray: string[], id: string, enabled: boolea
         // otherwise, do nothing
     } else {
         return idArray;
+    }
+}
+
+export async function getStarboardIds(setting: string, channelId: string) {
+    let guild = await prisma.starboard.findUnique({ where: { channelId: channelId } });
+    if (!guild) throw new NoStarboardError('No starboard exists for this channel.');
+
+    switch (setting) {
+        case 'channel':
+            return guild.blacklistedChannelIds;
+        case 'user':
+            return guild.blacklistedUserIds;
+        default:
+            return [];
+    }
+}
+
+export async function convertStarboardSettings(setting: string): Promise<keyof Starboard> {
+    switch (setting) {
+        case 'channel':
+            return 'blacklistedChannelIds';
+        case 'user':
+            return 'blacklistedUserIds';
+        default:
+            throw new Error('Invalid setting');
     }
 }

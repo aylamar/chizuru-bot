@@ -1,4 +1,4 @@
-export { ApiConnectionError, LocateStreamerError, NonTextChannelError } from './errors';
+export { ApiConnectionError, LocateStreamerError, NonTextChannelError, NoStarboardError } from './errors';
 export { getFiles } from './files';
 export {
     deferReply,

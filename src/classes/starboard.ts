@@ -117,6 +117,12 @@ export class Starboard {
                 .filter(embed => embed.thumbnail || embed.image)
                 .map(embed => (embed.thumbnail) ? embed.thumbnail.url : embed.image?.url);
             imageUrl = images[0];
+        } else if (message.attachments.size) {
+            const firstAttachment = message.attachments.first()
+            if (firstAttachment) {
+                imageUrl = firstAttachment.url;
+                content += `\n📎 [${ firstAttachment.name }](${ firstAttachment.url })`;
+            }
         }
 
         return generateEmbed({

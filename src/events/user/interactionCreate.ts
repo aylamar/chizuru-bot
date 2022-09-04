@@ -15,22 +15,6 @@ export const run: RunEvent = async (client: Bot, interaction: ChatInputCommandIn
     const channel: Channel | undefined = client.channels.cache.get(interaction.channelId);
     if (!channel || !channel.isTextBased() || channel.isDMBased() || !interaction.inCachedGuild()) return;
 
-    // check for permissions
-    // let botMember = await interaction.guild.members.cache.get(client.user.id)?.fetch();
-    // if (!botMember) return;
-    //
-    // // check if the bot has the required permissions
-    // let messingPerms = [];
-    // const botPerms = botMember.permissions.toArray();
-    // for (const idx in command.permissions) {
-    //     if (!botPerms.includes(command.permissions[idx])) messingPerms.push(command.permissions[idx]);
-    // }
-    //
-    // if (messingPerms.length > 0) {
-    //     let msg = `❌ I need the these permissions to run this command: ${ messingPerms.join(', ') }`;
-    //     return await replyMessage(interaction, msg, true);
-    // }
-
     try {
         await command.run(client, interaction);
     } catch (err) {

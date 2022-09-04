@@ -48,6 +48,8 @@ export class Starboard {
 
             let starboardMessage: Message | undefined;
             if (!dbMessage) {
+                // do not send new message if it is older than the maximum message age
+                if (message.createdTimestamp < (Date.now() - (starboard.maxMessageAge * 60 * 60 * 1000))) continue;
                 this.logger.debug(`Creating new starboard message for ${ message.id } in ${ channel.name } for ${ starboard.emote }`, { label: 'starboard' });
                 starboardMessage = await channel.send({ embeds: [await embed] });
                 await this.updateStarboardMessage(starboard.id, starboardMessage.id, message.id, count);
@@ -117,7 +119,7 @@ export class Starboard {
                 .map(embed => (embed.thumbnail) ? embed.thumbnail.url : embed.image?.url);
             imageUrl = images[0];
         } else if (message.attachments.size) {
-            const firstAttachment = message.attachments.first()
+            const firstAttachment = message.attachments.first();
             if (firstAttachment) {
                 imageUrl = firstAttachment.url;
                 content += `\n📎 [${ firstAttachment.name }](${ firstAttachment.url })`;

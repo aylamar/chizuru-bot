@@ -36,7 +36,7 @@ model Starboard {
   blacklistedChannelIds String[]
   blacklistedRoleIds    String[]
   blacklistedUserIds    String[]
-  StarboardMessage      StarboardMessage[]
+  starboardMessage      StarboardMessage[]
 
   created DateTime @default(now())
   updated DateTime @default(now()) @updatedAt
@@ -64,7 +64,7 @@ model Channel {
   guildId   String
 
   followedStreamers Streamer[]
-  MessageStats      MessageStats[]
+  messageStats      MessageStats[]
 
   created DateTime @default(now())
   updated DateTime @default(now())
@@ -75,7 +75,7 @@ model User {
   userId       String         @unique
   guilds       Guild[]
   messageCount Int?
-  MessageStats MessageStats[]
+  messageStats MessageStats[]
 
   created DateTime @default(now())
   updated DateTime @default(now()) @updatedAt
@@ -98,7 +98,6 @@ model Streamer {
 
 model MessageStats {
   id           Int     @id @unique @default(autoincrement())
-  hour         BigInt
   user         User    @relation(fields: [userId], references: [userId])
   userId       String
   channel      Channel @relation(fields: [channelId], references: [channelId], onDelete: Cascade)
@@ -108,7 +107,7 @@ model MessageStats {
   created DateTime @default(now())
   updated DateTime @default(now()) @updatedAt
 
-  @@unique([hour, channelId, userId])
+  @@unique([channelId, userId])
 }
 
 enum StreamPlatform {

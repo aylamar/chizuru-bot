@@ -7,7 +7,6 @@ export const run: RunEvent = async (client: Bot, message: Message) => {
     const start = process.hrtime.bigint();
     if (message.author.bot) return;
 
-    let hourTimestamp = Date.now() / 1000;
     const guildId = message.guild?.id;
     const channelId = message.channel?.id;
     const userId = message.author?.id;
@@ -17,14 +16,12 @@ export const run: RunEvent = async (client: Bot, message: Message) => {
 
     await prisma.messageStats.upsert({
         where: {
-            hour_channelId_userId: {
-                hour: BigInt(hourTimestamp - hourTimestamp % 3600),
+            channelId_userId: {
                 userId: userId,
                 channelId: channelId,
             },
         },
         create: {
-            hour: BigInt(hourTimestamp - hourTimestamp % 3600),
             user: {
                 connectOrCreate: {
                     where: { userId: userId },

@@ -2,7 +2,7 @@
 config.json
 
 # lib folder
-lib/
+build/
 
 # idea folder
 .idea/

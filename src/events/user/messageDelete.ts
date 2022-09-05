@@ -1,71 +1,86 @@
-import { Message, TextChannel } from 'discord.js'
-import { Bot } from '../../client/client'
-import { RunFunction } from '../../interfaces/Event'
-import { getGuildLogMsgDeleteChannels, sendEmbed} from '../../util/CommonUtils'
-import { Field } from '../../interfaces/MessageData'
+import { Guild } from '@prisma/client';
+import { AuditLogEvent, GuildAuditLogs, Message } from 'discord.js';
+import { Bot } from '../../classes/bot';
+import { Field, RunEvent } from '../../interfaces';
+import { prisma } from '../../services';
+import { generateEmbed, sendEmbedToChannelArr } from '../../utils';
+import { getRecentAuditLog } from '../../utils/guilds';
 
-export const run: RunFunction = async (client: Bot, message: Message) => {
-    let guildID: string = message.guildId
-    let logChannels = await getGuildLogMsgDeleteChannels(client, guildID)
+export const run: RunEvent = async (client: Bot, message: Message) => {
+    const start = process.hrtime.bigint();
+    if (message.partial) return;
+    if (!message.inGuild()) return;
+    if (message.author?.bot) return;
 
-    if (!logChannels) return
-    if (!client.cache[guildID].messageDelete) return
-    if (client.cache[guildID].logBlacklist?.includes(message.channelId)) return
-    if (message.partial) return
-    if (message.author?.bot) return
-
-    // Trim message.content to be 1900 characters or fewer
-    let messageTrimmed = message.content
-    if (message.content.length > 1900) {
-        messageTrimmed = message.content.substring(0, 1900)
+    let guildId: string = message.guildId;
+    let guild: Guild | null;
+    try {
+        guild = await prisma.guild.findUnique({ where: { guildId: guildId } });
+    } catch (err) {
+        client.logger.error(err);
+        return;
     }
 
-    logChannels.map(async (l) => {
-        let channel = client.channels.resolve(l) as TextChannel
-        if (channel.isText()) {
-            await sendEmbed(client, channel, {
-                author: message.author.tag,
-                authorIcon: message.author.avatarURL(),
-                msg: `Message from <@${message.author.id}> deleted in <#${message.channelId}>\n\n${messageTrimmed}`,
-                footer: `User ID: ${message.author.id}`,
-                timestamp: true,
-                color: client.colors.error
-            })
+    if (!guild || !guild.logDeletedMessagesChannels) return;
+    if (guild.logBlacklistedChannels.includes(message.channelId)) return;
 
-            if (message.attachments.first() !== undefined) {
-                await sendEmbed(client, channel, {
-                    author: message.author.tag,
-                    authorIcon: message.author.avatarURL(),
-                    msg: `${message.author.tag}'s message included the following attachments:`,
-                    footer: `User ID: ${message.author.id}`,
-                    timestamp: true,
-                    color: client.colors.error
-                })
+    let messageTrimmed = message.content;
+    if (message.content.length > 1024) {
+        messageTrimmed = message.content.substring(0, 1024) + '...';
+    }
 
-                let fields: Field[] = []
+    let fetchedLogs:  GuildAuditLogs<AuditLogEvent.MessageDelete>
+    try {
+        fetchedLogs = await message.guild.fetchAuditLogs({
+            limit: 1,
+            type: AuditLogEvent.MessageDelete,
+        });
+    } catch (err) {
+        client.logger.error(`Failed to fetch audit logs for message delete in guild ${ message.guild.name } (${ message.guildId })`, { label: 'event' });
+        client.logger.error(err);
+        return;
+    }
 
-                message.attachments.forEach((attachment) => {
-                    fields.push({
-                        name: `Content Type: ${attachment.contentType}`,
-                        value: `<${attachment.url}>`,
-                        inline: true
-                    })
-                })
-
-                return await sendEmbed(client, channel, {
-                    author: message.author.tag,
-                    authorIcon: message.author.avatarURL(),
-                    footer: `User ID: ${message.author.id}`,
-                    fields,
-                    timestamp: true,
-                    color: client.colors.error
-                })
-
-            }
-        } else {
-            return
+    let actionBy = getRecentAuditLog(fetchedLogs, message.author.id);
+    let fields: Field[] = [];
+    if (message.attachments.size > 0) {
+        for (let attachment of message.attachments.values()) {
+            fields.push({
+                name: `Attached File`,
+                value: `File Name: ${ attachment.name }\n`
+                    + `File Size: ${ await formatBytes(attachment.size) }\n`
+                    + `Content Type: ${ attachment.contentType }\n`
+                    + `File URLs: [Attachment URL](${ attachment.url }), [Proxy URL](${ attachment.proxyURL })`,
+                inline: false,
+            });
         }
-    })
-}
+    }
 
-export const name: string = 'messageDelete'
+    let embed = await generateEmbed({
+        author: message.author.tag,
+        authorIcon: message.author.avatarURL() || message.author.defaultAvatarURL,
+        msg: `Message from <@${ message.author.id }> deleted in <#${ message.channelId }>${ await actionBy }\n\n${ messageTrimmed }`,
+        footer: `User ID: ${ message.author.id }`,
+        fields: fields,
+        timestamp: true,
+        color: client.colors.error,
+    });
+
+    await sendEmbedToChannelArr(client, guild.logDeletedMessagesChannels, embed);
+    const result = process.hrtime.bigint();
+    client.logger.debug(`Spent ${ ((result - start) / BigInt(1000000)) }ms processing message delete in ${ message.channel.name } by ${ message.author.tag }`, { label: 'event' });
+};
+
+export const name: string = 'messageDelete';
+
+async function formatBytes(bytes: number, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}

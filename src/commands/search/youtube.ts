@@ -1,45 +1,41 @@
-import { PermissionString } from 'discord.js'
-import { RunFunction } from '../../interfaces/Command'
-import ytSearch from 'yt-search'
-import { deferReply, replyMessage } from '../../util/CommonUtils'
+import { PermissionFlagsBits, PermissionsString, SlashCommandBuilder } from 'discord.js';
+import ytSearch from 'yt-search';
+import { RunCommand } from '../../interfaces';
+import { replyMessage } from '../../utils';
 
-export const run: RunFunction = async (client, interaction) => {
-    let args = interaction.options.getString('title') as string
-    await deferReply(client, interaction)
+export const run: RunCommand = async (client, interaction) => {
+    let searchTitle = interaction.options.getString('title') as string;
+    let video: ytSearch.VideoSearchResult | null;
 
-    const videoSearch = async (query: any) => {
-        try {
-            const video = await ytSearch(query)
-            if (video.videos.length > 1) {
-                return video.videos[0]
-            } else {
-                return null
-            }
-        } catch (err) {
-            client.logger.error(err)
-            return null
-        }
+    try {
+        video = await videoSearch(searchTitle);
+    } catch (err: any) {
+        client.logger.error(err);
+        video = null;
     }
 
-    const video = await videoSearch(args)
-    if (video) {
-        let msg = `${video.url}`
-        return await replyMessage(client, interaction, msg)
+    if (video) return await replyMessage(interaction, video.url, false);
+    await replyMessage(interaction, `No results found for ${ searchTitle }, try searching for something else.`, true);
+};
+
+export const name: string = 'youtube';
+export const permissions: PermissionsString[] = ['ViewChannel', 'SendMessages'];
+
+export const data: SlashCommandBuilder = new SlashCommandBuilder()
+    .setName('youtube')
+    .setDescription('Search for a video on YouTube by title')
+    .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages | PermissionFlagsBits.ViewChannel)
+    .addStringOption(option => option.setName('title')
+        .setDescription('The title of the video to search for')
+        .setRequired(true))
+    .setDMPermission(true);
+
+
+async function videoSearch(query: string) {
+    const video = await ytSearch(query);
+    if (video.videos.length > 1) {
+        return video.videos[0];
     } else {
-        let msg = '❌ Unable to find a video with this name'
-        return await replyMessage(client, interaction, msg)
+        return null;
     }
 }
-
-export const name: string = 'youtube'
-export const description: string = 'Search for a video on YouTube by title'
-export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
-export const userPermissions: Array<PermissionString> = ['SEND_MESSAGES']
-export const options: Array<Object> = [
-    {
-        name: 'title',
-        type: 3,
-        description: 'Title of the video you\'d like to search for',
-        required: true
-    }
-]

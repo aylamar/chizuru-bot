@@ -1,8 +1,0 @@
-{
-    "guildID": "<guild ID>",
-    "clientID": "<client ID",
-    "mongoURI": "<url here>",
-    "discordToken": "<Discord Bot Token",
-    "twitchClientID": "<Twitch API client ID>",
-    "twitchClientSecret": "<Twitch API client secret>"
-}

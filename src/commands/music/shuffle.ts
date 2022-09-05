@@ -1,27 +1,38 @@
-import { PermissionString } from 'discord.js'
-import { RunFunction } from '../../interfaces/Command'
-import { replyEmbed, replyMessage } from '../../util/CommonUtils'
+import { Queue } from 'discord-music-player';
+import {
+    PermissionFlagsBits,
+    PermissionsString,
+    SlashCommandBuilder,
+    SlashCommandSubcommandsOnlyBuilder,
+} from 'discord.js';
+import { RunCommand } from '../../interfaces';
+import { generateEmbed, inVoiceChannel, replyEmbed, replyMessage } from '../../utils';
 
-export const run: RunFunction = async (client, interaction) => {
-    const musicChannel = client.cache[interaction.guildId].musicChannel
-    if (musicChannel === interaction.channelId || musicChannel == undefined) {
-        let queue = client.music.getQueue(interaction.guild)
+export const run: RunCommand = async (client, interaction) => {
+    if (!interaction.inCachedGuild()) return false;
+    if (!await inVoiceChannel(client, interaction)) return;
+    let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
+    if (!queue || !queue.nowPlaying) return await replyMessage(interaction, 'Nothing is currently queued, why not queue something with /play?', true);
 
-        if (queue) {
-            await queue.shuffle()
-            let msg = 'The queue has been shuffled.'
-            return await replyEmbed(client, interaction, { msg: msg, color: client.colors.success })
-        } else {
-            let msg = 'Nothing is currently playing in this server.'
-            return await replyEmbed(client, interaction, { msg: msg, color: client.colors.error })
-        }
-    } else {
-        let msg = `This command can only be run in <#${musicChannel}>.`
-        return await replyMessage(client, interaction, msg)
-    }
-}
+    let shuffled = queue.shuffle();
+    if (!shuffled) return await replyMessage(interaction, 'There are no songs to shuffle, queue more songs then try again', true);
+    queue.songs = shuffled;
 
-export const name: string = 'shuffle'
-export const description: string = 'Shuffles the current queue'
-export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
-export const userPermissions: Array<PermissionString> = ['SEND_MESSAGES']
+    let embed = generateEmbed({
+        author: interaction.user.tag,
+        authorIcon: interaction.user.avatarURL() || interaction.user.defaultAvatarURL,
+        msg: `The queue has been shuffled by ${ interaction.user.tag }.`,
+        color: client.colors.success,
+    });
+
+    await replyEmbed(interaction, await embed);
+};
+
+export const name: string = 'shuffle';
+export const permissions: PermissionsString[] = ['ViewChannel', 'SendMessages'];
+
+export const data: SlashCommandSubcommandsOnlyBuilder = new SlashCommandBuilder()
+    .setName('shuffle')
+    .setDescription('Shuffle the queue')
+    .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages | PermissionFlagsBits.ViewChannel | PermissionFlagsBits.Speak)
+    .setDMPermission(false);

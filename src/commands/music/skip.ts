@@ -1,33 +1,39 @@
-import { PermissionString } from 'discord.js'
-import { RunFunction } from '../../interfaces/Command'
-import { replyEmbed, replyMessage } from '../../util/CommonUtils'
+import { Queue } from 'discord-music-player';
+import {
+    PermissionFlagsBits,
+    PermissionsString,
+    SlashCommandBuilder,
+    SlashCommandSubcommandsOnlyBuilder,
+} from 'discord.js';
+import { RunCommand } from '../../interfaces';
+import { generateEmbed, replyEmbed, replyMessage } from '../../utils';
 
-export const run: RunFunction = async (client, interaction) => {
-    const musicChannel = client.cache[interaction.guildId].musicChannel
-    if (musicChannel === interaction.channelId || musicChannel == undefined) {
-        let queue = client.music.getQueue(interaction.guild)
-
-        if (queue) {
-            if (queue.songs[1]) {
-                let msg = `Skipping ${queue.songs[0].name}...`
-                await queue.skip()
-                return await replyEmbed(client, interaction, { msg: msg, color: client.colors.success })
-            } else {
-                let msg = `Skipping ${queue.songs[0].name}.`
-                await queue.stop()
-                return await replyEmbed(client, interaction, { msg: msg, color: client.colors.success })
-            }
-        } else {
-            let msg = 'Nothing is currently playing in this server.'
-            return await replyEmbed(client, interaction, { msg: msg, color: client.colors.error })
-        }
-    } else {
-        let msg = `This command can only be run in <#${musicChannel}>.`
-        return await replyMessage(client, interaction, msg)
+export const run: RunCommand = async (client, interaction) => {
+    if (!interaction.inCachedGuild()) return;
+    if (!interaction.member.voice.channelId) {
+        return await replyMessage(interaction, 'You must be in a voice channel to use this command.', true);
     }
-}
+    let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
+    if (!queue || !queue.nowPlaying) return await replyMessage(interaction, 'Nothing is currently queued, why not queue something with /play?', true);
 
-export const name: string = 'skip'
-export const description: string = 'Skips the current song'
-export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
-export const userPermissions: Array<PermissionString> = ['SEND_MESSAGES']
+    let currentSong = queue.nowPlaying;
+    let skip = queue.skip();
+    let embed = generateEmbed({
+        author: interaction.user.tag,
+        authorIcon: interaction.user.avatarURL() || interaction.user.defaultAvatarURL,
+        msg: `${ currentSong.name } has been skipped by ${ interaction.user.tag }.`,
+        color: client.colors.success,
+    });
+
+    await skip;
+    await replyEmbed(interaction, await embed);
+};
+
+export const name: string = 'skip';
+export const permissions: PermissionsString[] = ['ViewChannel', 'SendMessages'];
+
+export const data: SlashCommandSubcommandsOnlyBuilder = new SlashCommandBuilder()
+    .setName('skip')
+    .setDescription('Skip the current song')
+    .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages | PermissionFlagsBits.ViewChannel | PermissionFlagsBits.Speak)
+    .setDMPermission(false);

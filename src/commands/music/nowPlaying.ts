@@ -1,47 +1,37 @@
-import { PermissionString } from 'discord.js'
-import { RunFunction } from '../../interfaces/Command'
-import { replyEmbed, replyMessage } from '../../util/CommonUtils'
+import { Queue } from 'discord-music-player';
+import {
+    PermissionFlagsBits,
+    PermissionsString,
+    SlashCommandBuilder,
+    SlashCommandSubcommandsOnlyBuilder,
+} from 'discord.js';
+import { RunCommand } from '../../interfaces';
+import { generateEmbed, inVoiceChannel, replyEmbed, replyMessage } from '../../utils';
 
-export const run: RunFunction = async (client, interaction) => {
-    const musicChannel = client.cache[interaction.guildId].musicChannel
-    // Check to see if the server has a defined music channel and ensure command is run in channel if it does
-    if (musicChannel === interaction.channelId || musicChannel == undefined) {
-        let queue = client.music.getQueue(interaction.guild)
+export const run: RunCommand = async (client, interaction) => {
+    if (!interaction.inCachedGuild()) return false;
+    if (!await inVoiceChannel(client, interaction)) return;
+    let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
+    if (!queue || !queue.nowPlaying) return await replyMessage(interaction, 'Nothing is currently queued, why not queue something with /play?', true);
 
-        // If queue exists, send a message containing the current song
-        if (queue) {
-            const song = queue.songs[0]
+    let nowPlaying = queue.nowPlaying;
 
-            let curTime = await beautifySeconds(queue.currentTime)
-            let dur = await beautifySeconds(song.duration)
+    let embed = generateEmbed({
+        author: interaction.user.tag,
+        authorIcon: interaction.user.avatarURL() || interaction.user.defaultAvatarURL,
+        msg: `${ nowPlaying.name } (${ queue.createProgressBar().times }) requested by ${ nowPlaying.requestedBy?.tag } is currently playing`,
+        color: client.colors.success,
+    });
 
-            let msg = `**[${song.name}](${song.url})** (${curTime}/${dur}) requested by ${song.user}.`
-            return await replyEmbed(client, interaction, { msg: msg, color: client.colors.purple })
-        } else {
-            let msg = 'Nothing is currently playing in this server.'
-            return await replyEmbed(client, interaction, { msg: msg, color: client.colors.error })
-        }
-    } else {
-        let msg = `This command can only be run in <#${musicChannel}>.`
-        return await replyMessage(client, interaction, msg)
-    }
-}
+    await replyEmbed(interaction, await embed);
+};
 
-export const name: string = 'nowplaying'
-export const description: string = 'Show what song is currently playing'
-export const botPermissions: Array<PermissionString> = ['SEND_MESSAGES', 'VIEW_CHANNEL']
-export const userPermissions: Array<PermissionString> = ['SEND_MESSAGES']
+export const name: string = 'nowplaying';
+export const permissions: PermissionsString[] = ['ViewChannel', 'SendMessages'];
 
-async function beautifySeconds(sec: number) {
-    let minutes: number
-    let seconds: number | string
+export const data: SlashCommandSubcommandsOnlyBuilder = new SlashCommandBuilder()
+    .setName('nowplaying')
+    .setDescription('View the currently playing song')
+    .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages | PermissionFlagsBits.ViewChannel | PermissionFlagsBits.Speak)
+    .setDMPermission(false);
 
-    minutes = Math.floor(sec / 60)
-    seconds = Math.floor(sec % 60)
-
-    if (seconds < 10) {
-        seconds = `0${seconds}`
-    }
-
-    return `${minutes}:${seconds}`
-}

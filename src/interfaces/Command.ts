@@ -1,15 +1,21 @@
-import { CommandInteraction, PermissionString } from 'discord.js'
-import { Bot } from '../client/client'
+import {
+    CacheType,
+    ChatInputCommandInteraction,
+    PermissionsString,
+    SlashCommandBuilder,
+    SlashCommandSubcommandsOnlyBuilder,
+} from 'discord.js';
+import { Bot } from '../classes/bot';
 
-export interface RunFunction {
-    (client: Bot, interaction: CommandInteraction, args?: string[]): Promise<void>
+export interface RunCommand {
+    (client: Bot, args: ChatInputCommandInteraction<CacheType>): void;
 }
 
 export interface Command {
-    name: string
-    category: string
-    options?: Array<any>
-    botPermissions: Array<PermissionString>
-    userPermissions: Array<PermissionString>
-    run: RunFunction
+    name: string;
+    permissions: PermissionsString[];
+    description: string;
+    aliases: string[];
+    run: RunCommand;
+    data: SlashCommandBuilder | SlashCommandSubcommandsOnlyBuilder;
 }

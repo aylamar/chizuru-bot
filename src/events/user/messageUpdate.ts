@@ -29,7 +29,7 @@ export const run: RunEvent = async (client: Bot, oldMessage: Message, newMessage
     let newMsgTrimmed = newMessage.content;
     if (newMsgTrimmed.length > 900) newMsgTrimmed = newMsgTrimmed.substring(0, 900) + '...';
 
-    let oldMsgTrimmed = newMessage.content;
+    let oldMsgTrimmed = oldMessage.content;
     if (oldMsgTrimmed.length > 900) oldMsgTrimmed = oldMsgTrimmed.substring(0, 900) + '...';
 
     let embed = await generateEmbed({

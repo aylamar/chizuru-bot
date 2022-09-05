@@ -6,15 +6,27 @@ import { prisma } from '../../services';
 export const run: RunEvent = async (client: Bot, message: Message) => {
     const start = process.hrtime.bigint();
     if (message.author.bot) return;
+    if (!message.inGuild()) return
 
-    const guildId = message.guild?.id;
-    const channelId = message.channel?.id;
-    const userId = message.author?.id;
+    const guildId = message.guild.id;
+    const channelId = message.channel.id;
+    const userId = message.author.id;
 
-    if (!guildId || !channelId || !userId) return;
-    if (!message.channel.isTextBased() || message.channel.isDMBased()) return;
+    try {
+        await upsertMessageStat(userId, channelId, guildId);
+    } catch (error: any) {
+        client.logger.error('Error while upserting message stat', { label: 'event' });
+        client.logger.error(error, { label: 'event' });
+    }
 
-    await prisma.messageStats.upsert({
+    const result = process.hrtime.bigint();
+    client.logger.debug(`Spent ${ ((result - start) / BigInt(1000000)) }ms processing message create in ${ message.channel.name } by ${ message.author.tag }`, { label: 'event' });
+};
+
+export const name = 'messageCreate';
+
+async function upsertMessageStat(userId: string, channelId: string, guildId: string) {
+    return await prisma.messageStats.upsert({
         where: {
             channelId_userId: {
                 userId: userId,
@@ -27,9 +39,9 @@ export const run: RunEvent = async (client: Bot, message: Message) => {
                     where: { userId: userId },
                     create: { userId: userId,
                         guilds: {
-                        connectOrCreate: {
-                            where: { guildId: guildId },
-                            create: { guildId: guildId },
+                            connectOrCreate: {
+                                where: { guildId: guildId },
+                                create: { guildId: guildId },
                             },
                         }
                     },
@@ -53,9 +65,4 @@ export const run: RunEvent = async (client: Bot, message: Message) => {
         },
         update: { messageCount: { increment: 1 } },
     });
-
-    const result = process.hrtime.bigint();
-    client.logger.debug(`Spent ${ ((result - start) / BigInt(1000000)) }ms processing message create in ${ message.channel.name } by ${ message.author.tag }`, { label: 'event' });
-};
-
-export const name = 'messageCreate';
+}

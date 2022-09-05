@@ -9,7 +9,7 @@ Chizuru Bot is a multipurpose Discord bot that was originally intended to notify
 - Fun: `gnome` and `kanye`.
 - Search: `lookup` and `youtube`.
 - Settings: `settings log`, `starboard create`, and **5** more. 
-- Util: `ping`
+- Util: `ping`, `stats`
 
 A full list of commands and how to use them can be found [here](https://github.com/aylamar/chizuru-bot/wiki/Commands).
 

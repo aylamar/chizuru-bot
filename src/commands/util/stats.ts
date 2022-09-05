@@ -32,7 +32,7 @@ export const run: RunCommand = async (client, interaction) => {
         name: 'User Info',
         value: `Username: ${ interaction.user.username }\n`
             + `Discriminator: ${ interaction.user.discriminator }\n`
-            + `Avatar: [Click Here](${ interaction.user.avatarURL() })\n`
+            + `Avatar: [Click Here](${ interaction.user.displayAvatarURL() })\n`
             + `User ID: ${ interaction.user.id }\n`
             + `Create Date: ${ await convertDate(interaction.user.createdAt) }\n`,
         inline: true,

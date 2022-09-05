@@ -4,67 +4,47 @@ import { prisma } from '../../services';
 import { generateEmbed, replyEmbed, replyMessage } from '../../utils';
 
 export const run: RunCommand = async (client, interaction) => {
-    if(!interaction.inGuild()) return
-    let user = await prisma.user.findUnique({
-        where: {
-            userId: interaction.user.id,
-        },
-        include: {
-            guilds: true,
-        },
-    })
-    if(!user) return await replyMessage(interaction, 'You are not registered in the database, have you sent any messages before?')
+    if (!interaction.inGuild()) return;
+    let user = await getUser(interaction.user.id);
+    if (!user) return await replyMessage(interaction, 'You are not registered in the database, have you sent any messages before?');
 
-    let messages = await prisma.messageStats.groupBy({
-        by: ['channelId'],
-        _sum: { messageCount: true },
-        orderBy: { _sum: { messageCount: 'desc' } },
-        where: {
-            userId: interaction.user.id,
-            channel: { guildId: interaction.guildId },
-        }
-    })
+    let rawChannelStats = getRawChannelStats(interaction.user.id, interaction.guildId);
+    let totalMessages = getTotalMessages(interaction.user.id);
 
-    let totalMessages = await prisma.messageStats.aggregate({
-        _sum: { messageCount: true },
-        where: {
-            userId: interaction.user.id,
-        }
-    })
+    let channelStats = await generateChannelStats(await rawChannelStats);
 
-    let fields: Field[] = []
-    let totalServerMessages = 0
+    let serverStats: Field = {
+        name: `${ interaction.guild?.name } Message Stats`,
+        value: channelStats.message + (channelStats.otherMsgCount > 0 ? `\n\n And ${ channelStats.otherMsgCount } `
+            + `${ channelStats.otherMsgCount == 1 ? 'message' : 'messages' } across ${ channelStats.channelCount - 5 } `
+            + ` other ${ channelStats.channelCount == 6 ? 'channel' : 'channels' }` : ''),
+        inline: false,
+    };
 
-    let messageStats: string = ''
-    for(let message of messages) {
-        if (message._sum.messageCount === null) continue
-        totalServerMessages += message._sum.messageCount
-        messageStats += `<#${message.channelId}> ${message._sum.messageCount} messages\n`
-    }
-    fields.push({
-        name: 'Message Stats',
-        value: messageStats,
-        inline: false
-    })
-    // convert user.created to yyyy-mm-dd
-    let date = new Date(user.created)
-    let year = date.getFullYear()
-    let month = date.getMonth() + 1
-    let day = date.getDay()
-    let created = `${year}-${month}-${day}`
+    let userStats: Field = {
+        name: 'User Stats',
+        value: `Tracking since ${ await convertDate(user.created) }\n`
+            + `Total Messages Sent: ${ (await totalMessages) ? await totalMessages : 0 }`,
+        inline: true,
+    };
 
-
-    let msg = `You have sent a total of ${totalServerMessages} messages in ${interaction.guild?.name} since `
-        + `I started tracking your stats on ${ created }, with a total of ${ totalMessages._sum.messageCount} messages sent.`
+    let userInfo: Field = {
+        name: 'User Info',
+        value: `Username: ${ interaction.user.username }\n`
+            + `Discriminator: ${ interaction.user.discriminator }\n`
+            + `Avatar: [Click Here](${ interaction.user.avatarURL() })\n`
+            + `User ID: ${ interaction.user.id }\n`
+            + `Create Date: ${ await convertDate(interaction.user.createdAt) }\n`,
+        inline: true,
+    };
 
     let embed = generateEmbed({
         title: 'Stats',
-        msg: msg,
-        fields: fields,
+        fields: [userInfo, userStats, serverStats],
         color: client.colors.purple,
         author: interaction.user.tag,
         authorIcon: interaction.user.displayAvatarURL(),
-    })
+    });
 
 
     return await replyEmbed(interaction, await embed);
@@ -77,4 +57,86 @@ export const data: SlashCommandBuilder = new SlashCommandBuilder()
     .setName('stats')
     .setDescription('Shows stats about yourself')
     .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages | PermissionFlagsBits.ViewChannel)
-    .setDMPermission(false)
+    .setDMPermission(false);
+
+async function convertDate(input: Date) {
+    let date = new Date(input);
+    let year = date.getFullYear();
+    let month = date.getMonth() < 9 ? `0${ date.getMonth() + 1 }` : date.getMonth() + 1;
+    let day = date.getDate() < 10 ? `0${ date.getDate() }` : date.getDate();
+    return `${ year }-${ month }-${ day }`;
+}
+
+async function getRawChannelStats(userId: string, guildId: string): Promise<ChannelStats[]> {
+    let stats = await prisma.messageStats.groupBy({
+        by: ['channelId'],
+        _sum: { messageCount: true },
+        orderBy: { _sum: { messageCount: 'desc' } },
+        where: {
+            userId: userId,
+            channel: { guildId: guildId },
+        },
+    });
+
+    // convert to stats to array of { channelId: channelId, messageCount: messageCount }
+    return stats.map((item: any) => {
+        return { channelId: item.channelId, messageCount: item._sum.messageCount };
+    });
+}
+
+async function getTotalMessages(userId: string): Promise<number | null> {
+    let totalMessages = await prisma.messageStats.aggregate({
+        _sum: { messageCount: true },
+        where: {
+            userId: userId,
+        },
+    });
+    return totalMessages._sum.messageCount;
+}
+
+async function getUser(userId: string) {
+    return prisma.user.findUnique({
+        where: {
+            userId: userId,
+        },
+        include: {
+            guilds: true,
+        },
+    });
+}
+
+
+async function generateChannelStats(channelStats: ChannelStats[]): Promise<parsedChannelStats> {
+    let data: parsedChannelStats = {
+        topMsgCount: 0,
+        otherMsgCount: 0,
+        channelCount: 0,
+        message: '',
+    };
+
+    for (let channel of channelStats) {
+        if (channel.messageCount === null) continue;
+        if (data.channelCount < 5) {
+            data.message += `<#${ channel.channelId }> ${ channel.messageCount } messages\n`;
+        } else {
+            data.otherMsgCount += channel.messageCount;
+        }
+        data.topMsgCount += channel.messageCount;
+        data.channelCount++;
+    }
+    // remove last \n from data.message
+    data.message = data.message.slice(0, -1);
+    return data;
+}
+
+interface ChannelStats {
+    channelId: string,
+    messageCount: number
+}
+
+interface parsedChannelStats {
+    topMsgCount: number,
+    otherMsgCount: number,
+    channelCount: number,
+    message: string,
+}

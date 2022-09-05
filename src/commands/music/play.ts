@@ -9,23 +9,17 @@ import {
 } from 'discord.js';
 import { Field, RunCommand } from '../../interfaces';
 import { deferReply, generateEmbed, replyEmbed, replyMessage } from '../../utils';
+import { musicValidator } from '../../utils/validators';
 
 export const run: RunCommand = async (client, interaction) => {
     if (!interaction.inCachedGuild()) return;
-    if (!interaction.member.voice.channelId) {
-        return await replyMessage(interaction, 'You must be in a voice channel to use this command.', true);
-    }
-
+    if (!await musicValidator(client, interaction)) return;
     let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
-    // make sure interaction was executed in a text channel
-    let interactionChannel = interaction.channel;
-    if (!interactionChannel || !interactionChannel.isTextBased() || interactionChannel.isDMBased() || interactionChannel.isThread()) {
-        return await replyMessage(interaction, 'You must be in a text channel to use this command.', true);
-    }
 
     if (!queue) {
         queue = client.player.createQueue(interaction.guildId, { data: { channelId: interaction.channelId } });
-        await queue.join(interaction.member.voice.channelId);
+        // this is safe to do thanks to musicValidator above
+        await queue.join(interaction.member.voice.channelId as string);
         client.logger.info(`No queue found for guild ${ interaction.guild.name } (${ interaction.guildId }), creating new queue.`);
     } else {
         // check to see if the user is in the same voice channel as the bot

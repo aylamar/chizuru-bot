@@ -7,7 +7,7 @@ import {
 } from 'discord.js';
 import type { RunCommand } from '../../interfaces';
 import { deferReply, generateEmbed, replyEmbed } from '../../utils';
-import { handleList, handleLog, handlePing, handleUpdate } from './subCommand';
+import { handleList, handleLog, handleMusicChannel, handlePing, handleUpdate } from './subCommand';
 
 export const run: RunCommand = async (client, interaction) => {
     if (!interaction.inCachedGuild()) return;
@@ -32,6 +32,9 @@ export const run: RunCommand = async (client, interaction) => {
             break;
         case 'log':
             embed = handleLog(setting, enabled, channel, client);
+            break;
+        case 'music-channel':
+            embed = handleMusicChannel(enabled, channel, interaction.guildId, client);
             break;
         default:
             embed = generateEmbed({
@@ -89,4 +92,12 @@ export const data: SlashCommandSubcommandsOnlyBuilder = new SlashCommandBuilder(
             .setRequired(true))
         .addBooleanOption(option => option.setName('enabled')
             .setDescription('True to enable the setting, false to disable it')
-            .setRequired(true)));
+            .setRequired(true)))
+    .addSubcommand(subcommand => subcommand.setName('music-channel')
+        .setDescription('Lock music commands to a specific channel')
+        .addBooleanOption(option => option.setName('enabled')
+            .setDescription('True to enable the setting, false to disable it')
+            .setRequired(true))
+        .addChannelOption(option => option.setName('channel')
+            .setDescription('The channel to lock music commands to')
+            .setRequired(false)));

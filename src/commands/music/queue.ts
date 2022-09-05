@@ -7,9 +7,11 @@ import {
 } from 'discord.js';
 import { RunCommand } from '../../interfaces';
 import { replyMessage, replyPages } from '../../utils';
+import { musicValidator } from '../../utils/validators';
 
 export const run: RunCommand = async (client, interaction) => {
     if (!interaction.inCachedGuild()) return;
+    if (!await musicValidator(client, interaction)) return;
     let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
     if (!queue) return await replyMessage(interaction, 'Nothing is currently queued, why not queue something with /play?', true);
 

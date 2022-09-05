@@ -10,4 +10,4 @@ export {
     sendEmbedToChannelArr,
     replyPages,
 } from './messages';
-export { inVoiceChannel } from './validators';
+export { inVoiceChannel, inMusicCommandChannel } from './validators';

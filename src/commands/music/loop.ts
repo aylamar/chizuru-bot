@@ -1,11 +1,12 @@
 import { Queue, RepeatMode } from 'discord-music-player';
 import { PermissionFlagsBits, PermissionsString, SlashCommandBuilder } from 'discord.js';
 import { RunCommand } from '../../interfaces';
-import { generateEmbed, inVoiceChannel, replyEmbed, replyMessage } from '../../utils';
+import { generateEmbed, replyEmbed, replyMessage } from '../../utils';
+import { musicValidator } from '../../utils/validators';
 
 export const run: RunCommand = async (client, interaction) => {
     if (!interaction.inCachedGuild()) return false;
-    if (!await inVoiceChannel(client, interaction)) return;
+    if (!await musicValidator(client, interaction)) return;
     let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
     if (!queue || !queue.nowPlaying) return await replyMessage(interaction, 'Nothing is currently queued, why not queue something with /play?', true);
 

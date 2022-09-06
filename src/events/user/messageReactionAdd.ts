@@ -6,12 +6,13 @@ export const run: RunEvent = async (client: Bot, reaction: MessageReaction | Par
     const start = process.hrtime.bigint();
 
     if (reaction.partial) reaction = await reaction.fetch();
-    let message = reaction.message;
+    if (!reaction) return
 
+    let message = reaction.message;
     if (message.partial) message = await message.fetch();
-    if (reaction.message.partial) await reaction.message.fetch();
+
+    if (!message ) return;
     if (!message.inGuild() || !message.channel.isTextBased()) return;
-    if (!message || !reaction) return;
 
     await client.starboard.handleReaction(reaction, message);
     const result = process.hrtime.bigint();

@@ -13,34 +13,39 @@ export class Starboard {
         this.logger = client.logger;
     }
 
-    public async handleReaction(reaction: MessageReaction, message: Message) {
-        if (reaction.partial) await reaction.fetch();
-        if (reaction.message.partial) await reaction.message.fetch();
-        if (!message.guildId) return;
+    public async handleReaction(reaction: MessageReaction, message: Message<true> & Message<boolean>) {
+        if (message.partial) message = await message.fetch();
         let emote = reaction.emoji.name?.toLowerCase();
         if (!emote) return;
 
         const starboards = await this.findStarboards(message.guildId, emote);
-        const author = message.author;
         if (starboards.length === 0) return;
 
         for (const starboard of starboards) {
             if (starboard.blacklistedChannelIds.includes(message.channelId)) continue;
-            if (starboard.blacklistedUserIds.includes(author.id)) continue;
-
-            // count all reactions by userIds that are not blacklisted
-            if (!reaction.users.cache) await reaction.users.fetch();
-            const count = reaction.users.cache.map(user => user.id)
-                .filter(userId => !starboard.blacklistedUserIds.includes(userId)).length;
+            if (starboard.blacklistedUserIds.includes(message.author.id)) continue;
+            // might use in the future to blacklist user from reacting
+            // if (starboard.blacklistedUserIds.length > 0) {
+            //     this.logger.debug(`Starboard ${ starboard.id } has blacklisted users, checking if any that are reacting are blacklisted`);
+            //     if (starboard.blacklistedUserIds.includes(author.id)) continue;
+            //
+            //     if (reaction.count < starboard.emoteCount) continue;
+            //     if (!cachedReaction) {
+            //         let sourceMsg = await message.fetch();
+            //         cachedReaction = await sourceMsg.reactions.cache.find(r => r.emoji.id === reaction.emoji.id);
+            //         if (!cachedReaction) continue;
+            //     }
+            //     count = reaction.users.cache.map(user => user.id).filter(userId => !starboard.blacklistedUserIds.includes(userId)).length;
+            // } else {
+            //     count = reaction.count;
+            // }
+            const count = reaction.count;
             if (count < starboard.emoteCount) continue;
 
             const embed = this.generateStarboardEmbed(count, message);
             let channel = this.client.channels.cache.get(starboard.channelId) as TextChannel | undefined;
-            if (!channel) {
-                // channel not cached, so fetch it
-                channel = await this.client.channels.fetch(starboard.channelId) as TextChannel | undefined;
-                if (!channel) continue; // channel doesn't exist
-            }
+            if (!channel) channel = await this.client.channels.fetch(starboard.channelId) as TextChannel | undefined;
+            if (!channel || channel.isDMBased() || !channel.isTextBased()) continue; // channel likely deleted
 
             let dbMessage = await prisma.starboardMessage.findUnique({
                 where: { starboardId_userMessageId: { starboardId: starboard.id, userMessageId: message.id } },
@@ -61,7 +66,8 @@ export class Starboard {
             }
 
             try {
-                starboardMessage = await channel.messages.fetch(dbMessage.messageId);
+                starboardMessage = await channel.messages.cache.get(dbMessage.messageId);
+                if (!starboardMessage) starboardMessage = await channel.messages.fetch(dbMessage.messageId);
             } catch (err) {
                 this.logger.info(`Message Id ${ dbMessage.messageId } in #${ starboard.channelId } not found so it is likely deleted, flagging it as deleted in database`, { label: 'starboard' });
                 await this.deleteStarboardMessage(starboard.id, message.id);

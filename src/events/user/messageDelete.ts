@@ -21,7 +21,7 @@ export const run: RunEvent = async (client: Bot, message: Message) => {
         return;
     }
 
-    if (!guild || !guild.logDeletedMessagesChannels) return;
+    if (!guild || guild.logDeletedMessagesChannels.length === 0) return;
     if (guild.logBlacklistedChannels.includes(message.channelId)) return;
 
     let messageTrimmed = message.content;

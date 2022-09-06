@@ -22,7 +22,7 @@ export const run: RunEvent = async (client: Bot, oldMessage: Message, newMessage
         return;
     }
 
-    if (!guild || !guild.logEditedMessagesChannels) return;
+    if (!guild || guild.logEditedMessagesChannels.length === 0) return;
     if (guild.logBlacklistedChannels.includes(newMessage.channelId)) return;
 
     // trim messages to be 900 characters or fewer

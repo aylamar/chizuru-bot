@@ -128,7 +128,7 @@ export class Streams {
             this.logger.info('No streamers found', { label: 'streams' });
             return;
         }
-        this.logger.info(`Updating stream state for ${ streamers.length }`, { label: 'streams' });
+        this.logger.info(`Updating stream state for ${ streamers.length } streamers`, { label: 'streams' });
 
         for (const streamer of streamers) {
             let isLive = false;

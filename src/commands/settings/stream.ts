@@ -1,7 +1,8 @@
-import { StreamPlatform } from '@prisma/client';
+import { Channel, StreamPlatform } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import {
     EmbedBuilder,
+    GuildTextBasedChannel,
     PermissionFlagsBits,
     PermissionsString,
     SlashCommandBuilder,
@@ -10,11 +11,12 @@ import {
 import { ChannelData, Field, RunCommand } from '../../interfaces';
 import { prisma } from '../../services';
 import { deferReply, generateEmbed, generateErrorEmbed, replyEmbed } from '../../utils';
+import type { Bot } from '../../classes/bot';
 
 export const run: RunCommand = async (client, interaction) => {
     if (!interaction.inCachedGuild()) return;
     const subCommand = interaction.options.getSubcommand();
-    let embed: EmbedBuilder | Promise<EmbedBuilder>;
+    let embed: EmbedBuilder | Promise<EmbedBuilder> | EmbedBuilder[] | Promise<EmbedBuilder[]>;
 
     let defer = deferReply(interaction);
     const streamer = interaction.options.getString('streamer');
@@ -23,23 +25,7 @@ export const run: RunCommand = async (client, interaction) => {
 
     switch (subCommand) {
         case 'list':
-            const res = await prisma.guild.findUnique({
-                where: { guildId: interaction.guild.id },
-                include: {
-                    channels: {
-                        include: {
-                            followedStreamers: {
-                                select: {
-                                    username: true,
-                                    displayName: true,
-                                    platform: true,
-                                },
-                            },
-                        },
-                    },
-                },
-            });
-
+            const res = await getFollowedStreams(interaction.guildId);
             if (!res || !res.channels) {
                 embed = generateEmbed({
                     msg: `No stream alerts are set up for this server.`,
@@ -47,20 +33,8 @@ export const run: RunCommand = async (client, interaction) => {
                 break;
             }
 
-            let fields: Field[] = [];
-            let streamCount = 0;
-            res.channels.map(channel => {
-                channel.followedStreamers.forEach(streamer => {
-                    streamCount++;
-                    fields.push({
-                        name: `${ streamer.username } (${ streamer.platform })`,
-                        value: `<#${ channel.channelId }>`,
-                        inline: true,
-                    });
-                });
-            });
-
-            if (streamCount === 0) {
+            const fields: Field[] = await generateFields(res.channels, client);
+            if (fields.length === 0) {
                 embed = generateEmbed({
                     msg: `No stream alerts are set up for this server.`,
                 });
@@ -136,7 +110,6 @@ export const run: RunCommand = async (client, interaction) => {
 
     await defer;
     await replyEmbed(interaction, await embed);
-
 };
 
 export const name: string = 'stream';
@@ -180,6 +153,62 @@ export const data: SlashCommandSubcommandsOnlyBuilder = new SlashCommandBuilder(
             .setRequired(true)),
     );
 
+async function getFollowedStreams(guildId: string) {
+    return await prisma.guild.findUnique({
+        where: { guildId: guildId },
+        include: {
+            channels: {
+                include: {
+                    followedStreamers: {
+                        select: {
+                            username: true,
+                            displayName: true,
+                            platform: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+}
+
+async function generateFields(channels: (Channel & { followedStreamers: { username: string, platform: 'twitch', displayName: string }[] })[], client: Bot): Promise<Field[]> {
+    let fields: Field[] = [];
+    channels.filter(channel => channel.followedStreamers.length > 0).map(channel => {
+        let streamers: string[] = [];
+        channel.followedStreamers.forEach(streamer => {
+            streamers.push(`${ streamer.username } (${ streamer.platform })`);
+        });
+
+        // needed to get the channel name
+        const cachedChannel = client.channels.cache.get(channel.channelId) as GuildTextBasedChannel;
+
+        streamers.sort();
+        fields.push({
+            name: `${ cachedChannel.name ? `#${ cachedChannel.name } followed streams` : 'Unknown Channel' }`,
+            value: `${ streamers.join('\n') }`,
+            inline: true,
+        });
+    });
+    return fields;
+}
+
+// async function generatePages(fields: Field[], guildName: string, color: number): Promise<EmbedBuilder[]> {
+//     const fieldsPerPage = 3;
+//     const pages: EmbedBuilder[] = [];
+//
+//     for (let i = 0; i < fields.length; i += fieldsPerPage) {
+//         const page = await generateEmbed({
+//             title: `Stream alerts for ${ guildName }`,
+//             color: color,
+//             fields: fields.slice(i, i + fieldsPerPage)
+//         });
+//         pages.push(page);
+//     }
+//
+//     return pages;
+// }
+
 async function generateConnectChannelQuery(channelId: string, guildId: string): Promise<ChannelConnectQuery> {
     return {
         where: { channelId: channelId },
@@ -222,15 +251,9 @@ async function upsertStreamer(streamerData: ChannelData, connectQuery: ChannelCo
             platform: StreamPlatform.twitch,
             avatarUrl: streamerData.thumbnailUrl,
             isLive: streamerData.isLive,
-            followingChannels: {
-                connectOrCreate: connectQuery,
-            },
+            followingChannels: { connectOrCreate: connectQuery },
         },
-        update: {
-            followingChannels: {
-                connectOrCreate: connectQuery,
-            },
-        },
+        update: { followingChannels: { connectOrCreate: connectQuery } },
     });
 }
 

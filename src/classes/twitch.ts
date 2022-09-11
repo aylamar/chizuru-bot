@@ -1,6 +1,6 @@
 import fetch, { Response } from 'node-fetch';
 import type { Logger } from 'winston';
-import { ChannelData, StreamData } from '../interfaces';
+import type { BulkChannelData, ChannelData, StreamData } from '../interfaces';
 import { ApiConnectionError, LocateStreamerError } from '../utils';
 
 export default class Twitch {
@@ -33,17 +33,18 @@ export default class Twitch {
             res = await this.makeRequest(`${ this.baseUrl }/search/channels?query=${ streamer }`, 'GET', headers);
             parsedRes = await res.json();
         } catch (err) {
-            this.logger.error(`Encounter error while calling twitch API  for ${ streamer }, please try again in a few minutes.`, { label: 'twitch' });
+            this.logger.error(`Encounter error while calling twitch API  for ${ streamer }, ${ err }`, { label: 'twitch' });
             throw new ApiConnectionError(`Encounter error while calling twitch API  for ${ streamer }, please try again in a few minutes.`);
         }
-        const data: rawChannelData[] = parsedRes.data;
+        const data: channelSearchData[] = parsedRes.data;
         if (!data) throw new LocateStreamerError(`Unable locate streamer ${ streamer }, please verify the username is correct.`);
 
-        let streamerData: rawChannelData = data.filter((e: any) => e['broadcaster_login'].toLowerCase() === streamer.toLowerCase())[0];
+        let streamerData: channelSearchData = data.filter((e: any) => e['broadcaster_login'].toLowerCase() === streamer.toLowerCase())[0];
         if (!streamerData) throw new LocateStreamerError(`Unable locate streamer ${ streamer }, please verify the username is correct.`);
 
         return {
             username: streamerData.broadcaster_login.toLowerCase(),
+            platformId: streamerData.id,
             displayName: streamerData.display_name,
             url: `https://www.twitch.tv/${ streamerData.broadcaster_login }`,
             thumbnailUrl: streamerData.thumbnail_url,
@@ -52,12 +53,38 @@ export default class Twitch {
         };
     }
 
+    public async getChannels(streamers: string[]): Promise<BulkChannelData[]> {
+        let res: Response;
+        let parsedRes: twitchChannelsRequest;
+        let headers = await this.getHeaders();
+        try {
+            res = await this.makeRequest(`${ this.baseUrl }/channels?broadcaster_id=${ streamers.join('&broadcaster_id=') }`, 'GET', headers);
+            parsedRes = await res.json();
+        } catch (err) {
+            this.logger.error(`Encounter error while calling twitch API for ${ streamers.join(', ') }\n${ err }`, { label: 'twitch' });
+            throw new ApiConnectionError(`Encounter error while calling twitch API for ${ streamers.length }, please try again in a few minutes.`);
+        }
+        const data: channelsData[] | undefined = parsedRes.data;
+        if (!data) throw new LocateStreamerError(`Unable locate any streamers in ${ streamers.join(', ') }`);
+
+        // lowercase user_login and return array of streamData
+        return data.map((channel: channelsData) => {
+            return {
+                username: channel.broadcaster_login.toLowerCase(),
+                platformId: channel.broadcaster_id,
+                displayName: channel.broadcaster_name,
+                url: `https://www.twitch.tv/${ channel.broadcaster_login }`,
+                gameName: channel.game_name,
+            };
+        });
+    }
+
     public async checkStream(streamer: string): Promise<StreamData | false> {
         let res: Response;
         let parsedRes: twitchStreamRequest;
         let headers = await this.getHeaders();
         try {
-            res = await this.makeRequest(`${ this.baseUrl }/streams?user_login=${ streamer }`, 'GET', headers);
+            res = await this.makeRequest(`${ this.baseUrl }/streams?user_id=${ streamer }`, 'GET', headers);
         } catch (err) {
             this.logger.error(`Unable to check stream for ${ streamer }`, { label: 'twitch' });
             throw new ApiConnectionError(`Unable to fetch profile for ${ streamer }`);
@@ -71,7 +98,8 @@ export default class Twitch {
 
         return {
             id: foundStreamer.id,
-            broadcasterLogin: foundStreamer.user_login.toLowerCase(),
+            username: foundStreamer.user_login.toLowerCase(),
+            platformId: foundStreamer.user_id,
             displayName: foundStreamer.user_name,
             streamThumbnailUrl: foundStreamer.thumbnail_url,
             viewerCount: foundStreamer.viewer_count,
@@ -79,6 +107,35 @@ export default class Twitch {
             gameName: foundStreamer.game_name,
         };
     }
+
+    public async checkStreams(streams: string[]): Promise<StreamData[]> {
+        let res: Response;
+        let parsedRes: twitchStreamRequest;
+        let headers = await this.getHeaders();
+        try {
+            res = await this.makeRequest(`${ this.baseUrl }/streams?user_id=${ streams.join('&user_id=') }`, 'GET', headers);
+        } catch (err) {
+            throw new ApiConnectionError(`Unable to fetch profile for ${ streams.join(', ') }`);
+        }
+        parsedRes = await res.json();
+        const data: rawStreamData[] | undefined = parsedRes.data;
+        if (!data) throw new LocateStreamerError(`No data returned while checking Twitch streams ${ streams }`);
+
+        // lowercase user_login and return array of streamData
+        return data.map((stream) => {
+            return {
+                id: stream.id,
+                username: stream.user_login.toLowerCase(),
+                platformId: stream.user_id,
+                displayName: stream.user_name,
+                streamThumbnailUrl: stream.thumbnail_url,
+                viewerCount: stream.viewer_count,
+                title: stream.title,
+                gameName: stream.game_name,
+            };
+        });
+    }
+
 
     private async makeRequest(url: string, method: string, headers: object, body?: any): Promise<Response> {
         let res: Response;
@@ -153,11 +210,11 @@ export default class Twitch {
 }
 
 interface twitchChannelRequest {
-    data: rawChannelData[];
+    data: channelSearchData[];
     pagination: {};
 }
 
-interface rawChannelData {
+interface channelSearchData {
     broadcaster_language: string;
     broadcaster_login: string,
     display_name: string,
@@ -169,6 +226,21 @@ interface rawChannelData {
     thumbnail_url: string,
     title: string,
     started_at: string,
+}
+
+interface twitchChannelsRequest {
+    data: channelsData[];
+}
+
+interface channelsData {
+    broadcaster_id: string,
+    broadcaster_login: string,
+    broadcaster_name: string,
+    broadcaster_language: string,
+    game_id: string,
+    game_name: string,
+    title: string,
+    delay: number
 }
 
 interface twitchStreamRequest {

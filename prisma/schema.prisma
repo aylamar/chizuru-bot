@@ -82,9 +82,10 @@ model User {
 
 model Streamer {
   id                Int            @id @default(autoincrement())
+  platformId        String
+  platform          StreamPlatform @default(twitch)
   username          String
   displayName       String
-  platform          StreamPlatform @default(twitch)
   isLive            Boolean        @default(false)
   statusChangeTime  DateTime       @default(now())
   avatarUrl         String
@@ -92,7 +93,7 @@ model Streamer {
   updated           DateTime       @default(now()) @updatedAt
   followingChannels Channel[]
 
-  @@unique([username, platform])
+  @@unique([platformId, platform])
 }
 
 model MessageStats {

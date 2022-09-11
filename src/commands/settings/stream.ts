@@ -8,10 +8,10 @@ import {
     SlashCommandBuilder,
     SlashCommandSubcommandsOnlyBuilder,
 } from 'discord.js';
+import type { Bot } from '../../classes/bot';
 import { ChannelData, Field, RunCommand } from '../../interfaces';
 import { prisma } from '../../services';
 import { deferReply, generateEmbed, generateErrorEmbed, replyEmbed } from '../../utils';
-import type { Bot } from '../../classes/bot';
 
 export const run: RunCommand = async (client, interaction) => {
     if (!interaction.inCachedGuild()) return;
@@ -80,14 +80,26 @@ export const run: RunCommand = async (client, interaction) => {
             break;
         case 'remove':
             if (!streamer || !channel || !platform) {
-                embed = generateEmbed({ 'msg': 'Please provide a streamer, channel and platform.' });
+                embed = generateEmbed({
+                    'msg': 'Please provide a streamer, channel and platform.',
+                    color: client.colors.success,
+                });
                 break;
             }
 
             try {
-                await disconnectStreamer(streamer, platform as StreamPlatform, channel.id);
+                const streamers = await prisma.streamer.findMany({
+                    where: { username: streamer.toLowerCase(), platform: StreamPlatform.twitch },
+                });
+
+                if (streamers.length > 0) {
+                    let platformId = streamers.filter(dbStreamer => dbStreamer.username === streamer.toLowerCase())[0].platformId;
+                    if (platformId) await disconnectStreamer(platformId, platform as StreamPlatform, channel.id);
+                }
+
                 embed = generateEmbed({
                     msg: `You'll no longer be notified in <#${ channel.id }> when ${ streamer } goes live on ${ platform }.`,
+                    color: client.colors.success,
                 });
             } catch (err: any) {
                 if (err instanceof PrismaClientKnownRequestError) {
@@ -224,11 +236,11 @@ async function generateConnectChannelQuery(channelId: string, guildId: string): 
     };
 }
 
-async function disconnectStreamer(streamer: string, platform: StreamPlatform, channelId: string) {
+async function disconnectStreamer(platformId: string, platform: StreamPlatform, channelId: string) {
     return await prisma.streamer.update({
         where: {
-            username_platform: {
-                username: streamer,
+            platformId_platform: {
+                platformId: platformId,
                 platform: StreamPlatform.twitch,
             },
         },
@@ -240,15 +252,16 @@ async function disconnectStreamer(streamer: string, platform: StreamPlatform, ch
 async function upsertStreamer(streamerData: ChannelData, connectQuery: ChannelConnectQuery) {
     return await prisma.streamer.upsert({
         where: {
-            username_platform: {
-                username: streamerData.username,
+            platformId_platform: {
+                platformId: streamerData.platformId,
                 platform: StreamPlatform.twitch,
             },
         },
         create: {
+            platformId: streamerData.platformId,
+            platform: StreamPlatform.twitch,
             username: streamerData.username,
             displayName: streamerData.displayName,
-            platform: StreamPlatform.twitch,
             avatarUrl: streamerData.thumbnailUrl,
             isLive: streamerData.isLive,
             followingChannels: { connectOrCreate: connectQuery },

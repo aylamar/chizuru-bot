@@ -10,7 +10,6 @@ import {
     ButtonBuilder,
     ButtonStyle,
     CommandInteraction,
-    Embed,
     EmbedBuilder,
     MessageComponentInteraction,
     TextChannel,
@@ -95,7 +94,7 @@ export async function sendEmbedToChannelArr(client: Bot, channels: string[], emb
     }
 }
 
-export async function replyPages(client: Bot, interaction: CommandInteraction, pages: string[]) {
+export async function replyPages(client: Bot, interaction: CommandInteraction, pages: string[] | EmbedBuilder[]) {
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
             .setCustomId('previous')
@@ -107,28 +106,34 @@ export async function replyPages(client: Bot, interaction: CommandInteraction, p
             .setStyle(ButtonStyle.Primary),
     );
     let page = 0;
-    await interaction.reply({ content: pages[0], components: [row] });
+    if (typeof pages[0] === 'string') {
+        if (interaction.deferred) await interaction.editReply({ content: pages[0], components: [row] });
+        else await interaction.reply({ content: pages[0], components: [row] });
+    } else {
+        if (interaction.deferred) await interaction.editReply({ embeds: [pages[0]], components: [row] });
+        else await interaction.reply({ embeds: [pages[0]], components: [row] });
+    }
 
     const filter = (i: any) => i.customId === 'previous' || i.customId === 'next';
     if (!interaction.channel) return;
     const collector = interaction.channel.createMessageComponentCollector({ filter, time: 120000 });
 
-    collector.on('collect', async (i) => {
-        if (i.customId === 'previous') {
+    collector.on('collect', async (interaction) => {
+        if (interaction.customId === 'previous') {
             if (page > 0) {
                 page--;
             } else {
                 page = pages.length - 1;
             }
-        } else if (i.customId === 'next') {
+        } else if (interaction.customId === 'next') {
             if (page + 1 < pages.length) {
                 page++;
             } else {
                 page = 0;
             }
         }
-        await deferUpdate(client, i);
-        await editPagedReply(client, i, pages[page], [row]);
+        await deferUpdate(client, interaction);
+        await editPagedReply(client, interaction, pages[page], [row]);
         collector.resetTimer();
     });
 }
@@ -177,7 +182,7 @@ async function deferUpdate(client: Bot, interaction: MessageComponentInteraction
     }
 }
 
-async function editPagedReply(client: Bot, interaction: MessageComponentInteraction, message: string | Embed, components: ActionRowBuilder<ButtonBuilder>[]) {
+async function editPagedReply(client: Bot, interaction: MessageComponentInteraction, message: string | EmbedBuilder, components: ActionRowBuilder<ButtonBuilder>[]) {
     if (typeof message === 'string') {
         try {
             await interaction.editReply({ content: message, components: components });

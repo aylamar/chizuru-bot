@@ -16,7 +16,7 @@ export const run: RunEvent = async (client: Bot, interaction: ChatInputCommandIn
     if (!channel || !channel.isTextBased() || channel.isDMBased() || !interaction.inCachedGuild()) return;
 
     try {
-        await command.run(client, interaction);
+        await command.execute(client, interaction);
     } catch (err) {
         client.logger.error(`Error sending message in ${ interaction.channelId }`, { label: 'event' });
         client.logger.error(err);

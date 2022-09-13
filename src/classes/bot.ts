@@ -1,17 +1,28 @@
 import { Player } from 'discord-music-player';
-import { Client, Collection, GatewayIntentBits, Partials } from 'discord.js';
+import {
+    ApplicationCommand,
+    ApplicationCommandData,
+    ChatInputApplicationCommandData,
+    Client,
+    Collection,
+    GatewayIntentBits,
+    Guild,
+    GuildResolvable,
+    Partials,
+} from 'discord.js';
 import type { Logger } from 'winston';
-import { Command, EmbedColors, Event, PlayerEvent } from '../interfaces';
+import { EmbedColors, Event, PlayerEvent } from '../interfaces';
 import { getLogger } from '../services';
 import { getFiles } from '../utils';
-import { Streams } from './stream';
+import { CommandArgs, CommandModule } from './command';
 import { Starboard } from './starboard';
+import { Streams } from './stream';
 import Twitch from './twitch';
 
-export class Bot extends Client {
+export class Bot extends Client<true> {
     public logger: Logger;
     public colors: EmbedColors;
-    commands: Collection<string, Command> = new Collection();
+    commands: Collection<string, CommandArgs> = new Collection();
     public player: Player;
     public twitch: Twitch;
     public starboard: Starboard;
@@ -19,27 +30,8 @@ export class Bot extends Client {
     private events: Collection<string, Event> = new Collection;
 
     public constructor() {
-        /*
-            Intents:
-            FLAGS.Guilds: Required for the bot to work.
-            FLAGS.GuildVoiceStates: required for voice state logging, without it, voice state logging will not work
-            FLAGS.GuildMessages: required for message logging and starboard, without it, neither will not work
-            FLAGS.GuildMessageReactions: required for starboard, without it, starboard will not work
-            FLAGS.GuildBans: required for ban logging, without it, ban logging will not work
-            FLAGS.MessageContent: required for message logging, without it, message logging will not work
-
-            Partials:
-            Message, Channel, Reaction are required for the starboard and message logging to work since the bot might not have the message cached.
-         */
         super({
-            intents: [
-                GatewayIntentBits.Guilds,
-                GatewayIntentBits.GuildVoiceStates,
-                GatewayIntentBits.GuildMessages,
-                GatewayIntentBits.GuildMessageReactions,
-                GatewayIntentBits.GuildBans,
-                GatewayIntentBits.MessageContent,
-            ],
+            intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildBans, GatewayIntentBits.MessageContent],
             partials: [Partials.Message, Partials.Channel, Partials.Reaction],
         });
 
@@ -67,23 +59,53 @@ export class Bot extends Client {
 
     public async start(): Promise<void> {
         this.logger.info('Chizuru Bot is starting up...');
-        this.once('ready', () => {
+        // run loadEvents and loadCommands in parallel
+        await Promise.all([this.loadEvents(), this.loadCommands()]);
+        await this.login(process.env.DISCORD_TOKEN);
 
-        });
+        // fetch and update or create global commands
+        const globalAppCommands = await this.application.commands.fetch();
+        const globalCommands = await this.getCommandsByModule(CommandModule.Global);
+        globalCommands.map(command => this.updateOrCreateGlobal(globalAppCommands, command));
 
-        // load events
+        // update admin commands
+        await this.deployAdminCommands();
+        // remove deleted global commands
+        await this.cleanGlobalCommands(globalAppCommands, globalCommands);
+    }
+
+    private async cleanGlobalCommands(appCommands: Collection<string, ApplicationCommand<{ guild: GuildResolvable }>>, commands: Collection<string, CommandArgs>) {
+        for (const command of appCommands.values()) {
+            if (!commands.has(command.name)) {
+                this.logger.debug(`Found extra global command /${ command.name }, deleting from global commands`);
+                await command.delete();
+            }
+        }
+    }
+
+    private async getCommandsByModule(module: CommandModule): Promise<Collection<string, CommandArgs>> {
+        return this.commands.filter(command => command.module === module);
+    }
+
+    private async deployAdminCommands() {
+        if (!process.env.GUILD_ID) return;
+        const adminCommands = await this.getCommandsByModule(CommandModule.Admin);
+
+        const guild = await this.guilds.fetch(process.env.GUILD_ID);
+        if (!guild) throw new Error('No GUILD_ID set in .env file');
+
+        const commands = await guild.commands.fetch();
+        for (const command of adminCommands.values()) {
+            await this.updateOrCreateGuildCommand(commands, command, guild);
+        }
+    }
+
+    private async loadEvents() {
         let eventStart = process.hrtime.bigint();
         const events = await getFiles(`${ __dirname }/../events`);
         let eventCount = 0;
         for (const file of events) {
             const event: Event = await import(file);
-
-            // let botEvent: Event = event as Event;
-            // this.events.set(botEvent.name, botEvent);
-            // this.on(botEvent.name, botEvent.run.bind(null, this));
-            //
-            // this.logger.debug(`Loaded event ${ event.name }`);
-
             if (file.includes('/events/player')) {
                 let playerEvent: PlayerEvent = event as PlayerEvent;
                 this.player.on(playerEvent.name, playerEvent.run.bind(null, this));
@@ -93,28 +115,83 @@ export class Bot extends Client {
                 this.on(botEvent.name, botEvent.run.bind(null, this));
             }
             eventCount++;
-            this.logger.debug(`Loaded event ${ event.name } for ${ file.includes('/events/player') ? 'player' : 'discordjs' }`);
+            this.logger.debug(`Loaded event ${ event.name } for ${ file.includes('/events/player') ? 'player' : 'client' }`);
         }
         let eventResult = process.hrtime.bigint();
-        this.logger.info(`Spent ${ ((eventResult - eventStart) / BigInt(1000000)) }ms loading ${ eventCount } events`);
+        this.logger.debug(`Spent ${ ((eventResult - eventStart) / BigInt(1000000)) }ms loading ${ eventCount } events`);
+        this.logger.info(`Loaded ${ eventCount } events`);
+    }
 
-        // load commands
+    private async loadCommands() {
         let commandStart = process.hrtime.bigint();
-        const commands = await getFiles(`${ __dirname }/../commands`);
+        const commandFiles = await getFiles(`${ __dirname }/../commands`);
         let commandCount = 0;
-        for (const file of commands) {
+        for (const file of commandFiles) {
             // skip sub commands
             if (file.includes('subCommand')) continue;
 
-            const command: Command = await import(file);
+            const commandImport: any = await import(file);
+            const command: CommandArgs = commandImport.default;
             this.commands.set(command.name, command);
-            this.on(command.name, command.run.bind(null, this));
             this.logger.debug(`Loaded command /${ command.name }`);
             commandCount++;
         }
         let commandResult = process.hrtime.bigint();
-        this.logger.info(`Spent ${ ((commandResult - commandStart) / BigInt(1000000)) }ms loading ${ commandCount } commands`);
+        this.logger.debug(`Spent ${ ((commandResult - commandStart) / BigInt(1000000)) }ms loading ${ commandCount } commands`);
+        this.logger.info(`Loaded ${ commandCount } commands`);
+    }
 
-        await this.login(process.env.DISCORD_TOKEN);
+    // private async cleanAdminCommands(guild: Guild) {
+    //     const commands = await guild.commands.fetch();
+    //
+    //     for (const command of commands.values()) {
+    //         if (!this.commands.has(command.name)) {
+    //             this.logger.debug(`Deleting command /${ command.name }`);
+    //             await command.delete();
+    //         }
+    //     }
+    // }
+
+    private async updateOrCreateGuildCommand(guildCommands: Collection<string, ApplicationCommand>, data: ChatInputApplicationCommandData, guild: Guild) {
+        const guildCommand = guildCommands.find(command => command.name === data.name);
+        if (!guildCommand) {
+            this.logger.debug(`Creating command /${ data.name } in guild ${ guild.name }`);
+            return await guild.commands.create(data);
+        }
+
+        if (!data.description) return;
+        let tmpNewCommand = {
+            ...guildCommand,
+            name: data.name,
+            description: data.description,
+            options: data.options,
+            type: data.type,
+            dmPermission: null,
+        } as ApplicationCommand;
+
+        if (guildCommand.equals(tmpNewCommand)) {
+            this.logger.debug(`Command /${ data.name } is up to date in guild ${ guild.name }`);
+            return;
+        } else {
+            this.logger.debug(`Updating command /${ data.name } in guild ${ guild.name }`);
+            // return await guildCommand.edit(data);
+            return;
+        }
+    }
+
+    private async updateOrCreateGlobal(botCommands: Collection<string, ApplicationCommand<{ guild: GuildResolvable }>>, data: ApplicationCommandData) {
+        const botCommand = botCommands.find(botCommand => botCommand.name === data.name);
+        if (!botCommand) {
+            this.logger.debug(`Creating command ${ data.name }, it doesn't exist`);
+            return await this.application.commands.create(data);
+        }
+
+        if (botCommand.equals(data)) {
+            this.logger.debug(`Command /${ data.name } is up to date`);
+            return;
+        } else {
+            this.logger.debug(`Command /${ data.name } is out of date, updating now`);
+            return await this.application.commands.edit(botCommand.id, data);
+        }
     }
 }

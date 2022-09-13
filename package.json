@@ -1,13 +1,12 @@
 {
   "name": "chizuru-bot",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "",
   "main": "app.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node build/app.js",
-    "dev": "npm run build && npm run start",
-    "deploy": "node build/deploy.js"
+    "dev": "npm run build && npm run start"
   },
   "keywords": [],
   "author": "aylamar",

@@ -1,35 +1,30 @@
 import { Queue, Song } from 'discord-music-player';
-import {
-    PermissionFlagsBits,
-    PermissionsString,
-    SlashCommandBuilder,
-    SlashCommandSubcommandsOnlyBuilder,
-} from 'discord.js';
-import { RunCommand } from '../../interfaces';
+import { Command, CommandModule } from '../../classes/command';
 import { replyMessage, replyPages } from '../../utils';
 import { musicValidator } from '../../utils/validators';
 
-export const run: RunCommand = async (client, interaction) => {
-    if (!interaction.inCachedGuild()) return;
-    if (!await musicValidator(client, interaction)) return;
-    let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
-    if (!queue) return await replyMessage(interaction, 'Nothing is currently queued, why not queue something with /play?', true);
+export default new Command({
+    name: 'queue',
+    description: 'List songs currently in the queue',
+    isDisabled: false,
+    dmPermission: false,
+    defaultMemberPermissions: ['Speak'],
+    module: CommandModule.Music,
+    options: [],
 
-    let pageCount = Math.floor(queue.songs.length / 10) + 1;
-    let pages = generatePages(pageCount, queue.songs);
+    execute: async (client, interaction) => {
+        if (!interaction.inCachedGuild()) return;
+        if (!await musicValidator(client, interaction)) return;
+        let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
+        if (!queue) return await replyMessage(interaction, 'Nothing is currently queued, why not queue something with /play?', true);
 
-    return await replyPages(client, interaction, pages);
-};
+        let pageCount = Math.floor(queue.songs.length / 10) + 1;
+        let pages = generatePages(pageCount, queue.songs);
 
-export const name: string = 'queue';
-export const permissions: PermissionsString[] = ['ViewChannel', 'SendMessages'];
+        return await replyPages(client, interaction, pages);
 
-export const data: SlashCommandSubcommandsOnlyBuilder = new SlashCommandBuilder()
-    .setName('queue')
-    .setDescription('List songs currently in the queue')
-    .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages | PermissionFlagsBits.ViewChannel | PermissionFlagsBits.Speak)
-    .setDMPermission(false);
-
+    },
+});
 
 function generatePages(pageCount: number, array: Array<Song>) {
     let count = 0;

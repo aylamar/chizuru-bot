@@ -18,4 +18,4 @@ export const run: RunEvent = async (client: Bot, guild: Guild) => {
     }
 };
 
-export const name: string = 'ready';
+export const name: string = 'guildCreate';

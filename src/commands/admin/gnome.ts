@@ -1,6 +1,6 @@
 import { Queue } from 'discord-music-player';
 import { ApplicationCommandOptionType } from 'discord.js';
-import { Command, CommandModule } from '../../classes/command';
+import { Command, CommandModule } from '../../structures/command';
 import { replyMessage } from '../../utils';
 
 export default new Command({

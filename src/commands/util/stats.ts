@@ -1,4 +1,4 @@
-import { Command, CommandModule } from '../../classes/command';
+import { Command, CommandModule } from '../../structures/command';
 import { Field } from '../../interfaces';
 import { prisma } from '../../services';
 import { generateEmbed, replyEmbed, replyMessage } from '../../utils';

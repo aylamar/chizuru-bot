@@ -1,5 +1,5 @@
 import { Channel, ChatInputCommandInteraction } from 'discord.js';
-import { Bot } from '../../classes/bot.js';
+import { Bot } from '../../structures/bot';
 import { RunEvent } from '../../interfaces';
 import { replyMessage } from '../../utils';
 

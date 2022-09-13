@@ -1,5 +1,5 @@
 import { PlayerEvents } from 'discord-music-player';
-import { Bot } from '../classes/bot';
+import { Bot } from '../structures/bot';
 
 export interface RunEvent {
     (client: Bot, ...args: any[]): Promise<any>;

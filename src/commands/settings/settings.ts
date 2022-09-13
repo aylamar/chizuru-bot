@@ -1,7 +1,7 @@
 import { Guild, Starboard } from '@prisma/client';
 import { ApplicationCommandOptionType, EmbedBuilder, GuildBasedChannel, Role } from 'discord.js';
-import { Bot } from '../../classes/bot';
-import { Command, CommandModule } from '../../classes/command';
+import { Bot } from '../../structures/bot';
+import { Command, CommandModule } from '../../structures/command';
 import { Field } from '../../interfaces';
 import { prisma } from '../../services';
 import { deferReply, generateEmbed, generateErrorEmbed, replyEmbed, updateArray } from '../../utils';

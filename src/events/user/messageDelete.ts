@@ -1,6 +1,6 @@
 import { Guild } from '@prisma/client';
 import { AuditLogEvent, GuildAuditLogs, Message } from 'discord.js';
-import { Bot } from '../../classes/bot';
+import { Bot } from '../../structures/bot';
 import { Field, RunEvent } from '../../interfaces';
 import { prisma } from '../../services';
 import { generateEmbed, sendEmbedToChannelArr } from '../../utils';

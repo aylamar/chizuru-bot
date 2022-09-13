@@ -1,7 +1,7 @@
 import { Starboard } from '@prisma/client';
 import { ApplicationCommandOptionType, Channel, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
-import { Bot } from '../../classes/bot';
-import { Command, CommandModule } from '../../classes/command';
+import { Bot } from '../../structures/bot';
+import { Command, CommandModule } from '../../structures/command';
 import { prisma } from '../../services';
 import { deferReply, generateEmbed, generateErrorEmbed, NoStarboardError, replyEmbed, updateArray } from '../../utils';
 

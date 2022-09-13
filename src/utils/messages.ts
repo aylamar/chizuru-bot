@@ -15,7 +15,7 @@ import {
     TextChannel,
 } from 'discord.js';
 import { Logger } from 'winston';
-import { Bot } from '../classes/bot';
+import { Bot } from '../structures/bot';
 import { MessageData } from '../interfaces';
 import { ApiConnectionError, LocateStreamerError, NonTextChannelError } from './errors';
 

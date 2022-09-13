@@ -1,5 +1,5 @@
 import { Message } from 'discord.js';
-import { Bot } from '../../classes/bot.js';
+import { Bot } from '../../structures/bot';
 import { RunEvent } from '../../interfaces';
 import { prisma } from '../../services';
 

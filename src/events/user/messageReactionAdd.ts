@@ -1,5 +1,5 @@
 import { MessageReaction, PartialMessageReaction } from 'discord.js';
-import { Bot } from '../../classes/bot';
+import { Bot } from '../../structures/bot';
 import { RunEvent } from '../../interfaces';
 
 export const run: RunEvent = async (client: Bot, reaction: MessageReaction | PartialMessageReaction) => {

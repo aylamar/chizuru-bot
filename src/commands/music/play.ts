@@ -1,6 +1,6 @@
 import { Playlist, Queue, Song } from 'discord-music-player';
 import { ApplicationCommandOptionType, EmbedBuilder, InteractionResponse } from 'discord.js';
-import { Command, CommandModule } from '../../classes/command';
+import { Command, CommandModule } from '../../structures/command';
 import { Field } from '../../interfaces';
 import { deferReply, generateEmbed, replyEmbed, replyMessage } from '../../utils';
 import { musicValidator } from '../../utils/validators';

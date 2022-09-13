@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType } from 'discord.js';
 import ytSearch from 'yt-search';
-import { Command, CommandModule } from '../../classes/command';
+import { Command, CommandModule } from '../../structures/command';
 import { replyMessage } from '../../utils';
 
 export default new Command({

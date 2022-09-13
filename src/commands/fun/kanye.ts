@@ -1,5 +1,5 @@
 import fetch, { Response } from 'node-fetch';
-import { Command, CommandModule } from '../../classes/command';
+import { Command, CommandModule } from '../../structures/command';
 import { generateEmbed, generateErrorEmbed, replyEmbed } from '../../utils';
 
 export default new Command({

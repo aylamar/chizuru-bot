@@ -1,4 +1,4 @@
-import { Command, CommandModule } from '../../classes/command';
+import { Command, CommandModule } from '../../structures/command';
 import { replyMessage } from '../../utils';
 
 export default new Command({

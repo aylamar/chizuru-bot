@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v10';
 import { Queue, RepeatMode } from 'discord-music-player';
-import { Command, CommandModule } from '../../classes/command';
+import { Command, CommandModule } from '../../structures/command';
 import { generateEmbed, replyEmbed, replyMessage } from '../../utils';
 import { musicValidator } from '../../utils/validators';
 

@@ -1,6 +1,6 @@
 import { DMPError, Queue } from 'discord-music-player';
 import { EmbedBuilder, GuildTextBasedChannel } from 'discord.js';
-import { Bot } from '../../classes/bot';
+import { Bot } from '../../structures/bot';
 import { RunPlayerEvent } from '../../interfaces';
 import { generateEmbed } from '../../utils';
 

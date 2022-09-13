@@ -1,5 +1,5 @@
 import { Queue, Song } from 'discord-music-player';
-import { Command, CommandModule } from '../../classes/command';
+import { Command, CommandModule } from '../../structures/command';
 import { replyMessage, replyPages } from '../../utils';
 import { musicValidator } from '../../utils/validators';
 

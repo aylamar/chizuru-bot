@@ -1,8 +1,8 @@
 import { Channel, StreamPlatform } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { ApplicationCommandOptionType, EmbedBuilder, GuildTextBasedChannel } from 'discord.js';
-import type { Bot } from '../../classes/bot';
-import { Command, CommandModule } from '../../classes/command';
+import type { Bot } from '../../structures/bot';
+import { Command, CommandModule } from '../../structures/command';
 import { ChannelData, Field } from '../../interfaces';
 import { prisma } from '../../services';
 import { deferReply, generateEmbed, generateErrorEmbed, replyEmbed } from '../../utils';

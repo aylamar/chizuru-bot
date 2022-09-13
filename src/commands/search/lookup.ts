@@ -1,7 +1,7 @@
 import type { AnimeEntry, MangaEntry, MediaSearchEntry } from 'anilist-node';
 import anilist from 'anilist-node';
 import { ApplicationCommandOptionType, TextChannel } from 'discord.js';
-import { Command, CommandModule } from '../../classes/command';
+import { Command, CommandModule } from '../../structures/command';
 import { deferReply, generateEmbed, replyEmbed, replyMessage } from '../../utils';
 
 const Anilist = new anilist();

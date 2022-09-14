@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType } from 'discord-api-types/v10';
+import { ApplicationCommandOptionType } from 'discord.js';
 import { Queue, RepeatMode } from 'discord-music-player';
 import { Chizuru } from '../../interfaces';
 import { Command } from '../../structures/command';

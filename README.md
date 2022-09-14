@@ -10,6 +10,7 @@ Chizuru Bot is a multipurpose Discord bot that was originally intended to notify
 - Search: `lookup` and `youtube`.
 - Settings: `settings log`, `starboard create`, and **5** more. 
 - Util: `ping`, `stats`
+- Admin: `module`
 
 A full list of commands and how to use them can be found [here](https://github.com/aylamar/chizuru-bot/wiki/Commands).
 
@@ -32,8 +33,7 @@ A full list of commands and how to use them can be found [here](https://github.c
 4. Fill out the `.env` file.
 5. run `npx prisma db push` to generate the database schema.
 6. Run `npm run build` to build the bot.
-7. Run `npm run deploy` to deploy commands globally if the `NODE_ENV` is set to production, otherwise, commands will be deployed to the guild.
-8. Run `npm run start` to launch the bot.
+7. Run `npm run start` to launch the bot.
 
 ## Configuration
 

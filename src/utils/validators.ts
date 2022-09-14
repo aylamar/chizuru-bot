@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, GuildTextBasedChannel, NewsChannel, TextChannel } from 'discord.js';
-import { Bot } from '../classes/bot';
+import { Bot } from '../structures/bot';
 import { prisma } from '../services';
 import { replyMessage } from './messages';
 

@@ -1,91 +1,103 @@
 import type { AnimeEntry, MangaEntry, MediaSearchEntry } from 'anilist-node';
 import anilist from 'anilist-node';
-import { PermissionFlagsBits, PermissionsString, SlashCommandBuilder, TextChannel } from 'discord.js';
-import { RunCommand } from '../../interfaces';
+import { ApplicationCommandOptionType, TextChannel } from 'discord.js';
+import { Chizuru } from '../../interfaces';
+import { Command } from '../../structures/command';
 import { deferReply, generateEmbed, replyEmbed, replyMessage } from '../../utils';
 
 const Anilist = new anilist();
 
-export const run: RunCommand = async (client, interaction) => {
-    await deferReply(interaction);
+export default new Command({
+    name: 'lookup',
+    description: 'Search for a video on YouTube by title',
+    isDisabled: false,
+    dmPermission: false,
+    defaultMemberPermissions: ['SendMessages'],
+    module: Chizuru.CommandModule.Global,
+    options: [
+        {
+            name: 'type',
+            description: 'The type of media to search for',
+            type: ApplicationCommandOptionType.String,
+            choices: [
+                { name: 'Anime', value: 'anime' },
+                { name: 'Manga', value: 'manga' },
+            ],
+            required: true,
+        },
+        {
+            name: 'query',
+            description: 'The title of the manga or anime to search for',
+            type: ApplicationCommandOptionType.String,
+            required: true,
+        },
+    ],
 
-    let res: MediaSearchEntry | null = null;
-    let parsedRes: AnimeEntry | MangaEntry | null = null;
-    const type: string = interaction.options.getString('type') as string;
-    const series: string = interaction.options.getString('series') as string;
+    execute: async (client, interaction) => {
+        await deferReply(interaction);
 
-    switch (type) {
-        case 'anime':
-            res = await Anilist.searchEntry.anime(series);
-            if (res.pageInfo.total === 0) break;
-            parsedRes = await Anilist.media.anime(res.media[0].id);
-            break;
-        case 'manga':
-            res = await Anilist.searchEntry.manga(series);
-            if (res.pageInfo.total === 0) break;
-            parsedRes = await Anilist.media.manga(res.media[0].id);
-            break;
-        default:
-            throw new Error('Invalid media type');
-    }
+        let res: MediaSearchEntry | null = null;
+        let parsedRes: AnimeEntry | MangaEntry | null = null;
+        const type: string = interaction.options.getString('type') as string;
+        const series: string = interaction.options.getString('series') as string;
 
-    if (res.pageInfo.total === 0 || parsedRes == null) {
-        await replyMessage(interaction, `No results found for ${ series } (${ type }), try searching for something else.`, true);
-        return;
-    }
+        switch (type) {
+            case 'anime':
+                res = await Anilist.searchEntry.anime(series);
+                if (res.pageInfo.total === 0) break;
+                parsedRes = await Anilist.media.anime(res.media[0].id);
+                break;
+            case 'manga':
+                res = await Anilist.searchEntry.manga(series);
+                if (res.pageInfo.total === 0) break;
+                parsedRes = await Anilist.media.manga(res.media[0].id);
+                break;
+            default:
+                throw new Error('Invalid media type');
+        }
 
-    // if parsedRes.isAdult is true and command was executed in a guild, check to see if channel is NSFW
-    if (parsedRes.isAdult && interaction.inGuild()) {
-        const channel = interaction.channel as TextChannel;
-        if (!channel.nsfw) {
-            await replyMessage(interaction, `This ${ type } is marked as NSFW, and this channel is not NSFW.`, true);
+        if (res.pageInfo.total === 0 || parsedRes == null) {
+            await replyMessage(interaction, `No results found for ${ series } (${ type }), try searching for something else.`, true);
             return;
         }
-    }
 
-    let genre = parsedRes.genres.join(', ');
-    let title: string;
-    if (parsedRes.title.english == null) {
-        title = `${ parsedRes.title.romaji }`;
-    } else {
-        title = `${ parsedRes.title.english }`;
-    }
-    let date = new Date(parsedRes.startDate.year, parsedRes.startDate.month, parsedRes.startDate.day, 0, 0, 0, 0).toString();
+        // if parsedRes.isAdult is true and command was executed in a guild, check to see if channel is NSFW
+        if (parsedRes.isAdult && interaction.inGuild()) {
+            const channel = interaction.channel as TextChannel;
+            if (!channel.nsfw) {
+                await replyMessage(interaction, `This ${ type } is marked as NSFW, and this channel is not NSFW.`, true);
+                return;
+            }
+        }
 
-    let descRaw = parsedRes.description.replace(/<br>/g, '').replace(/\n/g, ' ');
-    let descArr = descRaw.split(' ');
-    let desc: string;
-    if (descArr.length > 30) {
-        desc = `${ descArr.splice(0, 30).join(' ') }... [(more)](${ parsedRes.siteUrl })`;
-    } else {
-        desc = descArr.join(' ');
-    }
+        let genre = parsedRes.genres.join(', ');
+        let title: string;
+        if (parsedRes.title.english == null) {
+            title = `${ parsedRes.title.romaji }`;
+        } else {
+            title = `${ parsedRes.title.english }`;
+        }
+        let date = new Date(parsedRes.startDate.year, parsedRes.startDate.month, parsedRes.startDate.day, 0, 0, 0, 0).toString();
 
-    const embed = await generateEmbed({
-        title: `${ title }`,
-        titleUrl: `${ parsedRes.siteUrl }`,
-        msg: `**_${ genre }_**\n${ desc }`,
-        image: `https://img.anili.st/media/${ parsedRes.id }`,
-        color: client.colors.anilist,
-        timestamp: date,
-        footer: `${ type }`,
-        footerIcon: 'https://anilist.co/img/icons/android-chrome-512x512.png',
-    });
-    return await replyEmbed(interaction, embed);
-};
+        let descRaw = parsedRes.description.replace(/<br>/g, '').replace(/\n/g, ' ');
+        let descArr = descRaw.split(' ');
+        let desc: string;
+        if (descArr.length > 30) {
+            desc = `${ descArr.splice(0, 30).join(' ') }... [(more)](${ parsedRes.siteUrl })`;
+        } else {
+            desc = descArr.join(' ');
+        }
 
-export const name: string = 'lookup';
-export const permissions: PermissionsString[] = ['ViewChannel', 'SendMessages'];
-
-export const data = new SlashCommandBuilder()
-    .setName('lookup')
-    .setDescription('Search for a media entry on Anilist')
-    .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages | PermissionFlagsBits.ViewChannel)
-    .setDMPermission(true)
-    .addStringOption(option => option.setName('type')
-        .setDescription('The title of the video to search for')
-        .addChoices({ name: 'Anime', value: 'anime' }, { name: 'Manga', value: 'manga' })
-        .setRequired(true))
-    .addStringOption(option => option.setName('series')
-        .setDescription('The name of the anime or series to search for')
-        .setRequired(true));
+        const embed = await generateEmbed({
+            title: `${ title }`,
+            titleUrl: `${ parsedRes.siteUrl }`,
+            msg: `**_${ genre }_**\n${ desc }`,
+            image: `https://img.anili.st/media/${ parsedRes.id }`,
+            color: client.colors.anilist,
+            timestamp: date,
+            footer: `${ type }`,
+            footerIcon: 'https://anilist.co/img/icons/android-chrome-512x512.png',
+        });
+        return await replyEmbed(interaction, embed);
+    },
+});

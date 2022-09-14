@@ -11,3 +11,4 @@ export {
     replyPages,
 } from './messages';
 export { inVoiceChannel, inMusicCommandChannel } from './validators';
+export { updateArray } from './misc';

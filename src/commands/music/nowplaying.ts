@@ -5,8 +5,8 @@ import { generateEmbed, replyEmbed, replyMessage } from '../../utils';
 import { musicValidator } from '../../utils/validators';
 
 export default new Command({
-    name: 'shuffle',
-    description: 'Shuffle the queue',
+    name: 'nowplaying',
+    description: 'View the currently playing song',
     isDisabled: false,
     dmPermission: false,
     defaultMemberPermissions: ['Speak'],
@@ -19,18 +19,15 @@ export default new Command({
         let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
         if (!queue || !queue.nowPlaying) return await replyMessage(interaction, 'Nothing is currently queued, why not queue something with /play?', true);
 
-        let shuffled = queue.shuffle();
-        if (!shuffled) return await replyMessage(interaction, 'There are no songs to shuffle, queue more songs then try again', true);
-        queue.songs = shuffled;
+        let nowPlaying = queue.nowPlaying;
 
         let embed = generateEmbed({
             author: interaction.user.tag,
             authorIcon: interaction.user.avatarURL() || interaction.user.defaultAvatarURL,
-            msg: `The queue has been shuffled by ${ interaction.user.tag }.`,
+            msg: `${ nowPlaying.name } (${ queue.createProgressBar().times }) requested by ${ nowPlaying.requestedBy?.tag } is currently playing`,
             color: client.colors.success,
         });
 
         await replyEmbed(interaction, await embed);
-
     },
 });

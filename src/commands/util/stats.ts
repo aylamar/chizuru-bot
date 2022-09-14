@@ -1,63 +1,61 @@
-import { PermissionFlagsBits, PermissionsString, SlashCommandBuilder } from 'discord.js';
-import { Field, RunCommand } from '../../interfaces';
+import { Chizuru } from '../../interfaces';
 import { prisma } from '../../services';
+import { Command } from '../../structures/command';
 import { generateEmbed, replyEmbed, replyMessage } from '../../utils';
 
-export const run: RunCommand = async (client, interaction) => {
-    if (!interaction.inGuild()) return;
-    let user = await getUser(interaction.user.id);
-    if (!user) return await replyMessage(interaction, 'You are not registered in the database, have you sent any messages before?');
+export default new Command({
+    name: 'stats',
+    description: 'Shows stats about yourself',
+    isDisabled: false,
+    dmPermission: false,
+    defaultMemberPermissions: ['SendMessages'],
+    module: Chizuru.CommandModule.Global,
+    options: [],
 
-    let rawChannelStats = getRawChannelStats(interaction.user.id, interaction.guildId);
-    let totalMessages = getTotalMessages(interaction.user.id);
+    execute: async (client, interaction) => {
+        if (!interaction.inGuild()) return;
+        let user = await getUser(interaction.user.id);
+        if (!user) return await replyMessage(interaction, 'You are not registered in the database, have you sent any messages before?');
 
-    let channelStats = await generateChannelStats(await rawChannelStats);
+        let rawChannelStats = getRawChannelStats(interaction.user.id, interaction.guildId);
+        let totalMessages = getTotalMessages(interaction.user.id);
 
-    let serverStats: Field = {
-        name: `${ interaction.guild?.name } Message Stats`,
-        value: channelStats.message + (channelStats.otherMsgCount > 0 ? `\n\n And ${ channelStats.otherMsgCount } `
-            + `${ channelStats.otherMsgCount == 1 ? 'message' : 'messages' } across ${ channelStats.channelCount - 5 } `
-            + ` other ${ channelStats.channelCount == 6 ? 'channel' : 'channels' }` : ''),
-        inline: false,
-    };
+        let channelStats = await generateChannelStats(await rawChannelStats);
 
-    let userStats: Field = {
-        name: 'User Stats',
-        value: `Tracking since ${ await convertDate(user.created) }\n`
-            + `Total Messages Sent: ${ (await totalMessages) ? await totalMessages : 0 }`,
-        inline: true,
-    };
+        let serverStats: Chizuru.Field = {
+            name: `${ interaction.guild?.name } Message Stats`,
+            value: channelStats.message + (channelStats.otherMsgCount > 0 ? `\n\n And ${ channelStats.otherMsgCount } `
+                + `${ channelStats.otherMsgCount == 1 ? 'message' : 'messages' } across ${ channelStats.channelCount - 5 } `
+                + ` other ${ channelStats.channelCount == 6 ? 'channel' : 'channels' }` : ''),
+            inline: false,
+        };
 
-    let userInfo: Field = {
-        name: 'User Info',
-        value: `Username: ${ interaction.user.username }\n`
-            + `Discriminator: ${ interaction.user.discriminator }\n`
-            + `Avatar: [Click Here](${ interaction.user.displayAvatarURL() })\n`
-            + `User ID: ${ interaction.user.id }\n`
-            + `Create Date: ${ await convertDate(interaction.user.createdAt) }\n`,
-        inline: true,
-    };
+        let userStats: Chizuru.Field = {
+            name: 'User Stats',
+            value: `Tracking since ${ await convertDate(user.created) }\n` + `Total Messages Sent: ${ (await totalMessages) ? await totalMessages : 0 }`,
+            inline: true,
+        };
 
-    let embed = generateEmbed({
-        title: 'Stats',
-        fields: [userInfo, userStats, serverStats],
-        color: client.colors.purple,
-        author: interaction.user.tag,
-        authorIcon: interaction.user.displayAvatarURL(),
-    });
+        let userInfo: Chizuru.Field = {
+            name: 'User Info',
+            value: `Username: ${ interaction.user.username }\n` + `Discriminator: ${ interaction.user.discriminator }\n`
+                + `Avatar: [Click Here](${ interaction.user.displayAvatarURL() })\n` + `User ID: ${ interaction.user.id }\n`
+                + `Create Date: ${ await convertDate(interaction.user.createdAt) }\n`,
+            inline: true,
+        };
+
+        let embed = generateEmbed({
+            title: 'Stats',
+            fields: [userInfo, userStats, serverStats],
+            color: client.colors.purple,
+            author: interaction.user.tag,
+            authorIcon: interaction.user.displayAvatarURL(),
+        });
 
 
-    return await replyEmbed(interaction, await embed);
-};
-
-export const name: string = 'stats';
-export const permissions: PermissionsString[] = ['ViewChannel', 'SendMessages'];
-
-export const data: SlashCommandBuilder = new SlashCommandBuilder()
-    .setName('stats')
-    .setDescription('Shows stats about yourself')
-    .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages | PermissionFlagsBits.ViewChannel)
-    .setDMPermission(false);
+        return await replyEmbed(interaction, await embed);
+    },
+});
 
 async function convertDate(input: Date) {
     let date = new Date(input);
@@ -98,8 +96,7 @@ async function getUser(userId: string) {
     return prisma.user.findUnique({
         where: {
             userId: userId,
-        },
-        include: {
+        }, include: {
             guilds: true,
         },
     });

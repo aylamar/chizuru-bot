@@ -1,38 +1,34 @@
 import { Queue } from 'discord-music-player';
-import {
-    PermissionFlagsBits,
-    PermissionsString,
-    SlashCommandBuilder,
-    SlashCommandSubcommandsOnlyBuilder,
-} from 'discord.js';
-import { RunCommand } from '../../interfaces';
+import { Chizuru } from '../../interfaces';
+import { Command } from '../../structures/command';
 import { generateEmbed, replyEmbed, replyMessage } from '../../utils';
 import { musicValidator } from '../../utils/validators';
 
-export const run: RunCommand = async (client, interaction) => {
-    if (!interaction.inCachedGuild()) return;
-    if (!await musicValidator(client, interaction)) return;
-    let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
-    if (!queue || !queue.nowPlaying) return await replyMessage(interaction, 'Nothing is currently queued, why not queue something with /play?', true);
+export default new Command({
+    name: 'skip',
+    description: 'Skip the current song',
+    isDisabled: false,
+    dmPermission: false,
+    defaultMemberPermissions: ['Speak'],
+    module: Chizuru.CommandModule.Music,
+    options: [],
 
-    let currentSong = queue.nowPlaying;
-    let skip = queue.skip();
-    let embed = generateEmbed({
-        author: interaction.user.tag,
-        authorIcon: interaction.user.avatarURL() || interaction.user.defaultAvatarURL,
-        msg: `${ currentSong.name } has been skipped by ${ interaction.user.tag }.`,
-        color: client.colors.success,
-    });
+    execute: async (client, interaction) => {
+        if (!interaction.inCachedGuild()) return;
+        if (!await musicValidator(client, interaction)) return;
+        let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
+        if (!queue || !queue.nowPlaying) return await replyMessage(interaction, 'Nothing is currently queued, why not queue something with /play?', true);
 
-    await skip;
-    await replyEmbed(interaction, await embed);
-};
+        let currentSong = queue.nowPlaying;
+        let skip = queue.skip();
+        let embed = generateEmbed({
+            author: interaction.user.tag,
+            authorIcon: interaction.user.avatarURL() || interaction.user.defaultAvatarURL,
+            msg: `${ currentSong.name } has been skipped by ${ interaction.user.tag }.`,
+            color: client.colors.success,
+        });
 
-export const name: string = 'skip';
-export const permissions: PermissionsString[] = ['ViewChannel', 'SendMessages'];
-
-export const data: SlashCommandSubcommandsOnlyBuilder = new SlashCommandBuilder()
-    .setName('skip')
-    .setDescription('Skip the current song')
-    .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages | PermissionFlagsBits.ViewChannel | PermissionFlagsBits.Speak)
-    .setDMPermission(false);
+        await skip;
+        await replyEmbed(interaction, await embed);
+    },
+});

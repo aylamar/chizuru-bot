@@ -1,6 +1,6 @@
 import fetch, { Response } from 'node-fetch';
 import type { Logger } from 'winston';
-import type { BulkChannelData, ChannelData, StreamData } from '../interfaces';
+import type { Chizuru } from '../interfaces';
 import { ApiConnectionError, LocateStreamerError } from '../utils';
 
 export default class Twitch {
@@ -25,7 +25,7 @@ export default class Twitch {
         void this.getToken();
     }
 
-    public async getChannel(streamer: string): Promise<ChannelData> {
+    public async getChannel(streamer: string): Promise<Chizuru.ChannelData> {
         let res: Response;
         let parsedRes: twitchChannelRequest;
         let headers = await this.getHeaders();
@@ -53,7 +53,7 @@ export default class Twitch {
         };
     }
 
-    public async getChannels(streamers: string[]): Promise<BulkChannelData[]> {
+    public async getChannels(streamers: string[]): Promise<Chizuru.BulkChannelData[]> {
         let res: Response;
         let parsedRes: twitchChannelsRequest;
         let headers = await this.getHeaders();
@@ -79,7 +79,7 @@ export default class Twitch {
         });
     }
 
-    public async checkStream(streamer: string): Promise<StreamData | false> {
+    public async checkStream(streamer: string): Promise<Chizuru.StreamData | false> {
         let res: Response;
         let parsedRes: twitchStreamRequest;
         let headers = await this.getHeaders();
@@ -108,7 +108,7 @@ export default class Twitch {
         };
     }
 
-    public async checkStreams(streams: string[]): Promise<StreamData[]> {
+    public async checkStreams(streams: string[]): Promise<Chizuru.StreamData[]> {
         let res: Response;
         let parsedRes: twitchStreamRequest;
         let headers = await this.getHeaders();

@@ -15,15 +15,15 @@ import {
     TextChannel,
 } from 'discord.js';
 import { Logger } from 'winston';
-import { Bot } from '../classes/bot';
-import { MessageData } from '../interfaces';
+import { Chizuru } from '../interfaces';
+import { Bot } from '../structures/bot';
 import { ApiConnectionError, LocateStreamerError, NonTextChannelError } from './errors';
 
 export async function deferReply(interaction: CommandInteraction) {
     return await interaction.deferReply();
 }
 
-export async function generateEmbed(data: MessageData): Promise<EmbedBuilder> {
+export async function generateEmbed(data: Chizuru.MessageData): Promise<EmbedBuilder> {
     let embed = new EmbedBuilder();
 
     if (data.msg) embed.setDescription(data.msg);

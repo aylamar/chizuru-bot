@@ -1,169 +1,194 @@
 import { Channel, StreamPlatform } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
-import {
-    EmbedBuilder,
-    GuildTextBasedChannel,
-    PermissionFlagsBits,
-    PermissionsString,
-    SlashCommandBuilder,
-    SlashCommandSubcommandsOnlyBuilder,
-} from 'discord.js';
-import type { Bot } from '../../classes/bot';
-import { ChannelData, Field, RunCommand } from '../../interfaces';
+import { ApplicationCommandOptionType, EmbedBuilder, GuildTextBasedChannel } from 'discord.js';
+import { Chizuru } from '../../interfaces';
 import { prisma } from '../../services';
+import type { Bot } from '../../structures/bot';
+import { Command } from '../../structures/command';
 import { deferReply, generateEmbed, generateErrorEmbed, replyEmbed } from '../../utils';
 
-export const run: RunCommand = async (client, interaction) => {
-    if (!interaction.inCachedGuild()) return;
-    const subCommand = interaction.options.getSubcommand();
-    let embed: EmbedBuilder | Promise<EmbedBuilder> | EmbedBuilder[] | Promise<EmbedBuilder[]>;
+export default new Command({
+    name: 'stream',
+    description: 'Update and view stream notification settings here',
+    isDisabled: false,
+    dmPermission: false,
+    defaultMemberPermissions: ['ManageGuild'],
+    module: Chizuru.CommandModule.Global,
+    options: [
+        {
+            name: 'list',
+            description: 'List all followed streamers',
+            type: ApplicationCommandOptionType.Subcommand,
+        },
+        {
+            name: 'add',
+            description: 'Enable notifications for when a streamer goes live in a channel',
+            type: ApplicationCommandOptionType.Subcommand,
+            options: [
+                {
+                    name: 'channel',
+                    description: 'The channel to enable notifications in',
+                    type: ApplicationCommandOptionType.Channel,
+                    required: true,
+                },
+                {
+                    name: 'platform',
+                    description: 'The platform the streamer is on',
+                    type: ApplicationCommandOptionType.String,
+                    required: true,
+                    choices: [
+                        { name: 'Twitch', value: 'twitch' },
+                    ],
+                },
+                {
+                    name: 'username',
+                    description: 'The username of the streamer',
+                    type: ApplicationCommandOptionType.String,
+                    required: true,
+                },
+            ],
+        },
+        {
+            name: 'remove',
+            description: 'Disable notifications for when a streamer goes live in a channel',
+            type: ApplicationCommandOptionType.Subcommand,
+            options: [
+                {
+                    name: 'channel',
+                    description: 'The channel to disable notifications in',
+                    type: ApplicationCommandOptionType.Channel,
+                    required: true,
+                },
+                {
+                    name: 'platform',
+                    description: 'The platform the streamer is on',
+                    type: ApplicationCommandOptionType.String,
+                    required: true,
+                    choices: [
+                        { name: 'Twitch', value: 'twitch' },
+                    ],
+                },
+                {
+                    name: 'username',
+                    description: 'The username of the streamer',
+                    type: ApplicationCommandOptionType.String,
+                    required: true,
+                },
+            ],
+        },
+    ],
 
-    let defer = deferReply(interaction);
-    const streamer = interaction.options.getString('streamer');
-    const channel = interaction.options.getChannel('channel');
-    const platform = interaction.options.getString('platform');
+    execute: async (client, interaction) => {
+        if (!interaction.inCachedGuild()) return;
+        const subCommand = interaction.options.getSubcommand();
+        let embed: EmbedBuilder | Promise<EmbedBuilder> | EmbedBuilder[] | Promise<EmbedBuilder[]>;
 
-    switch (subCommand) {
-        case 'list':
-            const res = await getFollowedStreams(interaction.guildId);
-            if (!res || !res.channels) {
-                embed = generateEmbed({
-                    msg: `No stream alerts are set up for this server.`,
-                });
-                break;
-            }
+        let defer = deferReply(interaction);
+        const streamer = interaction.options.getString('streamer');
+        const channel = interaction.options.getChannel('channel');
+        const platform = interaction.options.getString('platform');
 
-            const fields: Field[] = await generateFields(res.channels, client);
-            if (fields.length === 0) {
-                embed = generateEmbed({
-                    msg: `No stream alerts are set up for this server.`,
-                });
-                break;
-            }
-            embed = generateEmbed({
-                title: `Stream alerts for ${ interaction.guild.name }`,
-                color: client.colors.twitch,
-                fields: fields,
-            });
-            break;
-        case 'add':
-            if (!streamer || !channel || !platform) {
-                embed = generateEmbed({ 'msg': 'Please provide a streamer, channel and platform.' });
-                break;
-            }
-
-            try {
-                const connectQuery = generateConnectChannelQuery(channel.id, channel.guild.id);
-                const streamerData = await client.twitch.getChannel(streamer);
-                client.logger.info(`Adding streamer ${ streamerData.displayName } to channel ${ channel.id } on ${ platform }`);
-
-                if (!channel.isTextBased() || channel.isDMBased() || channel.isThread()) {
+        switch (subCommand) {
+            case 'list':
+                const res = await getFollowedStreams(interaction.guildId);
+                if (!res || !res.channels) {
                     embed = generateEmbed({
-                        msg: `${ channel.name } is not a text channel, please select a text channel.`,
-                        color: client.colors.error,
+                        msg: `No stream alerts are set up for this server.`,
                     });
                     break;
                 }
 
-                await upsertStreamer(streamerData, await connectQuery);
+                const fields: Chizuru.Field[] = await generateFields(res.channels, client);
+                if (fields.length === 0) {
+                    embed = generateEmbed({
+                        msg: `No stream alerts are set up for this server.`,
+                    });
+                    break;
+                }
                 embed = generateEmbed({
-                    msg: `You'll be notified in <#${ channel.id }> when ${ streamerData.displayName }`
-                        + ` goes live on ${ platform.charAt(0).toUpperCase() + platform.slice(1) }.`,
-                    authorIcon: `${ streamerData.thumbnailUrl }`,
-                    author: `${ streamerData.displayName }`,
-                    authorUrl: `${ streamerData.url }`,
-                    color: client.colors.success,
-                });
-            } catch (err: any) {
-                embed = generateErrorEmbed(err, client.colors.error, client.logger);
-            }
-            break;
-        case 'remove':
-            if (!streamer || !channel || !platform) {
-                embed = generateEmbed({
-                    'msg': 'Please provide a streamer, channel and platform.',
-                    color: client.colors.success,
+                    title: `Stream alerts for ${ interaction.guild.name }`,
+                    color: client.colors.twitch,
+                    fields: fields,
                 });
                 break;
-            }
-
-            try {
-                const streamers = await prisma.streamer.findMany({
-                    where: { username: streamer.toLowerCase(), platform: StreamPlatform.twitch },
-                });
-
-                if (streamers.length > 0) {
-                    let platformId = streamers.filter(dbStreamer => dbStreamer.username === streamer.toLowerCase())[0].platformId;
-                    if (platformId) await disconnectStreamer(platformId, platform as StreamPlatform, channel.id);
+            case 'add':
+                if (!streamer || !channel || !platform) {
+                    embed = generateEmbed({ 'msg': 'Please provide a streamer, channel and platform.' });
+                    break;
                 }
 
-                embed = generateEmbed({
-                    msg: `You'll no longer be notified in <#${ channel.id }> when ${ streamer } goes live on ${ platform }.`,
-                    color: client.colors.success,
-                });
-            } catch (err: any) {
-                if (err instanceof PrismaClientKnownRequestError) {
+                try {
+                    const connectQuery = generateConnectChannelQuery(channel.id, channel.guild.id);
+                    const streamerData = await client.twitch.getChannel(streamer);
+                    client.logger.info(`Adding streamer ${ streamerData.displayName } to channel ${ channel.id } on ${ platform }`);
+
+                    if (!channel.isTextBased() || channel.isDMBased() || channel.isThread()) {
+                        embed = generateEmbed({
+                            msg: `${ channel.name } is not a text channel, please select a text channel.`,
+                            color: client.colors.error,
+                        });
+                        break;
+                    }
+
+                    await upsertStreamer(streamerData, await connectQuery);
                     embed = generateEmbed({
-                        msg: `You weren't following ${ streamer } on ${ platform } in <#${ channel.id }>.`,
+                        msg: `You'll be notified in <#${ channel.id }> when ${ streamerData.displayName }`
+                            + ` goes live on ${ platform.charAt(0).toUpperCase() + platform.slice(1) }.`,
+                        authorIcon: `${ streamerData.thumbnailUrl }`,
+                        author: `${ streamerData.displayName }`,
+                        authorUrl: `${ streamerData.url }`,
                         color: client.colors.success,
                     });
-                } else {
+                } catch (err: any) {
                     embed = generateErrorEmbed(err, client.colors.error, client.logger);
                 }
-            }
-            break;
-        default:
-            embed = generateEmbed({
-                msg: 'Invalid subcommand',
-                color: client.colors.error,
-            });
-            break;
-    }
+                break;
+            case 'remove':
+                if (!streamer || !channel || !platform) {
+                    embed = generateEmbed({
+                        'msg': 'Please provide a streamer, channel and platform.',
+                        color: client.colors.success,
+                    });
+                    break;
+                }
 
-    await defer;
-    await replyEmbed(interaction, await embed);
-};
+                try {
+                    const streamers = await prisma.streamer.findMany({
+                        where: { username: streamer.toLowerCase(), platform: StreamPlatform.twitch },
+                    });
 
-export const name: string = 'stream';
-export const permissions: PermissionsString[] = ['ViewChannel', 'SendMessages'];
+                    if (streamers.length > 0) {
+                        let platformId = streamers.filter(dbStreamer => dbStreamer.username === streamer.toLowerCase())[0].platformId;
+                        if (platformId) await disconnectStreamer(platformId, platform as StreamPlatform, channel.id);
+                    }
 
-export const data: SlashCommandSubcommandsOnlyBuilder = new SlashCommandBuilder()
-    .setName('stream')
-    .setDescription('Update and view stream notification settings here')
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
-    .setDMPermission(false)
-    .addSubcommand(subcommand => subcommand.setName('list')
-        .setDescription('List the current settings for the server'))
-    .addSubcommand(subcommand => subcommand.setName('add')
-        .setDescription('Enable notifications for when a streamer goes live in a channel')
-        .addChannelOption(option => option.setName('channel')
-            .setDescription('The channel to send the notification to')
-            .setRequired(true))
-        .addStringOption(option => option.setName('platform')
-            .setDescription('The platform the streamer is on')
-            .setRequired(true)
-            .addChoices(
-                { name: 'twitch', value: 'twitch' },
-            ))
-        .addStringOption(option => option.setName('streamer')
-            .setDescription('The streamer\'s username')
-            .setRequired(true)),
-    )
-    .addSubcommand(subcommand => subcommand.setName('remove')
-        .setDescription('Disable notifications for a streamer in a channel')
-        .addChannelOption(option => option.setName('channel')
-            .setDescription('The channel to disable notifications in')
-            .setRequired(true))
-        .addStringOption(option => option.setName('platform')
-            .setDescription('The platform the streamer is on')
-            .setRequired(true)
-            .addChoices(
-                { name: 'twitch', value: 'twitch' },
-            ))
-        .addStringOption(option => option.setName('streamer')
-            .setDescription('The streamer\'s username')
-            .setRequired(true)),
-    );
+                    embed = generateEmbed({
+                        msg: `You'll no longer be notified in <#${ channel.id }> when ${ streamer } goes live on ${ platform }.`,
+                        color: client.colors.success,
+                    });
+                } catch (err: any) {
+                    if (err instanceof PrismaClientKnownRequestError) {
+                        embed = generateEmbed({
+                            msg: `You weren't following ${ streamer } on ${ platform } in <#${ channel.id }>.`,
+                            color: client.colors.success,
+                        });
+                    } else {
+                        embed = generateErrorEmbed(err, client.colors.error, client.logger);
+                    }
+                }
+                break;
+            default:
+                embed = generateEmbed({
+                    msg: 'Invalid subcommand',
+                    color: client.colors.error,
+                });
+                break;
+        }
+
+        await defer;
+        await replyEmbed(interaction, await embed);
+    },
+});
 
 async function getFollowedStreams(guildId: string) {
     return await prisma.guild.findUnique({
@@ -184,8 +209,8 @@ async function getFollowedStreams(guildId: string) {
     });
 }
 
-async function generateFields(channels: (Channel & { followedStreamers: { username: string, platform: 'twitch', displayName: string }[] })[], client: Bot): Promise<Field[]> {
-    let fields: Field[] = [];
+async function generateFields(channels: (Channel & { followedStreamers: { username: string, platform: 'twitch', displayName: string }[] })[], client: Bot): Promise<Chizuru.Field[]> {
+    let fields: Chizuru.Field[] = [];
     channels.filter(channel => channel.followedStreamers.length > 0).map(channel => {
         let streamers: string[] = [];
         channel.followedStreamers.forEach(streamer => {
@@ -204,22 +229,6 @@ async function generateFields(channels: (Channel & { followedStreamers: { userna
     });
     return fields;
 }
-
-// async function generatePages(fields: Field[], guildName: string, color: number): Promise<EmbedBuilder[]> {
-//     const fieldsPerPage = 3;
-//     const pages: EmbedBuilder[] = [];
-//
-//     for (let i = 0; i < fields.length; i += fieldsPerPage) {
-//         const page = await generateEmbed({
-//             title: `Stream alerts for ${ guildName }`,
-//             color: color,
-//             fields: fields.slice(i, i + fieldsPerPage)
-//         });
-//         pages.push(page);
-//     }
-//
-//     return pages;
-// }
 
 async function generateConnectChannelQuery(channelId: string, guildId: string): Promise<ChannelConnectQuery> {
     return {
@@ -249,7 +258,7 @@ async function disconnectStreamer(platformId: string, platform: StreamPlatform, 
 
 }
 
-async function upsertStreamer(streamerData: ChannelData, connectQuery: ChannelConnectQuery) {
+async function upsertStreamer(streamerData: Chizuru.ChannelData, connectQuery: ChannelConnectQuery) {
     return await prisma.streamer.upsert({
         where: {
             platformId_platform: {

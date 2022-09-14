@@ -1,20 +1,21 @@
-import { PermissionFlagsBits, PermissionsString, SlashCommandBuilder } from 'discord.js';
-import { RunCommand } from '../../interfaces';
+import { Chizuru } from '../../interfaces';
+import { Command } from '../../structures/command';
 import { replyMessage } from '../../utils';
 
-export const run: RunCommand = async (client, interaction) => {
-    let curTime = Date.now();
-    let ping = curTime - interaction.createdTimestamp;
+export default new Command({
+    name: 'ping',
+    description: 'Replies with pong',
+    isDisabled: false,
+    dmPermission: false,
+    defaultMemberPermissions: ['SendMessages'],
+    module: Chizuru.CommandModule.Global,
+    options: [],
 
-    let msg = `:ping_pong: ~${ ping }ms delay between when you ran the command and when I received it.`;
-    return await replyMessage(interaction, msg);
-};
+    execute: async (client, interaction) => {
+        let curTime = Date.now();
+        let ping = curTime - interaction.createdTimestamp;
 
-export const name: string = 'ping';
-export const permissions: PermissionsString[] = ['ViewChannel', 'SendMessages'];
-
-export const data: SlashCommandBuilder = new SlashCommandBuilder()
-    .setName('ping')
-    .setDescription('Replies with pong')
-    .setDefaultMemberPermissions(PermissionFlagsBits.SendMessages | PermissionFlagsBits.ViewChannel)
-    .setDMPermission(false);
+        let msg = `:ping_pong: ~${ ping }ms delay between when you ran the command and when I received it.`;
+        return await replyMessage(interaction, msg);
+    },
+});

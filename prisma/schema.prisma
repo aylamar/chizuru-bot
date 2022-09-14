@@ -8,20 +8,21 @@ datasource db {
 }
 
 model Guild {
-  id                         Int         @id @unique @default(autoincrement())
-  guildId                    String      @unique
+  id                         Int              @id @unique @default(autoincrement())
+  guildId                    String           @unique
   musicChannelId             String?
   streamPingRoleId           String?
-  streamPingRandomUser       Boolean     @default(false)
+  streamPingRandomUser       Boolean          @default(false)
   logBlacklistedChannels     String[]
   logDeletedMessagesChannels String[]
   logEditedMessagesChannels  String[]
   logVoiceStateChannels      String[]
+  modules                    CommandModule[]
   starboards                 Starboard[]
   channels                   Channel[]
   users                      User[]
-  created                    DateTime    @default(now())
-  updated                    DateTime    @updatedAt
+  created                    DateTime         @default(now())
+  updated                    DateTime         @updatedAt
   starboardId                Int?
 }
 
@@ -108,6 +109,12 @@ model MessageStats {
   updated DateTime @default(now()) @updatedAt
 
   @@unique([channelId, userId])
+}
+
+enum CommandModule {
+  admin
+  global
+  music
 }
 
 enum StreamPlatform {

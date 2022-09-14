@@ -10,7 +10,7 @@ export default new Command({
     description: 'Update modules enabled for a guild',
     isDisabled: false,
     dmPermission: false,
-    defaultMemberPermissions: ['SendMessages'],
+    defaultMemberPermissions: ['ManageGuild'],
     module: Chizuru.CommandModule.Admin,
     options: [
         {

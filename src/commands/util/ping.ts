@@ -1,4 +1,5 @@
-import { Command, CommandModule } from '../../structures/command';
+import { Chizuru } from '../../interfaces';
+import { Command } from '../../structures/command';
 import { replyMessage } from '../../utils';
 
 export default new Command({
@@ -7,7 +8,7 @@ export default new Command({
     isDisabled: false,
     dmPermission: false,
     defaultMemberPermissions: ['SendMessages'],
-    module: CommandModule.Global,
+    module: Chizuru.CommandModule.Global,
     options: [],
 
     execute: async (client, interaction) => {

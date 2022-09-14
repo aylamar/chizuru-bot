@@ -11,17 +11,17 @@ import {
     Partials,
 } from 'discord.js';
 import type { Logger } from 'winston';
-import { EmbedColors, Event, PlayerEvent } from '../interfaces';
+import { Chizuru, Event, PlayerEvent } from '../interfaces';
 import { getLogger } from '../services';
 import { getFiles } from '../utils';
-import { CommandArgs, CommandModule } from './command';
+import { CommandArgs } from './command';
 import { Starboard } from './starboard';
 import { Streams } from './stream';
 import Twitch from './twitch';
 
 export class Bot extends Client<true> {
     public logger: Logger;
-    public colors: EmbedColors;
+    public colors: Chizuru.EmbedColors;
     commands: Collection<string, CommandArgs> = new Collection();
     public player: Player;
     public twitch: Twitch;
@@ -63,15 +63,38 @@ export class Bot extends Client<true> {
         await Promise.all([this.loadEvents(), this.loadCommands()]);
         await this.login(process.env.DISCORD_TOKEN);
 
+        let start = process.hrtime.bigint();
         // fetch and update or create global commands
         const globalAppCommands = await this.application.commands.fetch();
-        const globalCommands = await this.getCommandsByModule(CommandModule.Global);
+        const globalCommands = await this.getCommandsByModule([Chizuru.CommandModule.Global]);
         globalCommands.map(command => this.updateOrCreateGlobal(globalAppCommands, command));
 
-        // update admin commands
-        await this.deployAdminCommands();
-        // remove deleted global commands
-        await this.cleanGlobalCommands(globalAppCommands, globalCommands);
+        let result = process.hrtime.bigint();
+        this.logger.info(`Spent ${ ((result - start) / BigInt(1000000)) }ms deploying global commands commands`);
+
+        // deploy admin commands and cleanup global commands
+        await Promise.all([await this.deployAdminCommands(), await this.cleanGlobalCommands(globalAppCommands, globalCommands)]);
+    }
+
+    public async getCommandsByModule(modules: Chizuru.CommandModule[]): Promise<Collection<string, CommandArgs>> {
+        return this.commands.filter(command => modules.includes(command.module));
+    }
+
+    public async deployGuildCommands(commands: Collection<string, CommandArgs>, guild: Guild) {
+        const guildCommands = await guild.commands.fetch();
+        for (const command of commands.values()) {
+            await this.updateOrCreateGuildCommand(guildCommands, command, guild);
+        }
+    }
+
+    public async cleanGuildCommands(commands: Collection<string, CommandArgs>, guild: Guild) {
+        const guildCommands = await guild.commands.fetch();
+        for (const command of guildCommands.values()) {
+            if (!commands.has(command.name)) {
+                this.logger.debug(`Found extra guild command /${ command.name } in ${ guild.name }, deleting from guild`);
+                await command.delete();
+            }
+        }
     }
 
     private async cleanGlobalCommands(appCommands: Collection<string, ApplicationCommand<{ guild: GuildResolvable }>>, commands: Collection<string, CommandArgs>) {
@@ -83,25 +106,22 @@ export class Bot extends Client<true> {
         }
     }
 
-    private async getCommandsByModule(module: CommandModule): Promise<Collection<string, CommandArgs>> {
-        return this.commands.filter(command => command.module === module);
-    }
-
     private async deployAdminCommands() {
-        if (!process.env.GUILD_ID) return;
-        const adminCommands = await this.getCommandsByModule(CommandModule.Admin);
+        let start = process.hrtime.bigint();
+        if (!process.env.GUILD_ID) throw new Error('No GUILD_ID set in .env file');
+        const adminCommands = await this.getCommandsByModule([Chizuru.CommandModule.Admin, Chizuru.CommandModule.Music]);
 
         const guild = await this.guilds.fetch(process.env.GUILD_ID);
         if (!guild) throw new Error('No GUILD_ID set in .env file');
 
-        const commands = await guild.commands.fetch();
-        for (const command of adminCommands.values()) {
-            await this.updateOrCreateGuildCommand(commands, command, guild);
-        }
+        await this.deployGuildCommands(adminCommands, guild);
+        await this.cleanGuildCommands(adminCommands, guild);
+        let result = process.hrtime.bigint();
+        this.logger.info(`Spent ${ ((result - start) / BigInt(1000000)) }ms deploying admin commands`);
     }
 
     private async loadEvents() {
-        let eventStart = process.hrtime.bigint();
+        let start = process.hrtime.bigint();
         const events = await getFiles(`${ __dirname }/../events`);
         let eventCount = 0;
         for (const file of events) {
@@ -117,13 +137,12 @@ export class Bot extends Client<true> {
             eventCount++;
             this.logger.debug(`Loaded event ${ event.name } for ${ file.includes('/events/player') ? 'player' : 'client' }`);
         }
-        let eventResult = process.hrtime.bigint();
-        this.logger.debug(`Spent ${ ((eventResult - eventStart) / BigInt(1000000)) }ms loading ${ eventCount } events`);
-        this.logger.info(`Loaded ${ eventCount } events`);
+        let result = process.hrtime.bigint();
+        this.logger.info(`Spent ${ ((result - start) / BigInt(1000000)) }ms loading ${ eventCount } events`);
     }
 
     private async loadCommands() {
-        let commandStart = process.hrtime.bigint();
+        let start = process.hrtime.bigint();
         const commandFiles = await getFiles(`${ __dirname }/../commands`);
         let commandCount = 0;
         for (const file of commandFiles) {
@@ -136,21 +155,9 @@ export class Bot extends Client<true> {
             this.logger.debug(`Loaded command /${ command.name }`);
             commandCount++;
         }
-        let commandResult = process.hrtime.bigint();
-        this.logger.debug(`Spent ${ ((commandResult - commandStart) / BigInt(1000000)) }ms loading ${ commandCount } commands`);
-        this.logger.info(`Loaded ${ commandCount } commands`);
+        let result = process.hrtime.bigint();
+        this.logger.info(`Spent ${ ((result - start) / BigInt(1000000)) }ms loading ${ commandCount } commands`);
     }
-
-    // private async cleanAdminCommands(guild: Guild) {
-    //     const commands = await guild.commands.fetch();
-    //
-    //     for (const command of commands.values()) {
-    //         if (!this.commands.has(command.name)) {
-    //             this.logger.debug(`Deleting command /${ command.name }`);
-    //             await command.delete();
-    //         }
-    //     }
-    // }
 
     private async updateOrCreateGuildCommand(guildCommands: Collection<string, ApplicationCommand>, data: ChatInputApplicationCommandData, guild: Guild) {
         const guildCommand = guildCommands.find(command => command.name === data.name);
@@ -174,8 +181,7 @@ export class Bot extends Client<true> {
             return;
         } else {
             this.logger.debug(`Updating command /${ data.name } in guild ${ guild.name }`);
-            // return await guildCommand.edit(data);
-            return;
+            return await guildCommand.edit(data);
         }
     }
 

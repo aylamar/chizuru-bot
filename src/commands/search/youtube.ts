@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType } from 'discord.js';
 import ytSearch from 'yt-search';
-import { Command, CommandModule } from '../../structures/command';
+import { Chizuru } from '../../interfaces';
+import { Command } from '../../structures/command';
 import { replyMessage } from '../../utils';
 
 export default new Command({
@@ -9,7 +10,7 @@ export default new Command({
     isDisabled: false,
     dmPermission: false,
     defaultMemberPermissions: ['SendMessages'],
-    module: CommandModule.Global,
+    module: Chizuru.CommandModule.Global,
     options: [{
         name: 'query',
         description: 'The title of the video to search for',

@@ -1,7 +1,7 @@
 import { Playlist, Queue, Song } from 'discord-music-player';
 import { ApplicationCommandOptionType, EmbedBuilder, InteractionResponse } from 'discord.js';
-import { Command, CommandModule } from '../../structures/command';
-import { Field } from '../../interfaces';
+import { Chizuru } from '../../interfaces';
+import { Command } from '../../structures/command';
 import { deferReply, generateEmbed, replyEmbed, replyMessage } from '../../utils';
 import { musicValidator } from '../../utils/validators';
 
@@ -11,7 +11,7 @@ export default new Command({
     isDisabled: false,
     dmPermission: false,
     defaultMemberPermissions: ['Speak'],
-    module: CommandModule.Music,
+    module: Chizuru.CommandModule.Music,
     options: [
         {
             name: 'song',
@@ -117,7 +117,7 @@ export default new Command({
                     break;
                 }
 
-                let fields: Field[] = [];
+                let fields: Chizuru.Field[] = [];
                 queuedPlaylist.songs.slice(0, 9).map((song, index) => {
                     fields.push({
                         name: `${ index + 1 }. ${ song.name }`,

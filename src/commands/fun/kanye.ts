@@ -1,5 +1,6 @@
 import fetch, { Response } from 'node-fetch';
-import { Command, CommandModule } from '../../structures/command';
+import { Chizuru } from '../../interfaces';
+import { Command } from '../../structures/command';
 import { generateEmbed, generateErrorEmbed, replyEmbed } from '../../utils';
 
 export default new Command({
@@ -8,7 +9,7 @@ export default new Command({
     isDisabled: false,
     dmPermission: false,
     defaultMemberPermissions: ['SendMessages'],
-    module: CommandModule.Global,
+    module: Chizuru.CommandModule.Global,
     options: [],
     execute: async (client, interaction) => {
         let res: Response;

@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType } from 'discord-api-types/v10';
 import { Queue, RepeatMode } from 'discord-music-player';
-import { Command, CommandModule } from '../../structures/command';
+import { Chizuru } from '../../interfaces';
+import { Command } from '../../structures/command';
 import { generateEmbed, replyEmbed, replyMessage } from '../../utils';
 import { musicValidator } from '../../utils/validators';
 
@@ -10,7 +11,7 @@ export default new Command({
     isDisabled: false,
     dmPermission: false,
     defaultMemberPermissions: ['Speak'],
-    module: CommandModule.Music,
+    module: Chizuru.CommandModule.Music,
     options: [
         {
             name: 'mode',

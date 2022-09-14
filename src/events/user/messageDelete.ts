@@ -1,8 +1,8 @@
 import { Guild } from '@prisma/client';
 import { AuditLogEvent, GuildAuditLogs, Message } from 'discord.js';
-import { Bot } from '../../structures/bot';
-import { Field, RunEvent } from '../../interfaces';
+import { Chizuru, RunEvent } from '../../interfaces';
 import { prisma } from '../../services';
+import { Bot } from '../../structures/bot';
 import { generateEmbed, sendEmbedToChannelArr } from '../../utils';
 import { getRecentAuditLog } from '../../utils/guilds';
 
@@ -29,7 +29,7 @@ export const run: RunEvent = async (client: Bot, message: Message) => {
         messageTrimmed = message.content.substring(0, 1024) + '...';
     }
 
-    let fetchedLogs:  GuildAuditLogs<AuditLogEvent.MessageDelete>
+    let fetchedLogs: GuildAuditLogs<AuditLogEvent.MessageDelete>;
     try {
         fetchedLogs = await message.guild.fetchAuditLogs({
             limit: 1,
@@ -42,7 +42,7 @@ export const run: RunEvent = async (client: Bot, message: Message) => {
     }
 
     let actionBy = getRecentAuditLog(fetchedLogs, message.author.id);
-    let fields: Field[] = [];
+    let fields: Chizuru.Field[] = [];
     if (message.attachments.size > 0) {
         for (let attachment of message.attachments.values()) {
             fields.push({

@@ -1,7 +1,7 @@
 import { Streamer } from '@prisma/client';
 import { EmbedBuilder, TextChannel } from 'discord.js';
 import { Logger } from 'winston';
-import type { BulkChannelData, StreamData } from '../interfaces';
+import type { Chizuru } from '../interfaces';
 import { prisma } from '../services';
 import { generateEmbed, sendEmbed } from '../utils';
 import { NoStreamerError } from '../utils/errors';
@@ -89,7 +89,7 @@ export class Streams {
         const chunks = await this.generateChunks(streamers);
         for (const chunk of chunks) {
             const platformIds = chunk.map(streamer => streamer.platformId);
-            const streamData: StreamData[] = await this.twitch.checkStreams(platformIds);
+            const streamData: Chizuru.StreamData[] = await this.twitch.checkStreams(platformIds);
             const livePlatformIds = streamData.map(streamer => streamer.platformId);
 
             // if platform id is in livePlatformIds, then add to liveStreamIds
@@ -128,8 +128,8 @@ export class Streams {
         for (const chunk of chunks) {
             // join all userIds into a query string
             let platformIds = chunk.map(streamer => streamer.platformId);
-            let streamData: StreamData[];
-            let channelData: BulkChannelData[];
+            let streamData: Chizuru.StreamData[];
+            let channelData: Chizuru.BulkChannelData[];
             try {
                 channelData = await this.twitch.getChannels(platformIds);
                 streamData = await this.twitch.checkStreams(platformIds);
@@ -190,7 +190,7 @@ export class Streams {
         });
     }
 
-    private async createLiveEmbed(streamer: StreamerData, stream: StreamData) {
+    private async createLiveEmbed(streamer: StreamerData, stream: Chizuru.StreamData) {
         let dateDiff = Streams.getDateDiff(streamer.changeTime);
         return generateEmbed({
             title: `${ streamer.displayName } has started streaming`,
@@ -209,7 +209,7 @@ export class Streams {
         });
     }
 
-    private async createOfflineEmbed(streamer: StreamerData, channel: BulkChannelData) {
+    private async createOfflineEmbed(streamer: StreamerData, channel: Chizuru.BulkChannelData) {
         let dateDiff = Streams.getDateDiff(streamer.changeTime);
         return generateEmbed({
             title: `${ streamer.displayName } has gone offline`,

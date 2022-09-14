@@ -1,8 +1,9 @@
 import { Starboard } from '@prisma/client';
 import { ApplicationCommandOptionType, Channel, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
-import { Bot } from '../../structures/bot';
-import { Command, CommandModule } from '../../structures/command';
+import { Chizuru } from '../../interfaces';
 import { prisma } from '../../services';
+import { Bot } from '../../structures/bot';
+import { Command } from '../../structures/command';
 import { deferReply, generateEmbed, generateErrorEmbed, NoStarboardError, replyEmbed, updateArray } from '../../utils';
 
 export default new Command({
@@ -11,7 +12,7 @@ export default new Command({
     isDisabled: false,
     dmPermission: false,
     defaultMemberPermissions: ['ManageGuild'],
-    module: CommandModule.Global,
+    module: Chizuru.CommandModule.Global,
     options: [
         {
             name: 'create',

@@ -1,7 +1,8 @@
 import type { AnimeEntry, MangaEntry, MediaSearchEntry } from 'anilist-node';
 import anilist from 'anilist-node';
 import { ApplicationCommandOptionType, TextChannel } from 'discord.js';
-import { Command, CommandModule } from '../../structures/command';
+import { Chizuru } from '../../interfaces';
+import { Command } from '../../structures/command';
 import { deferReply, generateEmbed, replyEmbed, replyMessage } from '../../utils';
 
 const Anilist = new anilist();
@@ -12,7 +13,7 @@ export default new Command({
     isDisabled: false,
     dmPermission: false,
     defaultMemberPermissions: ['SendMessages'],
-    module: CommandModule.Global,
+    module: Chizuru.CommandModule.Global,
     options: [
         {
             name: 'type',

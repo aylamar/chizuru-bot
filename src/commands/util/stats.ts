@@ -1,6 +1,6 @@
-import { Command, CommandModule } from '../../structures/command';
-import { Field } from '../../interfaces';
+import { Chizuru } from '../../interfaces';
 import { prisma } from '../../services';
+import { Command } from '../../structures/command';
 import { generateEmbed, replyEmbed, replyMessage } from '../../utils';
 
 export default new Command({
@@ -9,7 +9,7 @@ export default new Command({
     isDisabled: false,
     dmPermission: false,
     defaultMemberPermissions: ['SendMessages'],
-    module: CommandModule.Global,
+    module: Chizuru.CommandModule.Global,
     options: [],
 
     execute: async (client, interaction) => {
@@ -22,7 +22,7 @@ export default new Command({
 
         let channelStats = await generateChannelStats(await rawChannelStats);
 
-        let serverStats: Field = {
+        let serverStats: Chizuru.Field = {
             name: `${ interaction.guild?.name } Message Stats`,
             value: channelStats.message + (channelStats.otherMsgCount > 0 ? `\n\n And ${ channelStats.otherMsgCount } `
                 + `${ channelStats.otherMsgCount == 1 ? 'message' : 'messages' } across ${ channelStats.channelCount - 5 } `
@@ -30,13 +30,13 @@ export default new Command({
             inline: false,
         };
 
-        let userStats: Field = {
+        let userStats: Chizuru.Field = {
             name: 'User Stats',
             value: `Tracking since ${ await convertDate(user.created) }\n` + `Total Messages Sent: ${ (await totalMessages) ? await totalMessages : 0 }`,
             inline: true,
         };
 
-        let userInfo: Field = {
+        let userInfo: Chizuru.Field = {
             name: 'User Info',
             value: `Username: ${ interaction.user.username }\n` + `Discriminator: ${ interaction.user.discriminator }\n`
                 + `Avatar: [Click Here](${ interaction.user.displayAvatarURL() })\n` + `User ID: ${ interaction.user.id }\n`

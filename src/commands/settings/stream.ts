@@ -1,10 +1,10 @@
 import { Channel, StreamPlatform } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { ApplicationCommandOptionType, EmbedBuilder, GuildTextBasedChannel } from 'discord.js';
-import type { Bot } from '../../structures/bot';
-import { Command, CommandModule } from '../../structures/command';
-import { ChannelData, Field } from '../../interfaces';
+import { Chizuru } from '../../interfaces';
 import { prisma } from '../../services';
+import type { Bot } from '../../structures/bot';
+import { Command } from '../../structures/command';
 import { deferReply, generateEmbed, generateErrorEmbed, replyEmbed } from '../../utils';
 
 export default new Command({
@@ -13,7 +13,7 @@ export default new Command({
     isDisabled: false,
     dmPermission: false,
     defaultMemberPermissions: ['ManageGuild'],
-    module: CommandModule.Global,
+    module: Chizuru.CommandModule.Global,
     options: [
         {
             name: 'list',
@@ -98,7 +98,7 @@ export default new Command({
                     break;
                 }
 
-                const fields: Field[] = await generateFields(res.channels, client);
+                const fields: Chizuru.Field[] = await generateFields(res.channels, client);
                 if (fields.length === 0) {
                     embed = generateEmbed({
                         msg: `No stream alerts are set up for this server.`,
@@ -209,8 +209,8 @@ async function getFollowedStreams(guildId: string) {
     });
 }
 
-async function generateFields(channels: (Channel & { followedStreamers: { username: string, platform: 'twitch', displayName: string }[] })[], client: Bot): Promise<Field[]> {
-    let fields: Field[] = [];
+async function generateFields(channels: (Channel & { followedStreamers: { username: string, platform: 'twitch', displayName: string }[] })[], client: Bot): Promise<Chizuru.Field[]> {
+    let fields: Chizuru.Field[] = [];
     channels.filter(channel => channel.followedStreamers.length > 0).map(channel => {
         let streamers: string[] = [];
         channel.followedStreamers.forEach(streamer => {
@@ -258,7 +258,7 @@ async function disconnectStreamer(platformId: string, platform: StreamPlatform, 
 
 }
 
-async function upsertStreamer(streamerData: ChannelData, connectQuery: ChannelConnectQuery) {
+async function upsertStreamer(streamerData: Chizuru.ChannelData, connectQuery: ChannelConnectQuery) {
     return await prisma.streamer.upsert({
         where: {
             platformId_platform: {

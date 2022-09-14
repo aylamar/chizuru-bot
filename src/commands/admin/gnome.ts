@@ -1,6 +1,7 @@
 import { Queue } from 'discord-music-player';
 import { ApplicationCommandOptionType } from 'discord.js';
-import { Command, CommandModule } from '../../structures/command';
+import { Chizuru } from '../../interfaces';
+import { Command } from '../../structures/command';
 import { replyMessage } from '../../utils';
 
 export default new Command({
@@ -9,7 +10,7 @@ export default new Command({
     isDisabled: false,
     dmPermission: false,
     defaultMemberPermissions: ['SendMessages'],
-    module: CommandModule.Admin,
+    module: Chizuru.CommandModule.Admin,
     options: [{
         name: 'channel',
         description: 'The channel to gnome',
@@ -32,4 +33,4 @@ export default new Command({
 
         await replyMessage(interaction, `<#${ channel.id }> has been gnomed`, true);
     },
-})
+});

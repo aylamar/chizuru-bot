@@ -1,9 +1,9 @@
 import { Guild, Starboard } from '@prisma/client';
 import { ApplicationCommandOptionType, EmbedBuilder, GuildBasedChannel, Role } from 'discord.js';
-import { Bot } from '../../structures/bot';
-import { Command, CommandModule } from '../../structures/command';
-import { Field } from '../../interfaces';
+import { Chizuru } from '../../interfaces';
 import { prisma } from '../../services';
+import { Bot } from '../../structures/bot';
+import { Command } from '../../structures/command';
 import { deferReply, generateEmbed, generateErrorEmbed, replyEmbed, updateArray } from '../../utils';
 
 export default new Command({
@@ -12,7 +12,7 @@ export default new Command({
     isDisabled: false,
     dmPermission: false,
     defaultMemberPermissions: ['ManageGuild'],
-    module: CommandModule.Global,
+    module: Chizuru.CommandModule.Global,
     options: [
         {
             name: 'list',
@@ -169,7 +169,7 @@ async function handleList(guildId: string, client: Bot): Promise<EmbedBuilder> {
         });
     }
 
-    let fields: Field[] = await generateSettingsFields(guild);
+    let fields: Chizuru.Field[] = await generateSettingsFields(guild);
     return generateEmbed({
         title: 'Settings',
         fields: fields,
@@ -309,8 +309,8 @@ async function handleUpdate(setting: string | null, enabled: boolean | null, gui
     helper functions
 
  */
-async function generateSettingsFields(guild: (Guild & { starboards: Starboard[] })): Promise<Field[]> {
-    let logField: Field = {
+async function generateSettingsFields(guild: (Guild & { starboards: Starboard[] })): Promise<Chizuru.Field[]> {
+    let logField: Chizuru.Field = {
         name: 'Log Settings',
         value: `\nLog edited messages: ${ await genChannelList(guild.logEditedMessagesChannels) }`
             + `\nLog deleted messages: ${ await genChannelList(guild.logDeletedMessagesChannels) }`
@@ -319,7 +319,7 @@ async function generateSettingsFields(guild: (Guild & { starboards: Starboard[] 
         inline: false,
     };
 
-    let musicField: Field = {
+    let musicField: Chizuru.Field = {
         name: 'Music Settings',
         value: `\nMusic commands can be run in ${ guild.musicChannelId ? `<#${ guild.musicChannelId }>` : 'any channel' }`,
         inline: false,
@@ -329,7 +329,7 @@ async function generateSettingsFields(guild: (Guild & { starboards: Starboard[] 
     if (guild.streamPingRoleId === '@everyone') role = '@everyone';
     else role = `<@&${ guild.streamPingRoleId }>`;
 
-    let streamField: Field = {
+    let streamField: Chizuru.Field = {
         name: 'Stream Settings',
         value: `\nStream pings for random users are ${ guild.streamPingRandomUser ? 'enabled' : 'disabled' }`
             + `\nStream pings for specific roles are ${ guild.streamPingRoleId ? `enabled for ${ role }` : 'disabled' }`,
@@ -340,7 +340,7 @@ async function generateSettingsFields(guild: (Guild & { starboards: Starboard[] 
     if (guild.starboards.length > 0) {
         // iterate through each starboard
         for (let starboard of guild.starboards) {
-            let starboardField: Field = {
+            let starboardField: Chizuru.Field = {
                 name: 'Starboard Settings',
                 value: `Channel: <#${ starboard.channelId }>`
                     + `\nEmote: ${ starboard.emote }`

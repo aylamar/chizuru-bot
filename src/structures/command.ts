@@ -5,6 +5,7 @@ import {
     ChatInputCommandInteraction,
     PermissionsString,
 } from 'discord.js';
+import { Chizuru } from '../interfaces';
 import { Bot } from './bot';
 
 export class Command implements ChatInputApplicationCommandData {
@@ -14,7 +15,7 @@ export class Command implements ChatInputApplicationCommandData {
     dmPermission: boolean;
     defaultMemberPermissions: PermissionsString[];
     type: ApplicationCommandType.ChatInput;
-    module: CommandModule;
+    module: Chizuru.CommandModule;
     options: ApplicationCommandOptionData[];
     execute: RunCommand;
 
@@ -41,14 +42,7 @@ export interface CommandArgs extends ChatInputApplicationCommandData {
     isDisabled: boolean;
     dmPermission: boolean;
     defaultMemberPermissions: PermissionsString[];
-    module: CommandModule;
+    module: Chizuru.CommandModule;
     options: ApplicationCommandOptionData[];
     execute: RunCommand;
-}
-
-
-export enum CommandModule {
-    Global = 'Global',
-    Admin = 'Admin',
-    Music = 'Music',
 }

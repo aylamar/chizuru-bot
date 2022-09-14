@@ -1,22 +1,19 @@
-import { MessageReaction, PartialMessageReaction } from 'discord.js';
+import { Events, MessageReaction, PartialMessageReaction } from 'discord.js';
 import { Bot } from '../../structures/bot';
-import { RunEvent } from '../../interfaces';
+import { Event } from '../../structures/event';
 
-export const run: RunEvent = async (client: Bot, reaction: MessageReaction | PartialMessageReaction) => {
-    const start = process.hrtime.bigint();
+export default new Event({
+    name: Events.MessageReactionAdd,
+    execute: async (client: Bot, reaction: MessageReaction | PartialMessageReaction) => {
+        if (reaction.partial) reaction = await reaction.fetch();
+        if (!reaction) return;
 
-    if (reaction.partial) reaction = await reaction.fetch();
-    if (!reaction) return
+        let message = reaction.message;
+        if (message.partial) message = await message.fetch();
 
-    let message = reaction.message;
-    if (message.partial) message = await message.fetch();
+        if (!message) return;
+        if (!message.inGuild() || !message.channel.isTextBased()) return;
 
-    if (!message ) return;
-    if (!message.inGuild() || !message.channel.isTextBased()) return;
-
-    await client.starboard.handleReaction(reaction, message);
-    const result = process.hrtime.bigint();
-    client.logger.debug(`Spent ${ ((result - start) / BigInt(1000000)) }ms processing reaction add in ${ message.channel.name } for ${ reaction.emoji.name }`, { label: 'event' });
-};
-
-export const name = 'messageReactionAdd';
+        await client.starboard.handleReaction(reaction, message);
+    },
+});

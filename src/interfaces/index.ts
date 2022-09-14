@@ -1,5 +1,3 @@
-export type { Event, PlayerEvent, RunEvent, RunPlayerEvent } from './event';
-
 export namespace Chizuru {
     export interface EmbedColors {
         error: number;

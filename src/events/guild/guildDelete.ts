@@ -1,16 +1,17 @@
-import { Guild } from 'discord.js';
-import { Bot } from '../../structures/bot';
-import { RunEvent } from '../../interfaces';
+import { Events, Guild } from 'discord.js';
 import { prisma } from '../../services';
+import { Bot } from '../../structures/bot';
+import { Event } from '../../structures/event';
 
-export const run: RunEvent = async (client: Bot, guild: Guild) => {
-    if (!guild || !guild.id) return;
-    try {
-        await prisma.guild.delete({ where: { guildId: guild.id } });
-    } catch (err) {
-        client.logger.error(`Joined ${ guild.name } (${ guild.id }), errored while deleting a record in the database.`, { label: 'event' });
-        client.logger.error(err);
-    }
-};
-
-export const name: string = 'guildDelete';
+export default new Event({
+    name: Events.GuildDelete,
+    execute: async (client: Bot, guild: Guild) => {
+        if (!guild || !guild.id) return;
+        try {
+            await prisma.guild.delete({ where: { guildId: guild.id } });
+        } catch (err) {
+            client.logger.error(`Joined ${ guild.name } (${ guild.id }), errored while deleting a record in the database.`, { label: 'event' });
+            client.logger.error(err);
+        }
+    },
+});

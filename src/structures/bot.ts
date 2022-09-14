@@ -11,10 +11,11 @@ import {
     Partials,
 } from 'discord.js';
 import type { Logger } from 'winston';
-import { Chizuru, Event, PlayerEvent } from '../interfaces';
+import { Chizuru } from '../interfaces';
 import { getLogger } from '../services';
 import { getFiles } from '../utils';
 import { CommandArgs } from './command';
+import { Event, PlayerEvent } from './event';
 import { Starboard } from './starboard';
 import { Streams } from './stream';
 import Twitch from './twitch';
@@ -125,14 +126,15 @@ export class Bot extends Client<true> {
         const events = await getFiles(`${ __dirname }/../events`);
         let eventCount = 0;
         for (const file of events) {
-            const event: Event = await import(file);
+            const eventImport: any = await import(file);
+            let event: Event | PlayerEvent;
             if (file.includes('/events/player')) {
-                let playerEvent: PlayerEvent = event as PlayerEvent;
-                this.player.on(playerEvent.name, playerEvent.run.bind(null, this));
+                event = eventImport.default as PlayerEvent;
+                event.startListener(this);
             } else {
-                let botEvent: Event = event as Event;
-                this.events.set(botEvent.name, botEvent);
-                this.on(botEvent.name, botEvent.run.bind(null, this));
+                event = eventImport.default as Event;
+                this.events.set(event.name, event);
+                event.startListener(this);
             }
             eventCount++;
             this.logger.debug(`Loaded event ${ event.name } for ${ file.includes('/events/player') ? 'player' : 'client' }`);

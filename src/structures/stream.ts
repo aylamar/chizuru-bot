@@ -201,7 +201,7 @@ export class Streams {
             footer: `${ streamer.username } on ${ streamer.platform }`,
             image: stream.streamThumbnailUrl.replace('{width}', '620').replace('{height}', '360'),
             fields: [
-                { name: 'Status', value: ':green_circle: Offline', inline: true },
+                { name: 'Status', value: ':green_circle: Online', inline: true },
                 { name: 'Game', value: `${ stream.gameName }`, inline: true },
                 { name: 'Last Stream', value: `${ await dateDiff } ago`, inline: true }],
             color: this.client.colors.success,

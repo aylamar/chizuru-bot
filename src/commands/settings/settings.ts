@@ -21,20 +21,58 @@ export default new Command({
         },
         {
             name: 'filter',
-            description: 'Add or remove a filtered string',
-            type: ApplicationCommandOptionType.Subcommand,
+            description: 'Add or remove a string or attachment type to the filters',
+            type: ApplicationCommandOptionType.SubcommandGroup,
             options: [
                 {
                     name: 'string',
                     description: 'The string to filter',
-                    type: ApplicationCommandOptionType.String,
-                    required: true,
+                    type: ApplicationCommandOptionType.Subcommand,
+                    options: [
+                        {
+                            name: 'string',
+                            description: 'The string to add or remove to the filter',
+                            type: ApplicationCommandOptionType.String,
+                            required: true,
+                        },
+                        {
+                            name: 'enabled',
+                            description: 'Whether or not the string should be filtered',
+                            type: ApplicationCommandOptionType.Boolean,
+                            required: true,
+                        },
+                    ],
                 },
                 {
-                    name: 'enabled',
-                    description: 'Whether or not the string should be filtered',
-                    type: ApplicationCommandOptionType.Boolean,
-                    required: true,
+                    name: 'extension',
+                    description: 'Add or remove a content type to the filter',
+                    type: ApplicationCommandOptionType.Subcommand,
+                    options: [
+                        {
+                            name: 'extension',
+                            description: 'The content type to add or remove to the filter',
+                            type: ApplicationCommandOptionType.String,
+                            required: true,
+                            choices: [
+                                { name: 'gif', value: 'image/gif' },
+                                { name: 'gzip', value: 'application/gzip' },
+                                { name: 'jar', value: 'application/java-archive' },
+                                { name: 'jpg', value: 'image/jpeg' },
+                                { name: 'png', value: 'image/png' },
+                                { name: 'rar', value: 'application/vnd.rar' },
+                                { name: 'webm audio', value: 'audio/webm' },
+                                { name: 'webm video', value: 'video/webm' },
+                                { name: 'webp', value: 'image/webp' },
+                                { name: 'zip', value: 'application/zip' },
+                            ],
+                        },
+                        {
+                            name: 'enabled',
+                            description: 'Whether or not the string should be filtered',
+                            type: ApplicationCommandOptionType.Boolean,
+                            required: true,
+                        },
+                    ],
                 },
             ],
         },
@@ -145,9 +183,17 @@ export default new Command({
                 const role = interaction.options.getRole('role');
                 embed = handlePing(setting, enabled, role, interaction.guildId, client);
                 break;
-            case 'filter':
-                embed = handleFilter(
+            case 'string':
+                embed = handleString(
                     interaction.options.getString('string', true),
+                    interaction.options.getBoolean('enabled', true),
+                    interaction.guildId,
+                    client
+                );
+                break;
+            case 'extension':
+                embed = handleExtension(
+                    interaction.options.getString('extension', true),
                     interaction.options.getBoolean('enabled', true),
                     interaction.guildId,
                     client
@@ -345,7 +391,7 @@ async function handleUpdate(
     }
 }
 
-async function handleFilter(string: string, enabled: boolean, guildId: string, client: Bot): Promise<EmbedBuilder> {
+async function handleString(string: string, enabled: boolean, guildId: string, client: Bot): Promise<EmbedBuilder> {
     const guild = await prisma.guild.findUnique({ where: { guildId } });
     const currentFilters = guild?.filteredStrings || [];
 
@@ -360,6 +406,33 @@ async function handleFilter(string: string, enabled: boolean, guildId: string, c
         return generateEmbed({
             title: 'Settings',
             msg: `The filter has been ${enabled ? 'enabled' : 'disabled'} for ${string}`,
+            color: client.colors.success,
+        });
+    } catch (err: any) {
+        return generateErrorEmbed(err, client.colors.error, client.logger);
+    }
+}
+
+async function handleExtension(
+    extension: string,
+    enabled: boolean,
+    guildId: string,
+    client: Bot
+): Promise<EmbedBuilder> {
+    const guild = await prisma.guild.findUnique({ where: { guildId } });
+    const currentFilters = guild?.filteredExtensions || [];
+
+    const updatedFilters = await updateArray(currentFilters, extension, enabled);
+
+    try {
+        await prisma.guild.upsert({
+            where: { guildId },
+            update: { filteredExtensions: updatedFilters },
+            create: { guildId, filteredStrings: updatedFilters },
+        });
+        return generateEmbed({
+            title: 'Settings',
+            msg: `The filter has been ${enabled ? 'enabled' : 'disabled'} for ${extension}`,
             color: client.colors.success,
         });
     } catch (err: any) {
@@ -390,9 +463,16 @@ async function generateSettingsFields(guild: Guild & { starboards: Starboard[] }
     };
 
     const filteredStrings = guild.filteredStrings.map(str => `"${str}"`);
+    const filteredExtensions = guild.filteredExtensions.map(ext => `${ext}`);
     const filterField: Chizuru.Field = {
-        name: 'Filtered Strings',
-        value: filteredStrings.length > 0 ? filteredStrings.join(', ') : 'No strings are currently filtered.',
+        name: 'Filter Strings',
+        value:
+            `Strings: ${
+                filteredStrings.length > 0 ? filteredStrings.join(', ') : 'No strings are currently filtered.'
+            }\n` +
+            `Extensions: ${
+                filteredExtensions.length > 0 ? filteredExtensions.join(', ') : 'No strings are currently filtered.'
+            }\n`,
         inline: false,
     };
 

@@ -8,32 +8,39 @@ export default new Event({
     execute: async (client: Bot, message: Message) => {
         if (message.author.bot) return;
         if (!message.inGuild()) return;
+        // console.log(message.attachments.map())
+        message.attachments.map(item => {
+            console.log(item.contentType);
+        });
+
         await Promise.all([
-            checkForFilteredStrings(client, message),
+            checkFilters(client, message),
             upsertMessageStat(client, message.author.id, message.channel.id, message.guild.id),
         ]);
     },
 });
 
-async function checkForFilteredStrings(client: Bot, message: Message<true>) {
-    try {
-        const guild = await prisma.guild.findUnique({
-            where: { guildId: message.guild.id },
-        });
-        if (!guild) return;
-        if (guild.filteredStrings.length == 0) return;
+async function checkFilters(client: Bot, message: Message<true>) {
+    const guild = await prisma.guild.findUnique({
+        where: { guildId: message.guild.id },
+    });
+    if (!guild) return;
 
-        const loweredMsg = message.content.toLowerCase();
-        for (const string of guild.filteredStrings) {
-            if (loweredMsg.includes(string)) return message.delete();
-        }
-    } catch (error: any) {
-        client.logger.error('Error while checking for filtered strings', {
-            label: 'event',
-        });
-        client.logger.error(error, { label: 'event' });
-        return;
+    if (guild.filteredStrings.length > 0) await checkStrings(client, message, guild.filteredStrings);
+    if (guild.filteredExtensions.length > 0) await checkExtensions(client, message, guild.filteredExtensions);
+}
+
+async function checkStrings(client: Bot, message: Message<true>, filteredStrings: string[]) {
+    const loweredMsg = message.content.toLowerCase();
+    for (const string of filteredStrings) {
+        if (loweredMsg.includes(string)) return message.delete();
     }
+}
+
+async function checkExtensions(client: Bot, message: Message<true>, filteredExtensions: string[]) {
+    message.attachments.map(item => {
+        if (item.contentType && filteredExtensions.includes(item.contentType)) return message.delete();
+    });
 }
 
 async function upsertMessageStat(client: Bot, userId: string, channelId: string, guildId: string) {

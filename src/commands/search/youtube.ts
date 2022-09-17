@@ -11,19 +11,21 @@ export default new Command({
     dmPermission: false,
     defaultMemberPermissions: ['SendMessages'],
     module: Chizuru.CommandModule.Global,
-    options: [{
-        name: 'query',
-        description: 'The title of the video to search for',
-        type: ApplicationCommandOptionType.String,
-        required: true,
-    }],
+    options: [
+        {
+            name: 'query',
+            description: 'The title of the video to search for',
+            type: ApplicationCommandOptionType.String,
+            required: true,
+        },
+    ],
 
     execute: async (client, interaction) => {
         let searchTitle = interaction.options.getString('title') as string;
         const video: ytSearch.VideoSearchResult | null = await videoSearch(searchTitle);
 
         if (video) return await replyMessage(interaction, video.url, false);
-        await replyMessage(interaction, `No results found for ${ searchTitle }, try searching for something else.`, true);
+        await replyMessage(interaction, `No results found for ${searchTitle}, try searching for something else.`, true);
     },
 });
 

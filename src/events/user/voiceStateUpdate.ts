@@ -13,7 +13,9 @@ export default new Event({
 
         let guild: Guild | null;
         try {
-            guild = await prisma.guild.findUnique({ where: { guildId: newState.guild.id } });
+            guild = await prisma.guild.findUnique({
+                where: { guildId: newState.guild.id },
+            });
         } catch (err) {
             client.logger.error(err);
             return;
@@ -32,8 +34,8 @@ export default new Event({
         let embed = await generateEmbed({
             author: newState.member.user.tag,
             authorIcon: newState.member.user.avatarURL() || newState.member.user.defaultAvatarURL,
-            msg: `${ newState.member.user.tag } is now ${ curState } in ${ newState.channel.name }.`,
-            footer: `User ID: ${ newState.member.id }`,
+            msg: `${newState.member.user.tag} is now ${curState} in ${newState.channel.name}.`,
+            footer: `User ID: ${newState.member.id}`,
             timestamp: true,
             color: client.colors.blurple,
         });

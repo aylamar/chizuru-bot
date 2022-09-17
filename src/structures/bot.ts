@@ -28,11 +28,18 @@ export class Bot extends Client<true> {
     public twitch: Twitch;
     public starboard: Starboard;
     private streams: Streams;
-    private events: Collection<string, Event> = new Collection;
+    private events: Collection<string, Event> = new Collection();
 
     public constructor() {
         super({
-            intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildBans, GatewayIntentBits.MessageContent],
+            intents: [
+                GatewayIntentBits.Guilds,
+                GatewayIntentBits.GuildVoiceStates,
+                GatewayIntentBits.GuildMessages,
+                GatewayIntentBits.GuildMessageReactions,
+                GatewayIntentBits.GuildBans,
+                GatewayIntentBits.MessageContent,
+            ],
             partials: [Partials.Message, Partials.Channel, Partials.Reaction],
         });
 
@@ -71,10 +78,13 @@ export class Bot extends Client<true> {
         globalCommands.map(command => this.updateOrCreateGlobal(globalAppCommands, command));
 
         let result = process.hrtime.bigint();
-        this.logger.info(`Spent ${ ((result - start) / BigInt(1000000)) }ms deploying global commands commands`);
+        this.logger.info(`Spent ${(result - start) / BigInt(1000000)}ms deploying global commands commands`);
 
         // deploy admin commands and cleanup global commands
-        await Promise.all([await this.deployAdminCommands(), await this.cleanGlobalCommands(globalAppCommands, globalCommands)]);
+        await Promise.all([
+            await this.deployAdminCommands(),
+            await this.cleanGlobalCommands(globalAppCommands, globalCommands),
+        ]);
     }
 
     public async getCommandsByModule(modules: Chizuru.CommandModule[]): Promise<Collection<string, CommandArgs>> {
@@ -92,16 +102,19 @@ export class Bot extends Client<true> {
         const guildCommands = await guild.commands.fetch();
         for (const command of guildCommands.values()) {
             if (!commands.has(command.name)) {
-                this.logger.debug(`Found extra guild command /${ command.name } in ${ guild.name }, deleting from guild`);
+                this.logger.debug(`Found extra guild command /${command.name} in ${guild.name}, deleting from guild`);
                 await command.delete();
             }
         }
     }
 
-    private async cleanGlobalCommands(appCommands: Collection<string, ApplicationCommand<{ guild: GuildResolvable }>>, commands: Collection<string, CommandArgs>) {
+    private async cleanGlobalCommands(
+        appCommands: Collection<string, ApplicationCommand<{ guild: GuildResolvable }>>,
+        commands: Collection<string, CommandArgs>
+    ) {
         for (const command of appCommands.values()) {
             if (!commands.has(command.name)) {
-                this.logger.debug(`Found extra global command /${ command.name }, deleting from global commands`);
+                this.logger.debug(`Found extra global command /${command.name}, deleting from global commands`);
                 await command.delete();
             }
         }
@@ -110,7 +123,10 @@ export class Bot extends Client<true> {
     private async deployAdminCommands() {
         let start = process.hrtime.bigint();
         if (!process.env.GUILD_ID) throw new Error('No GUILD_ID set in .env file');
-        const adminCommands = await this.getCommandsByModule([Chizuru.CommandModule.Admin, Chizuru.CommandModule.Music]);
+        const adminCommands = await this.getCommandsByModule([
+            Chizuru.CommandModule.Admin,
+            Chizuru.CommandModule.Music,
+        ]);
 
         const guild = await this.guilds.fetch(process.env.GUILD_ID);
         if (!guild) throw new Error('No GUILD_ID set in .env file');
@@ -118,12 +134,12 @@ export class Bot extends Client<true> {
         await this.deployGuildCommands(adminCommands, guild);
         await this.cleanGuildCommands(adminCommands, guild);
         let result = process.hrtime.bigint();
-        this.logger.info(`Spent ${ ((result - start) / BigInt(1000000)) }ms deploying admin commands`);
+        this.logger.info(`Spent ${(result - start) / BigInt(1000000)}ms deploying admin commands`);
     }
 
     private async loadEvents() {
         let start = process.hrtime.bigint();
-        const events = await getFiles(`${ __dirname }/../events`);
+        const events = await getFiles(`${__dirname}/../events`);
         let eventCount = 0;
         for (const file of events) {
             const eventImport: any = await import(file);
@@ -137,15 +153,17 @@ export class Bot extends Client<true> {
                 event.startListener(this);
             }
             eventCount++;
-            this.logger.debug(`Loaded event ${ event.name } for ${ file.includes('/events/player') ? 'player' : 'client' }`);
+            this.logger.debug(
+                `Loaded event ${event.name} for ${file.includes('/events/player') ? 'player' : 'client'}`
+            );
         }
         let result = process.hrtime.bigint();
-        this.logger.info(`Spent ${ ((result - start) / BigInt(1000000)) }ms loading ${ eventCount } events`);
+        this.logger.info(`Spent ${(result - start) / BigInt(1000000)}ms loading ${eventCount} events`);
     }
 
     private async loadCommands() {
         let start = process.hrtime.bigint();
-        const commandFiles = await getFiles(`${ __dirname }/../commands`);
+        const commandFiles = await getFiles(`${__dirname}/../commands`);
         let commandCount = 0;
         for (const file of commandFiles) {
             // skip sub commands
@@ -154,17 +172,21 @@ export class Bot extends Client<true> {
             const commandImport: any = await import(file);
             const command: CommandArgs = commandImport.default;
             this.commands.set(command.name, command);
-            this.logger.debug(`Loaded command /${ command.name }`);
+            this.logger.debug(`Loaded command /${command.name}`);
             commandCount++;
         }
         let result = process.hrtime.bigint();
-        this.logger.info(`Spent ${ ((result - start) / BigInt(1000000)) }ms loading ${ commandCount } commands`);
+        this.logger.info(`Spent ${(result - start) / BigInt(1000000)}ms loading ${commandCount} commands`);
     }
 
-    private async updateOrCreateGuildCommand(guildCommands: Collection<string, ApplicationCommand>, data: ChatInputApplicationCommandData, guild: Guild) {
+    private async updateOrCreateGuildCommand(
+        guildCommands: Collection<string, ApplicationCommand>,
+        data: ChatInputApplicationCommandData,
+        guild: Guild
+    ) {
         const guildCommand = guildCommands.find(command => command.name === data.name);
         if (!guildCommand) {
-            this.logger.debug(`Creating command /${ data.name } in guild ${ guild.name }`);
+            this.logger.debug(`Creating command /${data.name} in guild ${guild.name}`);
             return await guild.commands.create(data);
         }
 
@@ -179,26 +201,29 @@ export class Bot extends Client<true> {
         } as ApplicationCommand;
 
         if (guildCommand.equals(tmpNewCommand)) {
-            this.logger.debug(`Command /${ data.name } is up to date in guild ${ guild.name }`);
+            this.logger.debug(`Command /${data.name} is up to date in guild ${guild.name}`);
             return;
         } else {
-            this.logger.debug(`Updating command /${ data.name } in guild ${ guild.name }`);
+            this.logger.debug(`Updating command /${data.name} in guild ${guild.name}`);
             return await guildCommand.edit(data);
         }
     }
 
-    private async updateOrCreateGlobal(botCommands: Collection<string, ApplicationCommand<{ guild: GuildResolvable }>>, data: ApplicationCommandData) {
+    private async updateOrCreateGlobal(
+        botCommands: Collection<string, ApplicationCommand<{ guild: GuildResolvable }>>,
+        data: ApplicationCommandData
+    ) {
         const botCommand = botCommands.find(botCommand => botCommand.name === data.name);
         if (!botCommand) {
-            this.logger.debug(`Creating command ${ data.name }, it doesn't exist`);
+            this.logger.debug(`Creating command ${data.name}, it doesn't exist`);
             return await this.application.commands.create(data);
         }
 
         if (botCommand.equals(data)) {
-            this.logger.debug(`Command /${ data.name } is up to date`);
+            this.logger.debug(`Command /${data.name} is up to date`);
             return;
         } else {
-            this.logger.debug(`Command /${ data.name } is out of date, updating now`);
+            this.logger.debug(`Command /${data.name} is out of date, updating now`);
             return await this.application.commands.edit(botCommand.id, data);
         }
     }

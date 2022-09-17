@@ -15,22 +15,31 @@ export default new Command({
 
     execute: async (client, interaction) => {
         if (!interaction.inCachedGuild()) return false;
-        if (!await musicValidator(client, interaction)) return;
+        if (!(await musicValidator(client, interaction))) return;
         let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
-        if (!queue || !queue.nowPlaying) return await replyMessage(interaction, 'Nothing is currently queued, why not queue something with /play?', true);
+        if (!queue || !queue.nowPlaying)
+            return await replyMessage(
+                interaction,
+                'Nothing is currently queued, why not queue something with /play?',
+                true
+            );
 
         let shuffled = queue.shuffle();
-        if (!shuffled) return await replyMessage(interaction, 'There are no songs to shuffle, queue more songs then try again', true);
+        if (!shuffled)
+            return await replyMessage(
+                interaction,
+                'There are no songs to shuffle, queue more songs then try again',
+                true
+            );
         queue.songs = shuffled;
 
         let embed = generateEmbed({
             author: interaction.user.tag,
             authorIcon: interaction.user.avatarURL() || interaction.user.defaultAvatarURL,
-            msg: `The queue has been shuffled by ${ interaction.user.tag }.`,
+            msg: `The queue has been shuffled by ${interaction.user.tag}.`,
             color: client.colors.success,
         });
 
         await replyEmbed(interaction, await embed);
-
     },
 });

@@ -42,25 +42,33 @@ export default new Command({
 
     execute: async (client, interaction) => {
         if (!interaction.inCachedGuild()) return;
-        if (!await musicValidator(client, interaction)) return;
+        if (!(await musicValidator(client, interaction))) return;
         let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
 
         if (!queue) {
-            queue = client.player.createQueue(interaction.guildId, { data: { channelId: interaction.channelId } });
+            queue = client.player.createQueue(interaction.guildId, {
+                data: { channelId: interaction.channelId },
+            });
             // this is safe to do thanks to musicValidator above
             await queue.join(interaction.member.voice.channelId as string);
-            client.logger.info(`No queue found for guild ${ interaction.guild.name } (${ interaction.guildId }), creating new queue.`);
+            client.logger.info(
+                `No queue found for guild ${interaction.guild.name} (${interaction.guildId}), creating new queue.`
+            );
         } else {
             // check to see if the user is in the same voice channel as the bot
             if (queue.connection?.channel.id !== interaction.member.voice.channelId) {
-                return await replyMessage(interaction, 'You must be in the same voice channel as the bot to use this command.', true);
+                return await replyMessage(
+                    interaction,
+                    'You must be in the same voice channel as the bot to use this command.',
+                    true
+                );
             }
 
             let data = queue.data as any;
             let queueChannelId = data.channelId;
             // check to see if this command is being executed as the queueChannelId
             if (queueChannelId !== interaction.channelId) {
-                return await replyMessage(interaction, `You need to use this command in <#${ queueChannelId }>.`, true);
+                return await replyMessage(interaction, `You need to use this command in <#${queueChannelId}>.`, true);
             }
         }
 
@@ -74,14 +82,18 @@ export default new Command({
                 let queuedSong: Song;
                 // check to see if songReq includes "playlist", if it does, direct to playlist command
                 if (songReq.includes('playlist')) {
-                    return await replyMessage(interaction, 'You can\'t use playlists with this command.', true);
+                    return await replyMessage(interaction, 'You can not use playlists with this command.', true);
                 }
                 defer = deferReply(interaction);
 
                 try {
-                    queuedSong = await queue.play(songReq, { requestedBy: interaction.user });
+                    queuedSong = await queue.play(songReq, {
+                        requestedBy: interaction.user,
+                    });
                 } catch (err: any) {
-                    client.logger.warn(`Failed to find song ${ songReq } for guild ${ interaction.guild.name } (${ interaction.guildId })`);
+                    client.logger.warn(
+                        `Failed to find song ${songReq} for guild ${interaction.guild.name} (${interaction.guildId})`
+                    );
                     client.logger.warn(err);
                     embed = generateEmbed({
                         msg: err.message,
@@ -93,7 +105,7 @@ export default new Command({
                 embed = generateEmbed({
                     author: interaction.user.tag,
                     authorIcon: interaction.user.avatarURL() || interaction.user.defaultAvatarURL,
-                    msg: `[${ queuedSong.name }](${ queuedSong.url }) has been added to the queue by ${ interaction.user.tag }.`,
+                    msg: `[${queuedSong.name}](${queuedSong.url}) has been added to the queue by ${interaction.user.tag}.`,
                     color: client.colors.success,
                 });
                 break;
@@ -106,9 +118,13 @@ export default new Command({
                 defer = deferReply(interaction);
 
                 try {
-                    queuedPlaylist = await queue.playlist(playlistReq, { requestedBy: interaction.user });
+                    queuedPlaylist = await queue.playlist(playlistReq, {
+                        requestedBy: interaction.user,
+                    });
                 } catch (err: any) {
-                    client.logger.warn(`Failed to find song ${ playlistReq } for guild ${ interaction.guild.name } (${ interaction.guildId })`);
+                    client.logger.warn(
+                        `Failed to find song ${playlistReq} for guild ${interaction.guild.name} (${interaction.guildId})`
+                    );
                     client.logger.warn(err);
                     embed = generateEmbed({
                         msg: err.message,
@@ -120,8 +136,8 @@ export default new Command({
                 let fields: Chizuru.Field[] = [];
                 queuedPlaylist.songs.slice(0, 9).map((song, index) => {
                     fields.push({
-                        name: `${ index + 1 }. ${ song.name }`,
-                        value: `Duration: ${ song.duration }`,
+                        name: `${index + 1}. ${song.name}`,
+                        value: `Duration: ${song.duration}`,
                         inline: false,
                     });
                 });
@@ -130,7 +146,7 @@ export default new Command({
                 if (queuedPlaylist.songs.length > 9) {
                     fields.push({
                         name: 'Additional songs',
-                        value: `${ queuedPlaylist.songs.length - 9 } more songs`,
+                        value: `${queuedPlaylist.songs.length - 9} more songs`,
                         inline: false,
                     });
                 }
@@ -138,7 +154,7 @@ export default new Command({
                 embed = generateEmbed({
                     author: interaction.user.tag,
                     authorIcon: interaction.user.avatarURL() || interaction.user.defaultAvatarURL,
-                    msg: `${ queuedPlaylist.songs.length } songs from ${ queuedPlaylist.name } has been added to the queue by ${ interaction.user.tag }.`,
+                    msg: `${queuedPlaylist.songs.length} songs from ${queuedPlaylist.name} has been added to the queue by ${interaction.user.tag}.`,
                     fields: fields,
                     color: client.colors.success,
                 });

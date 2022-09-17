@@ -38,9 +38,9 @@ export class Streams {
         let diffMinutes = Math.floor((timeDiff % (1000 * 3600)) / (1000 * 60));
 
         let timeString = '';
-        if (diffDays > 0) timeString += `${ diffDays } days, `;
-        if (diffHours > 0) timeString += `${ diffHours } hours, `;
-        if (diffMinutes > 0) timeString += `${ diffMinutes } minutes, `;
+        if (diffDays > 0) timeString += `${diffDays} days, `;
+        if (diffHours > 0) timeString += `${diffHours} hours, `;
+        if (diffMinutes > 0) timeString += `${diffMinutes} minutes, `;
         return timeString.slice(0, -2);
     }
 
@@ -78,7 +78,8 @@ export class Streams {
         try {
             streamers = await this.getStreamers();
         } catch (err) {
-            if (err instanceof NoStreamerError) this.logger.info(`No streamers found while initialing state, continuing`, { label: 'streams' });
+            if (err instanceof NoStreamerError)
+                this.logger.info(`No streamers found while initialing state, continuing`, { label: 'streams' });
             return;
         }
 
@@ -99,15 +100,20 @@ export class Streams {
         }
 
         let updateLive = prisma.streamer.updateMany({
-            where: { id: { in: liveStreamIds } }, data: { isLive: true },
+            where: { id: { in: liveStreamIds } },
+            data: { isLive: true },
         });
         let updateOffline = prisma.streamer.updateMany({
-            where: { id: { in: offlineStreamIds } }, data: { isLive: false },
+            where: { id: { in: offlineStreamIds } },
+            data: { isLive: false },
         });
 
         await Promise.all([updateLive, updateOffline]);
-        this.logger.info(`Initial stream state set, found ${ liveStreamIds.length } live streams,`
-            + ` and ${ offlineStreamIds.length } offline streams`, { label: 'streams' });
+        this.logger.info(
+            `Initial stream state set, found ${liveStreamIds.length} live streams,` +
+                ` and ${offlineStreamIds.length} offline streams`,
+            { label: 'streams' }
+        );
     }
 
     private async updateState() {
@@ -115,12 +121,17 @@ export class Streams {
         try {
             streamers = await this.getStreamers();
         } catch (err) {
-            if (err instanceof NoStreamerError) return this.logger.info(`No streamers found, continuing`, { label: 'streams' });
-            return this.logger.error(`Error while updating stream state:\n${ err }`, { label: 'streams' });
+            if (err instanceof NoStreamerError)
+                return this.logger.info(`No streamers found, continuing`, {
+                    label: 'streams',
+                });
+            return this.logger.error(`Error while updating stream state:\n${err}`, {
+                label: 'streams',
+            });
         }
 
         if (streamers.length === 0) return this.logger.info('No streamers found', { label: 'streams' });
-        this.logger.info(`Updating stream state for ${ streamers.length } streamers`, { label: 'streams' });
+        this.logger.info(`Updating stream state for ${streamers.length} streamers`, { label: 'streams' });
 
         // generate chunks, then iterate through each chunks
         const chunks = await this.generateChunks(streamers);
@@ -133,7 +144,9 @@ export class Streams {
                 channelData = await this.twitch.getChannels(platformIds);
                 streamData = await this.twitch.checkStreams(platformIds);
             } catch (err) {
-                this.logger.error(`Error while checking streams: ${ err }`, { label: 'streams' });
+                this.logger.error(`Error while checking streams: ${err}`, {
+                    label: 'streams',
+                });
                 return;
             }
 
@@ -147,7 +160,9 @@ export class Streams {
                 const channel = channelData.find(channel => channel.platformId === streamer.platformId);
                 if (!stream && streamer.isLive) {
                     if (!channel) {
-                        this.logger.warn(`No channel data found for ${ streamer.username }, were they banned?`, { label: 'streams' });
+                        this.logger.warn(`No channel data found for ${streamer.username}, were they banned?`, {
+                            label: 'streams',
+                        });
                         continue;
                     }
                     update = this.updateStreamer(streamer, false);
@@ -192,17 +207,26 @@ export class Streams {
     private async createLiveEmbed(streamer: StreamerData, stream: Chizuru.StreamData) {
         let dateDiff = Streams.getDateDiff(streamer.changeTime);
         return generateEmbed({
-            title: `${ streamer.displayName } has started streaming`,
-            msg: `${ stream.title }\n\n` + `https://twitch.tv/${ streamer.username }`,
+            title: `${streamer.displayName} has started streaming`,
+            msg: `${stream.title}\n\n` + `https://twitch.tv/${streamer.username}`,
             author: streamer.displayName,
             authorIcon: streamer.avatarUrl,
-            authorUrl: `https://twitch.tv/${ streamer.username }`,
-            footer: `${ streamer.username } on ${ streamer.platform }`,
+            authorUrl: `https://twitch.tv/${streamer.username}`,
+            footer: `${streamer.username} on ${streamer.platform}`,
             image: stream.streamThumbnailUrl.replace('{width}', '620').replace('{height}', '360'),
             fields: [
-                { name: 'Status', value: ':green_circle: Online', inline: true },
-                { name: 'Game', value: `${ stream.gameName }`, inline: true },
-                { name: 'Last Stream', value: `${ await dateDiff } ago`, inline: true }],
+                {
+                    name: 'Status',
+                    value: ':green_circle: Online',
+                    inline: true,
+                },
+                { name: 'Game', value: `${stream.gameName}`, inline: true },
+                {
+                    name: 'Last Stream',
+                    value: `${await dateDiff} ago`,
+                    inline: true,
+                },
+            ],
             color: this.client.colors.success,
             timestamp: true,
         });
@@ -211,37 +235,51 @@ export class Streams {
     private async createOfflineEmbed(streamer: StreamerData, channel: Chizuru.BulkChannelData) {
         let dateDiff = Streams.getDateDiff(streamer.changeTime);
         return generateEmbed({
-            title: `${ streamer.displayName } has gone offline`,
+            title: `${streamer.displayName} has gone offline`,
             author: streamer.displayName,
             authorIcon: streamer.avatarUrl,
-            authorUrl: `https://twitch.tv/${ streamer.username }`,
-            footer: `${ streamer.username } on ${ streamer.platform }`,
+            authorUrl: `https://twitch.tv/${streamer.username}`,
+            footer: `${streamer.username} on ${streamer.platform}`,
             fields: [
                 { name: 'Status', value: ':red_circle: Offline', inline: true },
-                { name: 'Game', value: `${ channel.gameName }`, inline: true },
-                { name: 'Stream Time', value: `${ await dateDiff }`, inline: true },
+                { name: 'Game', value: `${channel.gameName}`, inline: true },
+                {
+                    name: 'Stream Time',
+                    value: `${await dateDiff}`,
+                    inline: true,
+                },
             ],
             color: this.client.colors.error,
             timestamp: true,
         });
     }
 
-    private async sendStreamNotification(channel: FollowingChannels, streamer: StreamerData, embed: EmbedBuilder, isLive: boolean) {
-        let textChannel = await this.client.channels.cache.get(channel.channelId) as TextChannel;
+    private async sendStreamNotification(
+        channel: FollowingChannels,
+        streamer: StreamerData,
+        embed: EmbedBuilder,
+        isLive: boolean
+    ) {
+        let textChannel = (await this.client.channels.cache.get(channel.channelId)) as TextChannel;
         if (!textChannel) {
-            this.logger.warn(`Could not find channel ${ channel.channelId }`, { label: 'streams' });
+            this.logger.warn(`Could not find channel ${channel.channelId}`, {
+                label: 'streams',
+            });
             return;
         }
         let message: string | undefined;
 
         if (isLive && channel.streamPingRoleId === '@everyone') message = `@everyone`;
-        else if (isLive && channel.streamPingRoleId) message = `<@&${ channel.streamPingRoleId }>, ${ streamer.displayName } is live`;
+        else if (isLive && channel.streamPingRoleId)
+            message = `<@&${channel.streamPingRoleId}>, ${streamer.displayName} is live`;
 
         try {
             await sendEmbed(textChannel, await embed, message);
         } catch (err) {
-            this.logger.error(`Error sending message to ${ textChannel.name } (${ channel.channelId }) `
-                + `in ${ textChannel.guild.name }`, { label: 'streams' });
+            this.logger.error(
+                `Error sending message to ${textChannel.name} (${channel.channelId}) ` + `in ${textChannel.guild.name}`,
+                { label: 'streams' }
+            );
             this.logger.error(err);
         }
     }

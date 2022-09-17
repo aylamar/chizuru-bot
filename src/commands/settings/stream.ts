@@ -36,9 +36,7 @@ export default new Command({
                     description: 'The platform the streamer is on',
                     type: ApplicationCommandOptionType.String,
                     required: true,
-                    choices: [
-                        { name: 'Twitch', value: 'twitch' },
-                    ],
+                    choices: [{ name: 'Twitch', value: 'twitch' }],
                 },
                 {
                     name: 'username',
@@ -64,9 +62,7 @@ export default new Command({
                     description: 'The platform the streamer is on',
                     type: ApplicationCommandOptionType.String,
                     required: true,
-                    choices: [
-                        { name: 'Twitch', value: 'twitch' },
-                    ],
+                    choices: [{ name: 'Twitch', value: 'twitch' }],
                 },
                 {
                     name: 'username',
@@ -106,25 +102,29 @@ export default new Command({
                     break;
                 }
                 embed = generateEmbed({
-                    title: `Stream alerts for ${ interaction.guild.name }`,
+                    title: `Stream alerts for ${interaction.guild.name}`,
                     color: client.colors.twitch,
                     fields: fields,
                 });
                 break;
             case 'add':
                 if (!streamer || !channel || !platform) {
-                    embed = generateEmbed({ 'msg': 'Please provide a streamer, channel and platform.' });
+                    embed = generateEmbed({
+                        msg: 'Please provide a streamer, channel and platform.',
+                    });
                     break;
                 }
 
                 try {
                     const connectQuery = generateConnectChannelQuery(channel.id, channel.guild.id);
                     const streamerData = await client.twitch.getChannel(streamer);
-                    client.logger.info(`Adding streamer ${ streamerData.displayName } to channel ${ channel.id } on ${ platform }`);
+                    client.logger.info(
+                        `Adding streamer ${streamerData.displayName} to channel ${channel.id} on ${platform}`
+                    );
 
                     if (!channel.isTextBased() || channel.isDMBased() || channel.isThread()) {
                         embed = generateEmbed({
-                            msg: `${ channel.name } is not a text channel, please select a text channel.`,
+                            msg: `${channel.name} is not a text channel, please select a text channel.`,
                             color: client.colors.error,
                         });
                         break;
@@ -132,11 +132,12 @@ export default new Command({
 
                     await upsertStreamer(streamerData, await connectQuery);
                     embed = generateEmbed({
-                        msg: `You'll be notified in <#${ channel.id }> when ${ streamerData.displayName }`
-                            + ` goes live on ${ platform.charAt(0).toUpperCase() + platform.slice(1) }.`,
-                        authorIcon: `${ streamerData.thumbnailUrl }`,
-                        author: `${ streamerData.displayName }`,
-                        authorUrl: `${ streamerData.url }`,
+                        msg:
+                            `You'll be notified in <#${channel.id}> when ${streamerData.displayName}` +
+                            ` goes live on ${platform.charAt(0).toUpperCase() + platform.slice(1)}.`,
+                        authorIcon: `${streamerData.thumbnailUrl}`,
+                        author: `${streamerData.displayName}`,
+                        authorUrl: `${streamerData.url}`,
                         color: client.colors.success,
                     });
                 } catch (err: any) {
@@ -146,7 +147,7 @@ export default new Command({
             case 'remove':
                 if (!streamer || !channel || !platform) {
                     embed = generateEmbed({
-                        'msg': 'Please provide a streamer, channel and platform.',
+                        msg: 'Please provide a streamer, channel and platform.',
                         color: client.colors.success,
                     });
                     break;
@@ -154,22 +155,27 @@ export default new Command({
 
                 try {
                     const streamers = await prisma.streamer.findMany({
-                        where: { username: streamer.toLowerCase(), platform: StreamPlatform.twitch },
+                        where: {
+                            username: streamer.toLowerCase(),
+                            platform: StreamPlatform.twitch,
+                        },
                     });
 
                     if (streamers.length > 0) {
-                        let platformId = streamers.filter(dbStreamer => dbStreamer.username === streamer.toLowerCase())[0].platformId;
+                        let platformId = streamers.filter(
+                            dbStreamer => dbStreamer.username === streamer.toLowerCase()
+                        )[0].platformId;
                         if (platformId) await disconnectStreamer(platformId, platform as StreamPlatform, channel.id);
                     }
 
                     embed = generateEmbed({
-                        msg: `You'll no longer be notified in <#${ channel.id }> when ${ streamer } goes live on ${ platform }.`,
+                        msg: `You'll no longer be notified in <#${channel.id}> when ${streamer} goes live on ${platform}.`,
                         color: client.colors.success,
                     });
                 } catch (err: any) {
                     if (err instanceof PrismaClientKnownRequestError) {
                         embed = generateEmbed({
-                            msg: `You weren't following ${ streamer } on ${ platform } in <#${ channel.id }>.`,
+                            msg: `You weren't following ${streamer} on ${platform} in <#${channel.id}>.`,
                             color: client.colors.success,
                         });
                     } else {
@@ -209,24 +215,35 @@ async function getFollowedStreams(guildId: string) {
     });
 }
 
-async function generateFields(channels: (Channel & { followedStreamers: { username: string, platform: 'twitch', displayName: string }[] })[], client: Bot): Promise<Chizuru.Field[]> {
+async function generateFields(
+    channels: (Channel & {
+        followedStreamers: {
+            username: string;
+            platform: 'twitch';
+            displayName: string;
+        }[];
+    })[],
+    client: Bot
+): Promise<Chizuru.Field[]> {
     let fields: Chizuru.Field[] = [];
-    channels.filter(channel => channel.followedStreamers.length > 0).map(channel => {
-        let streamers: string[] = [];
-        channel.followedStreamers.forEach(streamer => {
-            streamers.push(`${ streamer.username } (${ streamer.platform })`);
-        });
+    channels
+        .filter(channel => channel.followedStreamers.length > 0)
+        .map(channel => {
+            let streamers: string[] = [];
+            channel.followedStreamers.forEach(streamer => {
+                streamers.push(`${streamer.username} (${streamer.platform})`);
+            });
 
-        // needed to get the channel name
-        const cachedChannel = client.channels.cache.get(channel.channelId) as GuildTextBasedChannel;
+            // needed to get the channel name
+            const cachedChannel = client.channels.cache.get(channel.channelId) as GuildTextBasedChannel;
 
-        streamers.sort();
-        fields.push({
-            name: `${ cachedChannel.name ? `#${ cachedChannel.name } followed streams` : 'Unknown Channel' }`,
-            value: `${ streamers.join('\n') }`,
-            inline: true,
+            streamers.sort();
+            fields.push({
+                name: `${cachedChannel.name ? `#${cachedChannel.name} followed streams` : 'Unknown Channel'}`,
+                value: `${streamers.join('\n')}`,
+                inline: true,
+            });
         });
-    });
     return fields;
 }
 
@@ -255,7 +272,6 @@ async function disconnectStreamer(platformId: string, platform: StreamPlatform, 
         },
         data: { followingChannels: { disconnect: { channelId: channelId } } },
     });
-
 }
 
 async function upsertStreamer(streamerData: Chizuru.ChannelData, connectQuery: ChannelConnectQuery) {
@@ -280,14 +296,14 @@ async function upsertStreamer(streamerData: Chizuru.ChannelData, connectQuery: C
 }
 
 interface ChannelConnectQuery {
-    where: { channelId: string },
+    where: { channelId: string };
     create: {
-        channelId: string,
+        channelId: string;
         guild: {
             connectOrCreate: {
-                where: { guildId: string },
-                create: { guildId: string },
-            }
-        }
-    },
+                where: { guildId: string };
+                create: { guildId: string };
+            };
+        };
+    };
 }

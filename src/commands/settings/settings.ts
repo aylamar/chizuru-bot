@@ -68,10 +68,22 @@ export default new Command({
                     type: ApplicationCommandOptionType.String,
                     required: true,
                     choices: [
-                        { name: 'Blacklist Channel From Logs', value: 'logBlacklistedChannels' },
-                        { name: 'Log Deleted Messages', value: 'logDeletedMessagesChannels' },
-                        { name: 'Log Edited Messages', value: 'logEditedMessagesChannels' },
-                        { name: 'Log Voice Status Changes', value: 'logVoiceStateChannels' },
+                        {
+                            name: 'Blacklist Channel From Logs',
+                            value: 'logBlacklistedChannels',
+                        },
+                        {
+                            name: 'Log Deleted Messages',
+                            value: 'logDeletedMessagesChannels',
+                        },
+                        {
+                            name: 'Log Edited Messages',
+                            value: 'logEditedMessagesChannels',
+                        },
+                        {
+                            name: 'Log Voice Status Changes',
+                            value: 'logVoiceStateChannels',
+                        },
                     ],
                 },
                 {
@@ -134,7 +146,12 @@ export default new Command({
                 embed = handlePing(setting, enabled, role, interaction.guildId, client);
                 break;
             case 'filter':
-                embed = handleFilter(interaction.options.getString('string', true), interaction.options.getBoolean('enabled', true), interaction.guildId, client);
+                embed = handleFilter(
+                    interaction.options.getString('string', true),
+                    interaction.options.getBoolean('enabled', true),
+                    interaction.guildId,
+                    client
+                );
                 break;
             case 'update':
                 embed = handleUpdate(setting, enabled, interaction.guildId, client);
@@ -142,7 +159,7 @@ export default new Command({
             default:
                 embed = generateEmbed({
                     title: 'Settings',
-                    msg: `${ subCommand } does not exist, please enter a valid command.`,
+                    msg: `${subCommand} does not exist, please enter a valid command.`,
                     color: client.colors.error,
                 });
                 break;
@@ -154,7 +171,10 @@ export default new Command({
 });
 
 async function handleList(guildId: string, client: Bot): Promise<EmbedBuilder> {
-    let guild = await prisma.guild.findUnique({ where: { guildId }, include: { starboards: true } });
+    let guild = await prisma.guild.findUnique({
+        where: { guildId },
+        include: { starboards: true },
+    });
     if (!guild) {
         await prisma.guild.upsert({
             where: { guildId },
@@ -177,7 +197,12 @@ async function handleList(guildId: string, client: Bot): Promise<EmbedBuilder> {
     });
 }
 
-async function handleLog(setting: string | null, enabled: boolean | null, channel: GuildBasedChannel | null, client: Bot) {
+async function handleLog(
+    setting: string | null,
+    enabled: boolean | null,
+    channel: GuildBasedChannel | null,
+    client: Bot
+) {
     if (!setting || !channel || enabled === undefined) {
         return generateEmbed({
             title: 'Settings',
@@ -193,7 +218,7 @@ async function handleLog(setting: string | null, enabled: boolean | null, channe
     if (!channel.isTextBased() || channel.isDMBased() || channel.isThread()) {
         return generateEmbed({
             title: 'Settings',
-            msg: `${ channel.name } is not a text channel, please select a text channel.`,
+            msg: `${channel.name} is not a text channel, please select a text channel.`,
             color: client.colors.error,
         });
     }
@@ -208,14 +233,19 @@ async function handleLog(setting: string | null, enabled: boolean | null, channe
         return generateEmbed({
             title: 'Settings',
             color: client.colors.success,
-            msg: `${ await settingName } has been ${ enabled ? 'enabled' : 'disabled' } for <#${ channel.id }>`,
+            msg: `${await settingName} has been ${enabled ? 'enabled' : 'disabled'} for <#${channel.id}>`,
         });
     } catch (err: any) {
         return generateErrorEmbed(err, client.colors.error, client.logger);
     }
 }
 
-async function handleMusicChannel(enabled: boolean | null, channel: GuildBasedChannel | null, guildId: string, client: Bot) {
+async function handleMusicChannel(
+    enabled: boolean | null,
+    channel: GuildBasedChannel | null,
+    guildId: string,
+    client: Bot
+) {
     if (enabled === null || (!channel && enabled)) {
         return generateEmbed({
             title: 'Settings',
@@ -244,12 +274,18 @@ async function handleMusicChannel(enabled: boolean | null, channel: GuildBasedCh
 
     return generateEmbed({
         title: 'Settings',
-        msg: `Music commands can now only be used in ${ channel }`,
+        msg: `Music commands can now only be used in ${channel}`,
         color: client.colors.success,
     });
 }
 
-async function handlePing(setting: string | null, enabled: boolean | null, role: Role | null, guildId: string, client: Bot): Promise<EmbedBuilder> {
+async function handlePing(
+    setting: string | null,
+    enabled: boolean | null,
+    role: Role | null,
+    guildId: string,
+    client: Bot
+): Promise<EmbedBuilder> {
     if (enabled === undefined || (enabled === true && !role)) {
         return generateEmbed({
             title: 'Settings',
@@ -273,12 +309,17 @@ async function handlePing(setting: string | null, enabled: boolean | null, role:
 
     return generateEmbed({
         title: 'Settings',
-        msg: `Stream pings have been ${ enabled ? `enabled ${ 'for' + role?.name }` : 'disabled' }.`,
+        msg: `Stream pings have been ${enabled ? `enabled ${'for' + role?.name}` : 'disabled'}.`,
         color: client.colors.success,
     });
 }
 
-async function handleUpdate(setting: string | null, enabled: boolean | null, guildId: string, client: Bot): Promise<EmbedBuilder> {
+async function handleUpdate(
+    setting: string | null,
+    enabled: boolean | null,
+    guildId: string,
+    client: Bot
+): Promise<EmbedBuilder> {
     if (!setting || enabled === undefined) {
         return generateEmbed({
             title: 'Settings',
@@ -296,7 +337,7 @@ async function handleUpdate(setting: string | null, enabled: boolean | null, gui
         });
         return generateEmbed({
             title: 'Settings',
-            msg: `${ await settingName } has been set to ${ enabled ? 'enabled' : 'disabled' }.`,
+            msg: `${await settingName} has been set to ${enabled ? 'enabled' : 'disabled'}.`,
             color: client.colors.success,
         });
     } catch (err: any) {
@@ -318,7 +359,7 @@ async function handleFilter(string: string, enabled: boolean, guildId: string, c
         });
         return generateEmbed({
             title: 'Settings',
-            msg: `The filter has been ${ enabled ? 'enabled' : 'disabled' } for ${ string }`,
+            msg: `The filter has been ${enabled ? 'enabled' : 'disabled'} for ${string}`,
             color: client.colors.success,
         });
     } catch (err: any) {
@@ -331,36 +372,37 @@ async function handleFilter(string: string, enabled: boolean, guildId: string, c
     helper functions
 
  */
-async function generateSettingsFields(guild: (Guild & { starboards: Starboard[] })): Promise<Chizuru.Field[]> {
+async function generateSettingsFields(guild: Guild & { starboards: Starboard[] }): Promise<Chizuru.Field[]> {
     const logField: Chizuru.Field = {
         name: 'Log Settings',
-        value: `\nLog edited messages: ${ await genChannelList(guild.logEditedMessagesChannels) }`
-            + `\nLog deleted messages: ${ await genChannelList(guild.logDeletedMessagesChannels) }`
-            + `\nLog voice status changes: ${ await genChannelList(guild.logVoiceStateChannels) }`
-            + `\nChannels blacklisted from logging: ${ await genChannelList(guild.logBlacklistedChannels) }`,
+        value:
+            `\nLog edited messages: ${await genChannelList(guild.logEditedMessagesChannels)}` +
+            `\nLog deleted messages: ${await genChannelList(guild.logDeletedMessagesChannels)}` +
+            `\nLog voice status changes: ${await genChannelList(guild.logVoiceStateChannels)}` +
+            `\nChannels blacklisted from logging: ${await genChannelList(guild.logBlacklistedChannels)}`,
         inline: false,
     };
 
     const musicField: Chizuru.Field = {
         name: 'Music Settings',
-        value: `\nMusic commands can be run in ${ guild.musicChannelId ? `<#${ guild.musicChannelId }>` : 'any channel' }`,
+        value: `\nMusic commands can be run in ${guild.musicChannelId ? `<#${guild.musicChannelId}>` : 'any channel'}`,
         inline: false,
     };
 
-    const filteredStrings = guild.filteredStrings.map((str) => `"${ str }"`);
+    const filteredStrings = guild.filteredStrings.map(str => `"${str}"`);
     const filterField: Chizuru.Field = {
         name: 'Filtered Strings',
         value: filteredStrings.length > 0 ? filteredStrings.join(', ') : 'No strings are currently filtered.',
         inline: false,
-    }
+    };
 
     let role: string;
     if (guild.streamPingRoleId === '@everyone') role = '@everyone';
-    else role = `<@&${ guild.streamPingRoleId }>`;
+    else role = `<@&${guild.streamPingRoleId}>`;
 
     const streamField: Chizuru.Field = {
         name: 'Stream Settings',
-        value: `\nStream pings for specific roles are ${ guild.streamPingRoleId ? `enabled for ${ role }` : 'disabled' }`,
+        value: `\nStream pings for specific roles are ${guild.streamPingRoleId ? `enabled for ${role}` : 'disabled'}`,
         inline: false,
     };
 
@@ -370,15 +412,28 @@ async function generateSettingsFields(guild: (Guild & { starboards: Starboard[] 
         for (let starboard of guild.starboards) {
             let starboardField: Chizuru.Field = {
                 name: 'Starboard Settings',
-                value: `Channel: <#${ starboard.channelId }>`
-                    + `\nEmote: ${ starboard.emote }`
-                    + `\nRequired ${ starboard.emote }: ${ starboard.emoteCount }`
-                    + `\nBanned Users: ${ starboard.blacklistedUserIds ? starboard.blacklistedUserIds.map((id) => {
-                        return `<@${ id }>`;
-                    }).join(', ') : 'None' }`
-                    + `\nBlacklisted Channels: ${ starboard.blacklistedChannelIds ? starboard.blacklistedChannelIds.map((id) => {
-                        return `<#${ id }>`;
-                    }).join(', ') : 'None' }`,
+                value:
+                    `Channel: <#${starboard.channelId}>` +
+                    `\nEmote: ${starboard.emote}` +
+                    `\nRequired ${starboard.emote}: ${starboard.emoteCount}` +
+                    `\nBanned Users: ${
+                        starboard.blacklistedUserIds
+                            ? starboard.blacklistedUserIds
+                                  .map(id => {
+                                      return `<@${id}>`;
+                                  })
+                                  .join(', ')
+                            : 'None'
+                    }` +
+                    `\nBlacklisted Channels: ${
+                        starboard.blacklistedChannelIds
+                            ? starboard.blacklistedChannelIds
+                                  .map(id => {
+                                      return `<#${id}>`;
+                                  })
+                                  .join(', ')
+                            : 'None'
+                    }`,
                 inline: false,
             };
             fields.push(starboardField);
@@ -389,9 +444,11 @@ async function generateSettingsFields(guild: (Guild & { starboards: Starboard[] 
 
 async function genChannelList(channels: string[]) {
     if (channels.length > 0) {
-        return channels.map((id) => {
-            return `<#${ id }>`;
-        }).join(', ');
+        return channels
+            .map(id => {
+                return `<#${id}>`;
+            })
+            .join(', ');
     }
     return `Not logging at the moment`;
 }

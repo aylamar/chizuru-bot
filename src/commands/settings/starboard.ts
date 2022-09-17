@@ -106,7 +106,6 @@ export default new Command({
                             required: true,
                         },
                     ],
-
                 },
             ],
         },
@@ -131,7 +130,10 @@ export default new Command({
                     embed = handleDelete(interaction, client);
                     break;
                 default:
-                    embed = generateEmbed({ msg: 'This command is not yet implemented.', color: client.colors.error });
+                    embed = generateEmbed({
+                        msg: 'This command is not yet implemented.',
+                        color: client.colors.error,
+                    });
                     break;
             }
         }
@@ -141,7 +143,10 @@ export default new Command({
     },
 });
 
-async function handleCreate(interaction: ChatInputCommandInteraction<'cached' | 'raw'>, client: Bot): Promise<EmbedBuilder> {
+async function handleCreate(
+    interaction: ChatInputCommandInteraction<'cached' | 'raw'>,
+    client: Bot
+): Promise<EmbedBuilder> {
     const createChannel = interaction.options.getChannel('channel', true);
     const emote = interaction.options.getString('emote', true).toLowerCase();
     const count = interaction.options.getInteger('count', true);
@@ -169,7 +174,7 @@ async function handleCreate(interaction: ChatInputCommandInteraction<'cached' | 
         if (err.code === 'P2002') {
             return generateEmbed({
                 title: 'Starboard',
-                msg: `A starboard already exists for <#${ channel.id }>, you'll need to edit it or delete it.`,
+                msg: `A starboard already exists for <#${channel.id}>, you'll need to edit it or delete it.`,
                 color: client.colors.error,
             });
         }
@@ -178,12 +183,15 @@ async function handleCreate(interaction: ChatInputCommandInteraction<'cached' | 
 
     return generateEmbed({
         title: 'Starboard',
-        msg: `Successfully created a starboard for <#${ channel.id }> with ${ count } ${ emote }'s.`,
+        msg: `Successfully created a starboard for <#${channel.id}> with ${count} ${emote}'s.`,
         color: client.colors.success,
     });
 }
 
-async function handleDelete(interaction: ChatInputCommandInteraction<'cached' | 'raw'>, client: Bot): Promise<EmbedBuilder> {
+async function handleDelete(
+    interaction: ChatInputCommandInteraction<'cached' | 'raw'>,
+    client: Bot
+): Promise<EmbedBuilder> {
     const channel = interaction.options.getChannel('channel', true);
     try {
         await prisma.starboard.delete({ where: { channelId: channel.id } });
@@ -192,7 +200,7 @@ async function handleDelete(interaction: ChatInputCommandInteraction<'cached' | 
         if (err.code === 'P2025') {
             return generateEmbed({
                 title: 'Starboard',
-                msg: `No starboard was deleted, a starboard does not exist for <#${ channel.id }>`,
+                msg: `No starboard was deleted, a starboard does not exist for <#${channel.id}>`,
                 color: client.colors.error,
             });
         }
@@ -201,12 +209,16 @@ async function handleDelete(interaction: ChatInputCommandInteraction<'cached' | 
 
     return generateEmbed({
         title: 'Starboard',
-        msg: `Successfully deleted the starboard for <#${ channel.id }>`,
+        msg: `Successfully deleted the starboard for <#${channel.id}>`,
         color: client.colors.success,
     });
 }
 
-async function handleBlacklist(option: string, interaction: ChatInputCommandInteraction<'cached' | 'raw'>, client: Bot): Promise<EmbedBuilder> {
+async function handleBlacklist(
+    option: string,
+    interaction: ChatInputCommandInteraction<'cached' | 'raw'>,
+    client: Bot
+): Promise<EmbedBuilder> {
     const starboard = interaction.options.getChannel('channel', true);
     const blacklisted = interaction.options.getBoolean('blacklisted', true);
     // if target is a channel, then it's a channel blacklist, otherwise it's a user blacklist
@@ -215,7 +227,7 @@ async function handleBlacklist(option: string, interaction: ChatInputCommandInte
     if (option === 'channel') {
         const target = interaction.options.getChannel('target', true);
         let apiChannel: Channel | undefined | null = client.channels.cache.get(target.id);
-        apiChannel = apiChannel ?? await client.channels.fetch(target.id);
+        apiChannel = apiChannel ?? (await client.channels.fetch(target.id));
         if (!apiChannel || !apiChannel.isTextBased() || apiChannel.isDMBased()) {
             return generateEmbed({
                 title: 'Starboard',
@@ -228,11 +240,12 @@ async function handleBlacklist(option: string, interaction: ChatInputCommandInte
         const target = interaction.options.getUser('user', true);
         id = target.id;
     }
-    if (!id) return generateEmbed({
-        title: 'Starboard',
-        msg: 'Please provide a valid channel or user.',
-        color: client.colors.error,
-    });
+    if (!id)
+        return generateEmbed({
+            title: 'Starboard',
+            msg: 'Please provide a valid channel or user.',
+            color: client.colors.error,
+        });
 
     let currentIds: string[];
     try {
@@ -258,9 +271,9 @@ async function handleBlacklist(option: string, interaction: ChatInputCommandInte
 
     let idString: string;
     if (option === 'channel') {
-        idString = `<@${ id }>`;
+        idString = `<@${id}>`;
     } else if (option === 'user') {
-        idString = `<#${ id }>`;
+        idString = `<#${id}>`;
     } else {
         idString = 'Invalid';
     }
@@ -268,7 +281,9 @@ async function handleBlacklist(option: string, interaction: ChatInputCommandInte
     return generateEmbed({
         title: 'Starboard',
         color: client.colors.success,
-        msg: `Successfully ${ blacklisted ? 'added' : 'removed' } ${ option } ${ idString } from the <#${ starboard.id }> Starboard blacklist.`,
+        msg: `Successfully ${blacklisted ? 'added' : 'removed'} ${option} ${idString} from the <#${
+            starboard.id
+        }> Starboard blacklist.`,
     });
 }
 
@@ -278,7 +293,9 @@ async function handleBlacklist(option: string, interaction: ChatInputCommandInte
 
  */
 async function getStarboardIds(setting: string, channelId: string) {
-    let guild = await prisma.starboard.findUnique({ where: { channelId: channelId } });
+    let guild = await prisma.starboard.findUnique({
+        where: { channelId: channelId },
+    });
     if (!guild) throw new NoStarboardError('No starboard exists for this channel.');
 
     switch (setting) {

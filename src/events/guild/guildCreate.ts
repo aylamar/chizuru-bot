@@ -13,9 +13,15 @@ export default new Event({
                 create: { guildId: guild.id },
                 update: { guildId: guild.id },
             });
-            client.logger.info(`Joined ${ guild.name } (${ guild.id }), and successfully created a record in the database.`, { label: 'event' });
+            client.logger.info(
+                `Joined ${guild.name} (${guild.id}), and successfully created a record in the database.`,
+                { label: 'event' }
+            );
         } catch (err) {
-            client.logger.error(`Joined ${ guild.name } (${ guild.id }), errored while creating a record in the database.`, { label: 'event' });
+            client.logger.error(
+                `Joined ${guild.name} (${guild.id}), errored while creating a record in the database.`,
+                { label: 'event' }
+            );
             client.logger.error(err);
         }
     },

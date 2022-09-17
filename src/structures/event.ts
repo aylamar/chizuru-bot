@@ -2,7 +2,7 @@ import { PlayerEvents } from 'discord-music-player';
 import { ClientEvents } from 'discord.js';
 import { Bot } from './bot';
 
-export class Event implements EventArgs{
+export class Event implements EventArgs {
     name: keyof ClientEvents;
     execute: RunEvent;
 
@@ -19,7 +19,9 @@ export class Event implements EventArgs{
             client.logger.error(err);
         }
         const result = process.hrtime.bigint();
-        return client.logger.debug(`Spent ${ ((result - start) / BigInt(1000000)) }ms processing event ${ this.name }`, { label: 'event' });
+        return client.logger.debug(`Spent ${(result - start) / BigInt(1000000)}ms processing event ${this.name}`, {
+            label: 'event',
+        });
     }
 
     public startListener(client: Bot): void {
@@ -53,7 +55,9 @@ export class PlayerEvent implements PlayerArgs {
             client.logger.error(err);
         }
         const result = process.hrtime.bigint();
-        return client.logger.debug(`Spent ${ ((result - start) / BigInt(1000000)) }ms processing event ${ this.name }`, { label: 'event' });
+        return client.logger.debug(`Spent ${(result - start) / BigInt(1000000)}ms processing event ${this.name}`, {
+            label: 'event',
+        });
     }
 
     public startListener(client: Bot): void {

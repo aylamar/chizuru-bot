@@ -15,16 +15,21 @@ export default new Command({
 
     execute: async (client, interaction) => {
         if (!interaction.inCachedGuild()) return false;
-        if (!await musicValidator(client, interaction)) return;
+        if (!(await musicValidator(client, interaction))) return;
 
         let queue: Queue | undefined = client.player.getQueue(interaction.guildId);
-        if (!queue || !queue.nowPlaying) return await replyMessage(interaction, 'Nothing is currently queued, why not queue something with /play?', true);
+        if (!queue || !queue.nowPlaying)
+            return await replyMessage(
+                interaction,
+                'Nothing is currently queued, why not queue something with /play?',
+                true
+            );
 
         queue.stop();
         let embed = generateEmbed({
             author: interaction.user.tag,
             authorIcon: interaction.user.avatarURL() || interaction.user.defaultAvatarURL,
-            msg: `Music has been stopped by ${ interaction.user.tag }.`,
+            msg: `Music has been stopped by ${interaction.user.tag}.`,
             color: client.colors.success,
         });
 

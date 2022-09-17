@@ -1,0 +1,12 @@
+# ignore non-code files
+build
+prisma
+node_modules
+
+# config files
+package.json
+package-lock.json
+tsconfig.json
+
+# docs
+README.md

@@ -24,9 +24,7 @@ export default new Command({
             description: 'The module to enable or disable',
             type: ApplicationCommandOptionType.String,
             required: true,
-            choices: [
-                { name: 'Music', value: 'Music' },
-            ],
+            choices: [{ name: 'Music', value: 'Music' }],
         },
         {
             name: 'enabled',
@@ -44,10 +42,11 @@ export default new Command({
 
         // check to see if the guild exists
         const guild = await client.guilds.fetch(guildId);
-        if (!guild) return await interaction.reply({
-            content: `Guild not found, is this bot in ${ guildId }?`,
-            ephemeral: true,
-        });
+        if (!guild)
+            return await interaction.reply({
+                content: `Guild not found, is this bot in ${guildId}?`,
+                ephemeral: true,
+            });
 
         // convert module to enum
         const moduleEnum = Chizuru.CommandModule[module];
@@ -55,13 +54,14 @@ export default new Command({
         const dbGuild = await prisma.guild.findUnique({
             where: { guildId: guildId },
         });
-        if (!dbGuild) return await interaction.reply({
-            content: `Guild not found in database, is this bot in ${ guildId }`,
-            ephemeral: true,
-        });
+        if (!dbGuild)
+            return await interaction.reply({
+                content: `Guild not found in database, is this bot in ${guildId}`,
+                ephemeral: true,
+            });
 
         const moduleArray = await updateArray(dbGuild.modules, await convertToDbEnum(moduleEnum), enabled);
-        const commandModuleArray = await Promise.all(moduleArray.map(async (module) => await convertToEnum(module)));
+        const commandModuleArray = await Promise.all(moduleArray.map(async module => await convertToEnum(module)));
         let commands = client.getCommandsByModule(commandModuleArray);
 
         await prisma.guild.update({
@@ -72,10 +72,9 @@ export default new Command({
         const moduleString = commandModuleArray.length === 0 ? 'None' : commandModuleArray.join(', ');
         const embed = generateEmbed({
             title: 'Module Update',
-            msg: `Successfully updated module settings for ${ guild.name }\n`
-                + `Enabled modules: ${ moduleString }\n`,
+            msg: `Successfully updated module settings for ${guild.name}\n` + `Enabled modules: ${moduleString}\n`,
             color: client.colors.success,
-        })
+        });
 
         await client.deployGuildCommands(await commands, guild);
         await client.cleanGuildCommands(await commands, guild);
@@ -85,7 +84,11 @@ export default new Command({
     },
 });
 
-export async function updateArray(idArray: CommandModule[], id: CommandModule, enabled: boolean | null): Promise<CommandModule[]> {
+export async function updateArray(
+    idArray: CommandModule[],
+    id: CommandModule,
+    enabled: boolean | null
+): Promise<CommandModule[]> {
     // if item is in list and enabled is false, remove it
     if (idArray.includes(id) && !enabled) {
         idArray.splice(idArray.indexOf(id), 1);

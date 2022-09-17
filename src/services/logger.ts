@@ -4,8 +4,8 @@ const { combine, timestamp, colorize, printf } = format;
 
 const logFormat = printf(({ label, level, message, stack, timestamp }) => {
     let service = '';
-    if (label) service = `[${ label }] `;
-    return `${ timestamp } ${ level }: ${ service }${ stack || message }`;
+    if (label) service = `[${label}] `;
+    return `${timestamp} ${level}: ${service}${stack || message}`;
 });
 
 const devLogger = createLogger({
@@ -14,11 +14,9 @@ const devLogger = createLogger({
         colorize(),
         timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         format.errors({ stack: true }),
-        logFormat,
+        logFormat
     ),
-    transports: [
-        new transports.Console(),
-    ],
+    transports: [new transports.Console()],
 });
 
 export function getLogger(): Logger {

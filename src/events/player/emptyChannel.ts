@@ -14,7 +14,7 @@ export default new PlayerEvent({
         let embed = generateEmbed({
             author: client.user.tag,
             authorIcon: client.user.displayAvatarURL(),
-            msg: `${ queueChannel.name } is empty, leaving the channel`,
+            msg: `${queueChannel.name} is empty, leaving the channel`,
             color: client.colors.warn,
         });
 

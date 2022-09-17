@@ -13,12 +13,14 @@ export default new Event({
                 data: { guilds: { disconnect: { guildId: member.guild.id } } },
             });
             client.logger.info(
-                `${ member.user.tag } (${ member.user.id }) left ${ member.guild.name }, successfully disconnected them from the guild`,
-                { label: 'event' });
+                `${member.user.tag} (${member.user.id}) left ${member.guild.name}, successfully disconnected them from the guild`,
+                { label: 'event' }
+            );
         } catch (err) {
             client.logger.error(
-                `Left ${ member.guild.name } (${ member.guild.id }), errored while disconnected a user in the database`,
-                { label: 'event' });
+                `Left ${member.guild.name} (${member.guild.id}), errored while disconnected a user in the database`,
+                { label: 'event' }
+            );
             client.logger.error(err);
         }
     },

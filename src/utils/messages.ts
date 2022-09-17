@@ -35,22 +35,29 @@ export async function generateEmbed(data: Chizuru.MessageData): Promise<EmbedBui
     if (data.title) embed.setTitle(data.title);
     if (data.fields) {
         for (let field of data.fields) {
-            embed.addFields({ name: field.name, value: field.value, inline: field.inline });
+            embed.addFields({
+                name: field.name,
+                value: field.value,
+                inline: field.inline,
+            });
         }
     }
 
-    if (data.author && data.authorIcon && !data.authorUrl) embed.setAuthor({
-        name: data.author,
-        iconURL: data.authorIcon,
-    });
-    if (data.author && !data.authorIcon && !data.authorUrl) embed.setAuthor({
-        name: data.author,
-    });
-    if (data.author && data.authorIcon && data.authorUrl) embed.setAuthor({
-        name: data.author,
-        iconURL: data.authorIcon,
-        url: data.authorUrl,
-    });
+    if (data.author && data.authorIcon && !data.authorUrl)
+        embed.setAuthor({
+            name: data.author,
+            iconURL: data.authorIcon,
+        });
+    if (data.author && !data.authorIcon && !data.authorUrl)
+        embed.setAuthor({
+            name: data.author,
+        });
+    if (data.author && data.authorIcon && data.authorUrl)
+        embed.setAuthor({
+            name: data.author,
+            iconURL: data.authorIcon,
+            url: data.authorUrl,
+        });
 
     if (data.image) embed.setImage(data.image);
     if (data.titleUrl) embed.setURL(data.titleUrl);
@@ -70,10 +77,10 @@ export async function replyMessage(interaction: CommandInteraction, message: str
     if (ephemeral === undefined) ephemeral = true;
 
     if (interaction.deferred) {
-        await interaction.editReply({ content: `${ message }` });
+        await interaction.editReply({ content: `${message}` });
     } else {
         await interaction.reply({
-            content: `${ message }`,
+            content: `${message}`,
             ephemeral: ephemeral,
         });
     }
@@ -89,36 +96,41 @@ export async function sendEmbedToChannelArr(client: Bot, channels: string[], emb
         try {
             await sendEmbed(channel, await embed);
         } catch (err) {
-            client.logger.error(`${ err }`, { label: 'messageUpdate' });
+            client.logger.error(`${err}`, { label: 'messageUpdate' });
         }
     }
 }
 
 export async function replyPages(client: Bot, interaction: CommandInteraction, pages: string[] | EmbedBuilder[]) {
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-            .setCustomId('previous')
-            .setLabel('Previous')
-            .setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-            .setCustomId('next')
-            .setLabel('Next')
-            .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder().setCustomId('previous').setLabel('Previous').setStyle(ButtonStyle.Primary),
+        new ButtonBuilder().setCustomId('next').setLabel('Next').setStyle(ButtonStyle.Primary)
     );
     let page = 0;
     if (typeof pages[0] === 'string') {
-        if (interaction.deferred) await interaction.editReply({ content: pages[0], components: [row] });
+        if (interaction.deferred)
+            await interaction.editReply({
+                content: pages[0],
+                components: [row],
+            });
         else await interaction.reply({ content: pages[0], components: [row] });
     } else {
-        if (interaction.deferred) await interaction.editReply({ embeds: [pages[0]], components: [row] });
+        if (interaction.deferred)
+            await interaction.editReply({
+                embeds: [pages[0]],
+                components: [row],
+            });
         else await interaction.reply({ embeds: [pages[0]], components: [row] });
     }
 
     const filter = (i: any) => i.customId === 'previous' || i.customId === 'next';
     if (!interaction.channel) return;
-    const collector = interaction.channel.createMessageComponentCollector({ filter, time: 120000 });
+    const collector = interaction.channel.createMessageComponentCollector({
+        filter,
+        time: 120000,
+    });
 
-    collector.on('collect', async (interaction) => {
+    collector.on('collect', async interaction => {
         if (interaction.customId === 'previous') {
             if (page > 0) {
                 page--;
@@ -149,18 +161,18 @@ export async function generateErrorEmbed(err: Error, errorColor: number, logger:
             break;
         case PrismaClientRustPanicError:
             message = 'A bad request was made against the database, please try again later.';
-            logger.error(`PrismaClientRustPanicError: ${ err }`);
+            logger.error(`PrismaClientRustPanicError: ${err}`);
             break;
         case PrismaClientInitializationError:
             message = 'Error connecting to the database, please try again later.';
-            logger.error(`PrismaClientInitializationError: ${ err }`);
+            logger.error(`PrismaClientInitializationError: ${err}`);
             break;
 
         case PrismaClientValidationError:
         case PrismaClientUnknownRequestError:
         case PrismaClientKnownRequestError:
             message = 'A bad request was made against the database, please try again later.';
-            logger.error(`PrismaClientValidationError: ${ err }`);
+            logger.error(`PrismaClientValidationError: ${err}`);
             break;
         default:
             message = 'default: An unknown error has occurred, please try again later.';
@@ -182,16 +194,27 @@ async function deferUpdate(client: Bot, interaction: MessageComponentInteraction
     }
 }
 
-async function editPagedReply(client: Bot, interaction: MessageComponentInteraction, message: string | EmbedBuilder, components: ActionRowBuilder<ButtonBuilder>[]) {
+async function editPagedReply(
+    client: Bot,
+    interaction: MessageComponentInteraction,
+    message: string | EmbedBuilder,
+    components: ActionRowBuilder<ButtonBuilder>[]
+) {
     if (typeof message === 'string') {
         try {
-            await interaction.editReply({ content: message, components: components });
+            await interaction.editReply({
+                content: message,
+                components: components,
+            });
         } catch (e) {
             client.logger.error(e);
         }
     } else {
         try {
-            await interaction.editReply({ embeds: [message], components: components });
+            await interaction.editReply({
+                embeds: [message],
+                components: components,
+            });
         } catch (e) {
             client.logger.error(e);
         }

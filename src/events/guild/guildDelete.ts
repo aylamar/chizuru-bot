@@ -9,9 +9,15 @@ export default new Event({
         if (!guild || !guild.id) return;
         try {
             await prisma.guild.delete({ where: { guildId: guild.id } });
-            client.logger.error(`Left ${ guild.name } (${ guild.id }), and successfully deleted the records in the database.`, { label: 'event' });
+            client.logger.error(
+                `Left ${guild.name} (${guild.id}), and successfully deleted the records in the database.`,
+                { label: 'event' }
+            );
         } catch (err) {
-            client.logger.error(`Left ${ guild.name } (${ guild.id }), errored while deleting the records in the database.`, { label: 'event' });
+            client.logger.error(
+                `Left ${guild.name} (${guild.id}), errored while deleting the records in the database.`,
+                { label: 'event' }
+            );
             client.logger.error(err);
         }
     },

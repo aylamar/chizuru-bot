@@ -17,7 +17,9 @@ export default new Event({
         let guildId: string = newMessage.guildId;
         let guild: Guild | null;
         try {
-            guild = await prisma.guild.findUnique({ where: { guildId: guildId } });
+            guild = await prisma.guild.findUnique({
+                where: { guildId: guildId },
+            });
         } catch (err) {
             client.logger.error(err);
             return;
@@ -36,10 +38,11 @@ export default new Event({
         let embed = await generateEmbed({
             author: newMessage.author.tag,
             authorIcon: newMessage.author.avatarURL() || newMessage.author.defaultAvatarURL,
-            msg: `<@${ newMessage.author.id }> edited a **[message](https://discord.com/channels/${ newMessage.guildId }/`
-                + `${ newMessage.channelId }/${ newMessage.id })** in <#${ newMessage.channelId }>`
-                + `\n\n**Old message**\n${ oldMsgTrimmed }\n\n**New message**\n${ newMsgTrimmed }`,
-            footer: `User ID: ${ newMessage.author.id }`,
+            msg:
+                `<@${newMessage.author.id}> edited a **[message](https://discord.com/channels/${newMessage.guildId}/` +
+                `${newMessage.channelId}/${newMessage.id})** in <#${newMessage.channelId}>` +
+                `\n\n**Old message**\n${oldMsgTrimmed}\n\n**New message**\n${newMsgTrimmed}`,
+            footer: `User ID: ${newMessage.author.id}`,
             timestamp: true,
             color: client.colors.warn,
         });

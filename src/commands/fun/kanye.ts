@@ -27,7 +27,7 @@ export default new Command({
             authorIcon: 'https://i.imgur.com/ywPk81X.jpeg',
             authorUrl: 'https://twitter.com/kanyewest/',
             color: client.colors.success,
-            msg: `"${ parsedRes.quote }"`,
+            msg: `"${parsedRes.quote}"`,
         });
         await replyEmbed(interaction, embed);
     },

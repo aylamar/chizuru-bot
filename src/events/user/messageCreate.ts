@@ -10,7 +10,7 @@ export default new Event({
         if (!message.inGuild()) return;
         await Promise.all([
             checkForFilteredStrings(client, message),
-            upsertMessageStat(client, message.author.id, message.channel.id, message.guild.id)
+            upsertMessageStat(client, message.author.id, message.channel.id, message.guild.id),
         ]);
     },
 });
@@ -28,7 +28,9 @@ async function checkForFilteredStrings(client: Bot, message: Message<true>) {
             if (loweredMsg.includes(string)) return message.delete();
         }
     } catch (error: any) {
-        client.logger.error('Error while checking for filtered strings', { label: 'event' });
+        client.logger.error('Error while checking for filtered strings', {
+            label: 'event',
+        });
         client.logger.error(error, { label: 'event' });
         return;
     }
@@ -77,7 +79,9 @@ async function upsertMessageStat(client: Bot, userId: string, channelId: string,
             update: { messageCount: { increment: 1 } },
         });
     } catch (error: any) {
-        client.logger.error('Error while checking for filtered strings', { label: 'event' });
+        client.logger.error('Error while checking for filtered strings', {
+            label: 'event',
+        });
         client.logger.error(error, { label: 'event' });
     }
 }

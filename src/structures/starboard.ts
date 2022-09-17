@@ -44,24 +44,37 @@ export class Starboard {
 
             const embed = this.generateStarboardEmbed(count, message);
             let channel = this.client.channels.cache.get(starboard.channelId) as TextChannel | undefined;
-            if (!channel) channel = await this.client.channels.fetch(starboard.channelId) as TextChannel | undefined;
+            if (!channel) channel = (await this.client.channels.fetch(starboard.channelId)) as TextChannel | undefined;
             if (!channel || channel.isDMBased() || !channel.isTextBased()) continue; // channel likely deleted
 
             let dbMessage = await prisma.starboardMessage.findUnique({
-                where: { starboardId_userMessageId: { starboardId: starboard.id, userMessageId: message.id } },
+                where: {
+                    starboardId_userMessageId: {
+                        starboardId: starboard.id,
+                        userMessageId: message.id,
+                    },
+                },
             });
 
             let starboardMessage: Message | undefined;
             if (!dbMessage) {
                 // do not send new message if it is older than the maximum message age
-                if (message.createdTimestamp < (Date.now() - (starboard.maxMessageAge * 60 * 60 * 1000))) continue;
-                this.logger.debug(`Creating new starboard message for ${ message.id } in ${ channel.name } for ${ starboard.emote }`, { label: 'starboard' });
-                starboardMessage = await channel.send({ embeds: [await embed] });
+                if (message.createdTimestamp < Date.now() - starboard.maxMessageAge * 60 * 60 * 1000) continue;
+                this.logger.debug(
+                    `Creating new starboard message for ${message.id} in ${channel.name} for ${starboard.emote}`,
+                    { label: 'starboard' }
+                );
+                starboardMessage = await channel.send({
+                    embeds: [await embed],
+                });
                 await this.updateStarboardMessage(starboard.id, starboardMessage.id, message.id, count);
                 continue;
             }
             if (dbMessage.deleted) {
-                this.logger.debug(`Starboard message for ${ message.id } in ${ channel.name } for ${ starboard.emote } was deleted, skipping it`, { label: 'starboard' });
+                this.logger.debug(
+                    `Starboard message for ${message.id} in ${channel.name} for ${starboard.emote} was deleted, skipping it`,
+                    { label: 'starboard' }
+                );
                 continue;
             }
 
@@ -69,7 +82,10 @@ export class Starboard {
                 starboardMessage = await channel.messages.cache.get(dbMessage.messageId);
                 if (!starboardMessage) starboardMessage = await channel.messages.fetch(dbMessage.messageId);
             } catch (err) {
-                this.logger.info(`Message Id ${ dbMessage.messageId } in #${ starboard.channelId } not found so it is likely deleted, flagging it as deleted in database`, { label: 'starboard' });
+                this.logger.info(
+                    `Message Id ${dbMessage.messageId} in #${starboard.channelId} not found so it is likely deleted, flagging it as deleted in database`,
+                    { label: 'starboard' }
+                );
                 await this.deleteStarboardMessage(starboard.id, message.id);
                 continue;
             }
@@ -81,7 +97,12 @@ export class Starboard {
 
     private async deleteStarboardMessage(starboardId: number, userMessageId: string) {
         await prisma.starboardMessage.update({
-            where: { starboardId_userMessageId: { starboardId: starboardId, userMessageId: userMessageId } },
+            where: {
+                starboardId_userMessageId: {
+                    starboardId: starboardId,
+                    userMessageId: userMessageId,
+                },
+            },
             data: { deleted: true },
         });
     }
@@ -89,17 +110,24 @@ export class Starboard {
     private async findStarboards(guildId: string, emote: string) {
         return await prisma.starboard.findMany({
             where: {
-                AND: [
-                    { guildId: guildId },
-                    { emote: emote },
-                ],
+                AND: [{ guildId: guildId }, { emote: emote }],
             },
         });
     }
 
-    private async updateStarboardMessage(starboardId: number, starboardMessageId: string, userMessageId: string, count: number) {
+    private async updateStarboardMessage(
+        starboardId: number,
+        starboardMessageId: string,
+        userMessageId: string,
+        count: number
+    ) {
         await prisma.starboardMessage.upsert({
-            where: { starboardId_userMessageId: { starboardId: starboardId, userMessageId: userMessageId } },
+            where: {
+                starboardId_userMessageId: {
+                    starboardId: starboardId,
+                    userMessageId: userMessageId,
+                },
+            },
             update: { emoteCount: count },
             create: {
                 messageId: starboardMessageId,
@@ -108,7 +136,6 @@ export class Starboard {
                 emoteCount: count,
             },
         });
-
     }
 
     private async generateStarboardEmbed(count: number, message: Message): Promise<EmbedBuilder> {
@@ -117,18 +144,18 @@ export class Starboard {
 
         if (message.content.length > 1536) content = message.content.slice(0, 1536);
         else content = message.content;
-        content += `\n\n→ [original message](${ message.url }) in <#${ message.channelId }>`;
+        content += `\n\n→ [original message](${message.url}) in <#${message.channelId}>`;
 
         if (message.embeds.length) {
             const images = message.embeds
                 .filter(embed => embed.thumbnail || embed.image)
-                .map(embed => (embed.thumbnail) ? embed.thumbnail.url : embed.image?.url);
+                .map(embed => (embed.thumbnail ? embed.thumbnail.url : embed.image?.url));
             imageUrl = images[0];
         } else if (message.attachments.size) {
             const firstAttachment = message.attachments.first();
             if (firstAttachment) {
                 imageUrl = firstAttachment.url;
-                content += `\n📎 [${ firstAttachment.name }](${ firstAttachment.url })`;
+                content += `\n📎 [${firstAttachment.name}](${firstAttachment.url})`;
             }
         }
 
@@ -138,7 +165,7 @@ export class Starboard {
             msg: content,
             image: imageUrl,
             color: this.client.colors.purple,
-            footer: `${ count } ⭐ (${ message.id }) • ${ message.createdAt.toLocaleDateString() }`,
+            footer: `${count} ⭐ (${message.id}) • ${message.createdAt.toLocaleDateString()}`,
         });
     }
 }

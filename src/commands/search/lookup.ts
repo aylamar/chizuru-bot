@@ -57,7 +57,11 @@ export default new Command({
         }
 
         if (res.pageInfo.total === 0 || parsedRes == null) {
-            await replyMessage(interaction, `No results found for ${ series } (${ type }), try searching for something else.`, true);
+            await replyMessage(
+                interaction,
+                `No results found for ${series} (${type}), try searching for something else.`,
+                true
+            );
             return;
         }
 
@@ -65,7 +69,7 @@ export default new Command({
         if (parsedRes.isAdult && interaction.inGuild()) {
             const channel = interaction.channel as TextChannel;
             if (!channel.nsfw) {
-                await replyMessage(interaction, `This ${ type } is marked as NSFW, and this channel is not NSFW.`, true);
+                await replyMessage(interaction, `This ${type} is marked as NSFW, and this channel is not NSFW.`, true);
                 return;
             }
         }
@@ -73,29 +77,37 @@ export default new Command({
         let genre = parsedRes.genres.join(', ');
         let title: string;
         if (parsedRes.title.english == null) {
-            title = `${ parsedRes.title.romaji }`;
+            title = `${parsedRes.title.romaji}`;
         } else {
-            title = `${ parsedRes.title.english }`;
+            title = `${parsedRes.title.english}`;
         }
-        let date = new Date(parsedRes.startDate.year, parsedRes.startDate.month, parsedRes.startDate.day, 0, 0, 0, 0).toString();
+        let date = new Date(
+            parsedRes.startDate.year,
+            parsedRes.startDate.month,
+            parsedRes.startDate.day,
+            0,
+            0,
+            0,
+            0
+        ).toString();
 
         let descRaw = parsedRes.description.replace(/<br>/g, '').replace(/\n/g, ' ');
         let descArr = descRaw.split(' ');
         let desc: string;
         if (descArr.length > 30) {
-            desc = `${ descArr.splice(0, 30).join(' ') }... [(more)](${ parsedRes.siteUrl })`;
+            desc = `${descArr.splice(0, 30).join(' ')}... [(more)](${parsedRes.siteUrl})`;
         } else {
             desc = descArr.join(' ');
         }
 
         const embed = await generateEmbed({
-            title: `${ title }`,
-            titleUrl: `${ parsedRes.siteUrl }`,
-            msg: `**_${ genre }_**\n${ desc }`,
-            image: `https://img.anili.st/media/${ parsedRes.id }`,
+            title: `${title}`,
+            titleUrl: `${parsedRes.siteUrl}`,
+            msg: `**_${genre}_**\n${desc}`,
+            image: `https://img.anili.st/media/${parsedRes.id}`,
             color: client.colors.anilist,
             timestamp: date,
-            footer: `${ type }`,
+            footer: `${type}`,
             footerIcon: 'https://anilist.co/img/icons/android-chrome-512x512.png',
         });
         return await replyEmbed(interaction, embed);

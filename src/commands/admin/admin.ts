@@ -14,9 +14,9 @@ export default new Command({
     options: [
         {
             name: 'stats',
-            description: 'Shows the bot\'s stats',
+            description: 'Retrieve stats about the bot',
             type: ApplicationCommandOptionType.Subcommand,
-        }
+        },
     ],
 
     execute: async (client, interaction) => {
@@ -39,7 +39,7 @@ export default new Command({
 async function handleStats(client: Bot): Promise<EmbedBuilder> {
     return generateEmbed({
         title: 'Bot Stats',
-        msg: 'tbd'
+        msg: 'tbd',
     });
     // const guilds = prisma.guild.count();
     // const users = prisma.user.count();

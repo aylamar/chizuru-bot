@@ -15,7 +15,7 @@ export default new PlayerEvent({
                 queue.skip();
 
                 embed = generateEmbed({
-                    msg: `${ currentSong.name } has been skipped due to YouTube's adult content filter.`,
+                    msg: `${currentSong.name} has been skipped due to YouTube's adult content filter.`,
                     color: client.colors.warn,
                 });
                 break;
@@ -23,7 +23,7 @@ export default new PlayerEvent({
                 client.logger.error('Encountered error in player event');
                 client.logger.error(error);
                 embed = generateEmbed({
-                    msg: `An unknown error has occurred while attempting to run a music command ${ String(error) }`,
+                    msg: `An unknown error has occurred while attempting to run a music command ${String(error)}`,
                     color: client.colors.error,
                 });
         }

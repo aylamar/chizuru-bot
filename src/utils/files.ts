@@ -6,10 +6,11 @@ export async function getFiles(searchDirectory: string): Promise<string[]> {
 
     for (const item of items) {
         if (item.isDirectory()) {
-            files = [...files, ...await getFiles(`${ searchDirectory }/${ item.name }`)];
+            const recursiveFiles = await getFiles(`${searchDirectory}/${item.name}`);
+            files = [...files, ...recursiveFiles];
         } else {
             if (!item.name.endsWith('.js')) continue;
-            const path = `${ searchDirectory }/${ item.name.replace('.ts', '.js') }`;
+            const path = `${searchDirectory}/${item.name.replace('.ts', '.js')}`;
             files.push(path);
         }
     }

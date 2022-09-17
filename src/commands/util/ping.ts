@@ -4,7 +4,7 @@ import { replyMessage } from '../../utils';
 
 export default new Command({
     name: 'ping',
-    description: 'Replies with pong',
+    description: 'Replies with the latency between the bot and Discord',
     isDisabled: false,
     dmPermission: false,
     defaultMemberPermissions: ['SendMessages'],

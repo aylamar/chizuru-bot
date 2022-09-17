@@ -23,6 +23,11 @@ export default new Command({
             description: 'Shows stats about the guild',
             type: ApplicationCommandOptionType.Subcommand,
         },
+        {
+            name: 'bot',
+            description: 'Shows stats about the bot',
+            type: ApplicationCommandOptionType.Subcommand,
+        }
     ],
 
     execute: async (client, interaction) => {
@@ -37,6 +42,9 @@ export default new Command({
                 break;
             case 'user':
                 embed = handleUserStats(client, interaction);
+                break;
+            case 'bot':
+                embed = handleBotStats(client);
                 break;
             default:
                 return;
@@ -83,7 +91,7 @@ async function handleUserStats(client: Bot, interaction: ChatInputCommandInterac
 
     let userStats: Chizuru.Field = {
         name: 'User Stats',
-        value: `Tracking since: ${ await convertDate(user.created) }\n`
+        value: `Tracking since: ${ await formatDate(user.created) }\n`
             + `Total Messages Sent: ${ (await totalMessages) ? await totalMessages : 0 }`,
         inline: true,
     };
@@ -92,7 +100,7 @@ async function handleUserStats(client: Bot, interaction: ChatInputCommandInterac
         name: 'User Info',
         value: `Username: ${ interaction.user.username }\n` + `Discriminator: ${ interaction.user.discriminator }\n`
             + `Avatar: [Click Here](${ interaction.user.displayAvatarURL() })\n`
-            + `User ID: ${ interaction.user.id }\n` + `Create Date: ${ await convertDate(interaction.user.createdAt) }\n`,
+            + `User ID: ${ interaction.user.id }\n` + `Create Date: ${ await formatDate(interaction.user.createdAt) }\n`,
         inline: true,
     };
 
@@ -105,13 +113,78 @@ async function handleUserStats(client: Bot, interaction: ChatInputCommandInterac
     });
 }
 
-async function convertDate(input: Date) {
-    let date = new Date(input);
-    let year = date.getFullYear();
-    let month = date.getMonth() < 9 ? `0${ date.getMonth() + 1 }` : date.getMonth() + 1;
-    let day = date.getDate() < 10 ? `0${ date.getDate() }` : date.getDate();
-    return `${ year }-${ month }-${ day }`;
+async function handleBotStats(client: Bot): Promise<EmbedBuilder> {
+    const guilds = prisma.guild.count();
+    const users = prisma.user.count();
+    const totalMessages = await prisma.messageStats.aggregate({
+        _sum: { messageCount: true }
+    })
+    const oldestMessageCreated = await prisma.messageStats.aggregate({
+        _min: { created: true }
+    })
+
+    let messagesPerMinute: string = '0.00';
+    if (oldestMessageCreated._min.created && totalMessages._sum.messageCount) {
+        const minutes = Math.floor((Date.now() - oldestMessageCreated._min.created.getTime()) / 1000 / 60);
+        messagesPerMinute = (Math.floor(totalMessages._sum.messageCount / minutes)).toFixed(2);
+    }
+    const used = process.memoryUsage().heapUsed / 1024 / 1024;
+
+    return generateEmbed({
+        title: `Chizuru v${ process.env.npm_package_version }`,
+        authorIcon: client.user.displayAvatarURL(),
+        msg: `Chizuru Bot is currently in ${ await guilds } guilds with ${ await users } users that have sent ${ addCommas(totalMessages._sum.messageCount) } messages.`,
+        color: client.colors.blurple,
+        fields: [
+            {
+                name: 'Bot',
+                value: `Memory Usage: ${used.toFixed(2)} MB\nTotal Commands: ${client.commands.size}\nShards: ${client.shard ? client.shard.count : 0}\n`,
+                inline: true,
+            },
+            {
+                name: '\u200B',
+                value: '\u200B',
+                inline: true
+            },
+            {
+                name: 'Messages',
+                value: `Total Messages: ${ addCommas(totalMessages._sum.messageCount) }\nMessages per Minute: ${ messagesPerMinute }/min`,
+                inline: true,
+            },
+            {
+                name: 'Uptime',
+                value: convertDate(process.uptime()),
+                inline: true,
+            },
+            {
+                name: 'Presence',
+                value: `${ await guilds } Servers\n${ addCommas(await users) } Users`,
+                inline: true,
+            },
+            {
+                name: 'Author',
+                value: 'aylamar\n• [github](https://github.com/aylamar/chizuru-bot)',
+                inline: true,
+            }
+        ]
+    });
 }
+
+
+async function formatDate(date: Date) {
+    return `${ date.getFullYear() }-${ pad(date.getMonth()) }-${ pad(date.getDate()) }`;
+}
+
+function convertDate(uptime: number): string {
+    // return uptime in days, hours, minutes, seconds
+    const days = Math.floor(uptime / 86400);
+    const hours = Math.floor(uptime / 3600) % 24;
+    const minutes = Math.floor(uptime / 60) % 60;
+    // const seconds = Math.floor(uptime % 60);
+
+    return `${ days } days\n${ hours } hours\n${ minutes } minutes`;
+}
+
 
 async function getRawChannelStats(userId: string, guildId: string): Promise<flatChannel[]> {
     let stats = await prisma.messageStats.groupBy({

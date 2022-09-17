@@ -8,11 +8,11 @@ datasource db {
 }
 
 model Guild {
-  id                         Int              @id @unique @default(autoincrement())
-  guildId                    String           @unique
+  id                         Int             @id @unique @default(autoincrement())
+  guildId                    String          @unique
   musicChannelId             String?
   streamPingRoleId           String?
-  streamPingRandomUser       Boolean          @default(false)
+  streamPingRandomUser       Boolean         @default(false)
   logBlacklistedChannels     String[]
   logDeletedMessagesChannels String[]
   logEditedMessagesChannels  String[]
@@ -21,8 +21,8 @@ model Guild {
   starboards                 Starboard[]
   channels                   Channel[]
   users                      User[]
-  created                    DateTime         @default(now())
-  updated                    DateTime         @updatedAt
+  created                    DateTime        @default(now())
+  updated                    DateTime        @updatedAt
   starboardId                Int?
 }
 
@@ -61,7 +61,7 @@ model StarboardMessage {
 model Channel {
   id        Int    @id @unique @default(autoincrement())
   channelId String @unique
-  guild     Guild  @relation(fields: [guildId], references: [guildId])
+  guild     Guild  @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
   guildId   String
 
   followedStreamers Streamer[]
@@ -99,7 +99,7 @@ model Streamer {
 
 model MessageStats {
   id           Int     @id @unique @default(autoincrement())
-  user         User    @relation(fields: [userId], references: [userId])
+  user         User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
   userId       String
   channel      Channel @relation(fields: [channelId], references: [channelId], onDelete: Cascade)
   channelId    String

@@ -24,7 +24,6 @@ model Guild {
   users                      User[]
   created                    DateTime        @default(now())
   updated                    DateTime        @updatedAt
-  starboardId                Int?
 }
 
 model Starboard {

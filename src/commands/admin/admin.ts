@@ -60,7 +60,7 @@ async function handleStats(client: Bot): Promise<EmbedBuilder> {
 
     return generateEmbed({
         title: `Chizuru v${ process.env.npm_package_version }`,
-        msg: `Chizuru Bot is currently in ${ await guilds } guilds with ${ await users } users that have sent ${ totalMessages._sum.messageCount } messages.`,
+        msg: `Chizuru Bot is currently in ${ await guilds } guilds with ${ await users } users that have sent ${ addCommas(totalMessages._sum.messageCount) } messages.`,
         color: client.colors.blurple,
         fields: [
             {
@@ -70,22 +70,22 @@ async function handleStats(client: Bot): Promise<EmbedBuilder> {
             },
             {
                 name: 'Bot',
-                value: `Memory: ${used.toFixed(2)} MB\nCommands: ${client.commands.size}\nShards: ${client.shard ? client.shard.count : 0}\n`,
+                value: `Memory Usage: ${used.toFixed(2)} MB\nTotal Commands: ${client.commands.size}\nShards: ${client.shard ? client.shard.count : 0}\n`,
                 inline: true,
             },
             {
                 name: 'Uptime',
-                value: format(process.uptime()),
+                value: formatDate(process.uptime()),
                 inline: true,
             },
             {
                 name: 'Presence',
-                value: `${ await guilds } Servers\n${ await users } Users`,
+                value: `${ await guilds } Servers\n${ addCommas(await users) } Users`,
                 inline: true,
             },
             {
                 name: 'Messages',
-                value: `${ totalMessages._sum.messageCount } Messages\n(${ messagesPerMinute }/min)`,
+                value: `Total Messages: ${ addCommas(totalMessages._sum.messageCount) }\nMessages per Minute: ${ messagesPerMinute }/min`,
                 inline: true,
             },
             {
@@ -97,7 +97,7 @@ async function handleStats(client: Bot): Promise<EmbedBuilder> {
     });
 }
 
-function format(uptime: number): string {
+function formatDate(uptime: number): string {
     // return uptime in days, hours, minutes, seconds
     const days = Math.floor(uptime / 86400);
     const hours = Math.floor(uptime / 3600) % 24;
@@ -105,4 +105,9 @@ function format(uptime: number): string {
     // const seconds = Math.floor(uptime % 60);
 
     return `${ days } days\n${ hours } hours\n${ minutes } minutes`;
+}
+
+function addCommas(number: number | null): string {
+    if (!number) return '0';
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }

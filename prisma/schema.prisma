@@ -17,6 +17,7 @@ model Guild {
   logDeletedMessagesChannels String[]
   logEditedMessagesChannels  String[]
   logVoiceStateChannels      String[]
+  filteredStrings            String[]
   modules                    CommandModule[]
   starboards                 Starboard[]
   channels                   Channel[]

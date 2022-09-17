@@ -20,22 +20,19 @@ export default new Command({
             type: ApplicationCommandOptionType.Subcommand,
         },
         {
-            name: 'update',
-            description: 'Update a setting for the server',
+            name: 'filter',
+            description: 'Add or remove a filtered string',
             type: ApplicationCommandOptionType.Subcommand,
             options: [
                 {
-                    name: 'setting',
-                    description: 'The setting to update',
+                    name: 'string',
+                    description: 'The string to filter',
                     type: ApplicationCommandOptionType.String,
                     required: true,
-                    choices: [
-                        { name: 'Random user stream pings', value: 'streamPingRandomUser' },
-                    ],
                 },
                 {
                     name: 'enabled',
-                    description: 'Whether or not the setting should be enabled',
+                    description: 'Whether or not the string should be filtered',
                     type: ApplicationCommandOptionType.Boolean,
                     required: true,
                 },
@@ -135,6 +132,9 @@ export default new Command({
             case 'stream-ping':
                 const role = interaction.options.getRole('role');
                 embed = handlePing(setting, enabled, role, interaction.guildId, client);
+                break;
+            case 'filter':
+                embed = handleFilter(interaction.options.getString('string', true), interaction.options.getBoolean('enabled', true), interaction.guildId, client);
                 break;
             case 'update':
                 embed = handleUpdate(setting, enabled, interaction.guildId, client);
@@ -304,13 +304,35 @@ async function handleUpdate(setting: string | null, enabled: boolean | null, gui
     }
 }
 
+async function handleFilter(string: string, enabled: boolean, guildId: string, client: Bot): Promise<EmbedBuilder> {
+    const guild = await prisma.guild.findUnique({ where: { guildId } });
+    const currentFilters = guild?.filteredStrings || [];
+
+    const updatedFilters = await updateArray(currentFilters, string.toLowerCase(), enabled);
+
+    try {
+        await prisma.guild.upsert({
+            where: { guildId },
+            update: { filteredStrings: updatedFilters },
+            create: { guildId, filteredStrings: updatedFilters },
+        });
+        return generateEmbed({
+            title: 'Settings',
+            msg: `The filter has been ${ enabled ? 'enabled' : 'disabled' } for ${ string }`,
+            color: client.colors.success,
+        });
+    } catch (err: any) {
+        return generateErrorEmbed(err, client.colors.error, client.logger);
+    }
+}
+
 /*
 
     helper functions
 
  */
 async function generateSettingsFields(guild: (Guild & { starboards: Starboard[] })): Promise<Chizuru.Field[]> {
-    let logField: Chizuru.Field = {
+    const logField: Chizuru.Field = {
         name: 'Log Settings',
         value: `\nLog edited messages: ${ await genChannelList(guild.logEditedMessagesChannels) }`
             + `\nLog deleted messages: ${ await genChannelList(guild.logDeletedMessagesChannels) }`
@@ -319,24 +341,31 @@ async function generateSettingsFields(guild: (Guild & { starboards: Starboard[] 
         inline: false,
     };
 
-    let musicField: Chizuru.Field = {
+    const musicField: Chizuru.Field = {
         name: 'Music Settings',
         value: `\nMusic commands can be run in ${ guild.musicChannelId ? `<#${ guild.musicChannelId }>` : 'any channel' }`,
         inline: false,
     };
 
+    const filteredStrings = guild.filteredStrings.map((str) => `"${ str }"`);
+    const filterField: Chizuru.Field = {
+        name: 'Filtered Strings',
+        value: filteredStrings.length > 0 ? filteredStrings.join(', ') : 'No strings are currently filtered.',
+        inline: false,
+    }
+
     let role: string;
     if (guild.streamPingRoleId === '@everyone') role = '@everyone';
     else role = `<@&${ guild.streamPingRoleId }>`;
 
-    let streamField: Chizuru.Field = {
+    const streamField: Chizuru.Field = {
         name: 'Stream Settings',
         value: `\nStream pings for random users are ${ guild.streamPingRandomUser ? 'enabled' : 'disabled' }`
             + `\nStream pings for specific roles are ${ guild.streamPingRoleId ? `enabled for ${ role }` : 'disabled' }`,
         inline: false,
     };
 
-    let fields = [logField, musicField, streamField];
+    let fields = [logField, filterField, musicField, streamField];
     if (guild.starboards.length > 0) {
         // iterate through each starboard
         for (let starboard of guild.starboards) {

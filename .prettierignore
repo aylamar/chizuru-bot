@@ -1,5 +1,7 @@
 # ignore non-code files
+.github
 build
+docs
 prisma
 node_modules
 
@@ -7,6 +9,7 @@ node_modules
 package.json
 package-lock.json
 tsconfig.json
+mkdocs.yml
 
 # docs
 README.md

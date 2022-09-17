@@ -360,8 +360,7 @@ async function generateSettingsFields(guild: (Guild & { starboards: Starboard[] 
 
     const streamField: Chizuru.Field = {
         name: 'Stream Settings',
-        value: `\nStream pings for random users are ${ guild.streamPingRandomUser ? 'enabled' : 'disabled' }`
-            + `\nStream pings for specific roles are ${ guild.streamPingRoleId ? `enabled for ${ role }` : 'disabled' }`,
+        value: `\nStream pings for specific roles are ${ guild.streamPingRoleId ? `enabled for ${ role }` : 'disabled' }`,
         inline: false,
     };
 

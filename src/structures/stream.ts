@@ -55,7 +55,6 @@ export class Streams {
         res.forEach(streamer => {
             let channels: FollowingChannels[] = streamer.followingChannels.map(channel => ({
                 channelId: channel.channelId,
-                pingRandomUser: channel.guild.streamPingRandomUser,
                 streamPingRoleId: channel.guild.streamPingRoleId,
             }));
             streamers.push({
@@ -236,17 +235,7 @@ export class Streams {
         let message: string | undefined;
 
         if (isLive && channel.streamPingRoleId === '@everyone') message = `@everyone`;
-        else if (isLive && channel.streamPingRoleId) message = `<@&${ channel.streamPingRoleId }>`;
-
-        if (isLive && channel.pingRandomUser) {
-            // get a random user online in the text channel
-            let user = await textChannel.members.random();
-            if (user && channel.streamPingRoleId) {
-                message = message + `, specifically <@${ user.id }>`;
-            } else if (user && !channel.streamPingRoleId) {
-                message = `<@${ user.id }> ${ streamer.displayName } is live!`;
-            }
-        }
+        else if (isLive && channel.streamPingRoleId) message = `<@&${ channel.streamPingRoleId }>, ${ streamer.displayName } is live`;
 
         try {
             await sendEmbed(textChannel, await embed, message);
@@ -260,7 +249,6 @@ export class Streams {
 
 interface FollowingChannels {
     channelId: string;
-    pingRandomUser: boolean;
     streamPingRoleId: string | null;
 }
 

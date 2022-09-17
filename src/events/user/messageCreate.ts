@@ -8,10 +8,6 @@ export default new Event({
     execute: async (client: Bot, message: Message) => {
         if (message.author.bot) return;
         if (!message.inGuild()) return;
-        // console.log(message.attachments.map())
-        message.attachments.map(item => {
-            console.log(item.contentType);
-        });
 
         await Promise.all([
             checkFilters(client, message),

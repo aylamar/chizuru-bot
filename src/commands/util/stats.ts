@@ -22,7 +22,7 @@ export default new Command({
             name: 'guild',
             description: 'Shows stats about the guild',
             type: ApplicationCommandOptionType.Subcommand,
-        }
+        },
     ],
 
     execute: async (client, interaction) => {
@@ -75,19 +75,24 @@ async function handleUserStats(client: Bot, interaction: ChatInputCommandInterac
 
     let serverStats: Chizuru.Field = {
         name: `${ interaction.guild?.name } Message Stats`,
-        value: channelStats.message + (channelStats.otherMsgCount > 0 ? `\n\n And ${ channelStats.otherMsgCount } ` + `${ channelStats.otherMsgCount == 1 ? 'message' : 'messages' } across ${ channelStats.channelCount - 5 } ` + ` other ${ channelStats.channelCount == 6 ? 'channel' : 'channels' }` : ''),
+        value: channelStats.message + (channelStats.otherMsgCount !== '0' ? `\n\n And ${ channelStats.otherMsgCount } `
+            + `${ channelStats.otherMsgCount == '1' ? 'message' : 'messages' } across ${ channelStats.channelCount - 5 } `
+            + ` other ${ channelStats.channelCount == 6 ? 'channel' : 'channels' }` : ''),
         inline: false,
     };
 
     let userStats: Chizuru.Field = {
         name: 'User Stats',
-        value: `Tracking since ${ await convertDate(user.created) }\n` + `Total Messages Sent: ${ (await totalMessages) ? await totalMessages : 0 }`,
+        value: `Tracking since: ${ await convertDate(user.created) }\n`
+            + `Total Messages Sent: ${ (await totalMessages) ? await totalMessages : 0 }`,
         inline: true,
     };
 
     let userInfo: Chizuru.Field = {
         name: 'User Info',
-        value: `Username: ${ interaction.user.username }\n` + `Discriminator: ${ interaction.user.discriminator }\n` + `Avatar: [Click Here](${ interaction.user.displayAvatarURL() })\n` + `User ID: ${ interaction.user.id }\n` + `Create Date: ${ await convertDate(interaction.user.createdAt) }\n`,
+        value: `Username: ${ interaction.user.username }\n` + `Discriminator: ${ interaction.user.discriminator }\n`
+            + `Avatar: [Click Here](${ interaction.user.displayAvatarURL() })\n`
+            + `User ID: ${ interaction.user.id }\n` + `Create Date: ${ await convertDate(interaction.user.createdAt) }\n`,
         inline: true,
     };
 
@@ -110,24 +115,27 @@ async function convertDate(input: Date) {
 
 async function getRawChannelStats(userId: string, guildId: string): Promise<flatChannel[]> {
     let stats = await prisma.messageStats.groupBy({
-        by: ['channelId'], _sum: { messageCount: true }, orderBy: { _sum: { messageCount: 'desc' } }, where: {
-            userId: userId, channel: { guildId: guildId },
-        },
+        by: ['channelId'],
+        _sum: { messageCount: true },
+        orderBy: { _sum: { messageCount: 'desc' } },
+        where: { userId: userId, channel: { guildId: guildId } },
     });
 
     // convert to stats to array of { channelId: channelId, messageCount: messageCount }
     return stats.map((item: any) => {
-        return { channelId: item.channelId, count: item._sum.messageCount };
+        return {
+            channelId: item.channelId,
+            count: item._sum.messageCount
+        };
     });
 }
 
-async function getUserTotalMessages(userId: string): Promise<number | null> {
+async function getUserTotalMessages(userId: string): Promise<string> {
     let totalMessages = await prisma.messageStats.aggregate({
-        _sum: { messageCount: true }, where: {
-            userId: userId,
-        },
+        _sum: { messageCount: true },
+        where: { userId: userId },
     });
-    return totalMessages._sum.messageCount;
+    return addCommas(totalMessages._sum.messageCount);
 }
 
 async function generateGuildStats(guild: Guild): Promise<Chizuru.Field> {
@@ -144,9 +152,11 @@ async function generateGuildStats(guild: Guild): Promise<Chizuru.Field> {
     const creationDateStr = `${ creationDate.getFullYear() }-${ pad(creationDate.getMonth() + 1) }-${ pad(creationDate.getDate()) }`;
 
     return {
-        name: 'Guild Stat',
-        value: `Guild: ${ creationDateStr }\n` + `Total Messages: ${ (await messageStats)._sum.messageCount }\n` + `Total Users: ${ (await totalUsers)._count._all }\n`,
-        inline: true,
+        name: 'Guild Stats',
+        value: `Create Date: ${ creationDateStr }\n`
+            + `Total Users: ${ addCommas((await totalUsers)._count._all) }\n`
+            + `Total Messages: ${ addCommas((await messageStats)._sum.messageCount) }\n`,
+        inline: false,
     };
 }
 
@@ -184,7 +194,8 @@ async function generateUserStats(guildId: string): Promise<Chizuru.Field> {
     let flatUsers: flatUser[];
     flatUsers = users.map((user) => {
         return {
-            userId: user.userId, count: user._sum.messageCount ? user._sum.messageCount : 0,
+            userId: user.userId,
+            count: user._sum.messageCount ? user._sum.messageCount : 0,
         };
     });
 
@@ -198,28 +209,37 @@ async function generateUserStats(guildId: string): Promise<Chizuru.Field> {
 
     const userStr = userArr.join('\n');
     return {
-        name: 'Top Users', value: userStr.length > 0 ? userStr : 'No users found..', inline: true,
+        name: 'Top Users',
+        value: userStr.length > 0 ? userStr : 'No users found..',
+        inline: true,
     };
 }
 
 async function generateUserChannelStats(channelStats: flatChannel[]): Promise<parsedChannelStats> {
     let data: parsedChannelStats = {
-        topMsgCount: 0, otherMsgCount: 0, channelCount: 0, message: '',
+        topMsgCount: 0, otherMsgCount: '', channelCount: 0, message: '',
     };
+    let msgCountTmp = 0;
 
     for (let channel of channelStats) {
         if (channel.count === null) continue;
         if (data.channelCount < 5) {
             data.message += `<#${ channel.channelId }> ${ channel.count } messages\n`;
         } else {
-            data.otherMsgCount += channel.count;
+            msgCountTmp += channel.count;
         }
         data.topMsgCount += channel.count;
         data.channelCount++;
     }
     // remove last \n from data.message
     data.message = data.message.slice(0, -1);
+    data.otherMsgCount = addCommas(msgCountTmp);
     return data;
+}
+
+function addCommas(number: number | null): string {
+    if (!number) return '0';
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 function pad(num: number): string {
@@ -238,7 +258,7 @@ interface flatUser {
 
 interface parsedChannelStats {
     topMsgCount: number,
-    otherMsgCount: number,
+    otherMsgCount: string,
     channelCount: number,
     message: string,
 }

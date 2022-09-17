@@ -125,7 +125,8 @@ async function getRawChannelStats(userId: string, guildId: string): Promise<flat
     return stats.map((item: any) => {
         return {
             channelId: item.channelId,
-            count: item._sum.messageCount
+            count: item._sum.messageCount,
+            prettyCount: addCommas(item._sum.messageCount),
         };
     });
 }
@@ -168,7 +169,9 @@ async function generateChannelStats(guildId: string): Promise<Chizuru.Field> {
     let flatChannels: flatChannel[];
     flatChannels = channels.map((channel) => {
         return {
-            channelId: channel.channelId, count: channel._sum.messageCount ? channel._sum.messageCount : 0,
+            channelId: channel.channelId,
+            count: channel._sum.messageCount ? channel._sum.messageCount : 0,
+            prettyCount: addCommas(channel._sum.messageCount ? channel._sum.messageCount : 0),
         };
     });
 
@@ -177,7 +180,7 @@ async function generateChannelStats(guildId: string): Promise<Chizuru.Field> {
     flatChannels = flatChannels.slice(0, 5);
 
     const channelArr = flatChannels.map((channel) => {
-        return `<#${ channel.channelId }>: ${ channel.count } messages`;
+        return `<#${ channel.channelId }>: ${ channel.prettyCount } messages`;
     });
 
     const channelStr = channelArr.join('\n');
@@ -196,6 +199,7 @@ async function generateUserStats(guildId: string): Promise<Chizuru.Field> {
         return {
             userId: user.userId,
             count: user._sum.messageCount ? user._sum.messageCount : 0,
+            prettyCount: addCommas(user._sum.messageCount ? user._sum.messageCount : 0),
         };
     });
 
@@ -204,7 +208,7 @@ async function generateUserStats(guildId: string): Promise<Chizuru.Field> {
     flatUsers = flatUsers.slice(0, 5);
 
     const userArr = flatUsers.map((user) => {
-        return `<@${ user.userId }>: ${ user.count } messages`;
+        return `<@${ user.userId }>: ${ user.prettyCount } messages`;
     });
 
     const userStr = userArr.join('\n');
@@ -248,17 +252,19 @@ function pad(num: number): string {
 
 interface flatChannel {
     channelId: string,
-    count: number
+    count: number,
+    prettyCount: string
 }
 
 interface flatUser {
     userId: string,
-    count: number
+    count: number,
+    prettyCount: string
 }
 
 interface parsedChannelStats {
     topMsgCount: number,
     otherMsgCount: string,
     channelCount: number,
-    message: string,
+    message: string
 }

@@ -12,3 +12,4 @@ export {
 } from './messages';
 export { inVoiceChannel, inMusicCommandChannel } from './validators';
 export { updateArray } from './misc';
+export { anilistExists, anilistIsAdult, generateAnilistEmbed } from './anilist';

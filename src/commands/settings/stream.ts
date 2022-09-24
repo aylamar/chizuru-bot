@@ -80,7 +80,7 @@ export default new Command({
         let embed: EmbedBuilder | Promise<EmbedBuilder> | EmbedBuilder[] | Promise<EmbedBuilder[]>;
 
         let defer = deferReply(interaction);
-        const streamer = interaction.options.getString('streamer');
+        const username = interaction.options.getString('username');
         const channel = interaction.options.getChannel('channel');
         const platform = interaction.options.getString('platform');
 
@@ -108,7 +108,7 @@ export default new Command({
                 });
                 break;
             case 'add':
-                if (!streamer || !channel || !platform) {
+                if (!username || !channel || !platform) {
                     embed = generateEmbed({
                         msg: 'Please provide a streamer, channel and platform.',
                     });
@@ -117,7 +117,7 @@ export default new Command({
 
                 try {
                     const connectQuery = generateConnectChannelQuery(channel.id, channel.guild.id);
-                    const streamerData = await client.twitch.getChannel(streamer);
+                    const streamerData = await client.twitch.getChannel(username);
                     client.logger.info(
                         `Adding streamer ${streamerData.displayName} to channel ${channel.id} on ${platform}`
                     );
@@ -145,7 +145,7 @@ export default new Command({
                 }
                 break;
             case 'remove':
-                if (!streamer || !channel || !platform) {
+                if (!username || !channel || !platform) {
                     embed = generateEmbed({
                         msg: 'Please provide a streamer, channel and platform.',
                         color: client.colors.success,
@@ -156,26 +156,26 @@ export default new Command({
                 try {
                     const streamers = await prisma.streamer.findMany({
                         where: {
-                            username: streamer.toLowerCase(),
+                            username: username.toLowerCase(),
                             platform: StreamPlatform.twitch,
                         },
                     });
 
                     if (streamers.length > 0) {
                         let platformId = streamers.filter(
-                            dbStreamer => dbStreamer.username === streamer.toLowerCase()
+                            dbStreamer => dbStreamer.username === username.toLowerCase()
                         )[0].platformId;
                         if (platformId) await disconnectStreamer(platformId, platform as StreamPlatform, channel.id);
                     }
 
                     embed = generateEmbed({
-                        msg: `You'll no longer be notified in <#${channel.id}> when ${streamer} goes live on ${platform}.`,
+                        msg: `You'll no longer be notified in <#${channel.id}> when ${username} goes live on ${platform}.`,
                         color: client.colors.success,
                     });
                 } catch (err: any) {
                     if (err instanceof PrismaClientKnownRequestError) {
                         embed = generateEmbed({
-                            msg: `You weren't following ${streamer} on ${platform} in <#${channel.id}>.`,
+                            msg: `You weren't following ${username} on ${platform} in <#${channel.id}>.`,
                             color: client.colors.success,
                         });
                     } else {

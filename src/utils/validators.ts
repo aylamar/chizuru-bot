@@ -1,6 +1,13 @@
-import { ChatInputCommandInteraction, GuildTextBasedChannel, NewsChannel, TextChannel } from 'discord.js';
-import { Bot } from '../structures/bot';
+import {
+    CategoryChannel,
+    ChatInputCommandInteraction,
+    ForumChannel,
+    GuildTextBasedChannel,
+    NewsChannel,
+    TextChannel,
+} from 'discord.js';
 import { prisma } from '../services';
+import { Bot } from '../structures/bot';
 import { replyMessage } from './messages';
 
 // check to see if the user is in a voice channel when executing a command, replies if not
@@ -18,7 +25,7 @@ export async function inVoiceChannel(
 export async function inMusicCommandChannel(
     client: Bot,
     interaction: ChatInputCommandInteraction<'cached'>,
-    channel: TextChannel | NewsChannel
+    channel: TextChannel | NewsChannel | ForumChannel
 ) {
     let guild = await prisma.guild.findUnique({
         where: { guildId: interaction.guild.id },
@@ -37,9 +44,11 @@ export async function inMusicCommandChannel(
 }
 
 // validate that the channel is a text channel or not
-export function isTextChannel(channel: GuildTextBasedChannel | null): NewsChannel | TextChannel | false {
+export function isTextChannel(channel: GuildTextBasedChannel | null): NewsChannel | TextChannel | ForumChannel | false {
     if (!channel || !channel.isTextBased() || channel.isDMBased() || channel.isThread() || channel.isVoiceBased())
         return false;
+    if (channel instanceof CategoryChannel) return false;
+
     return channel;
 }
 

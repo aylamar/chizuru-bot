@@ -79,7 +79,19 @@ async function upsertMessageStat(client: Bot, userId: string, channelId: string,
                 },
                 messageCount: 1,
             },
-            update: { messageCount: { increment: 1 } },
+            update: {
+                messageCount: { increment: 1 },
+                user: {
+                    update: {
+                        guilds: {
+                            connectOrCreate: {
+                                where: { guildId: guildId },
+                                create: { guildId: guildId },
+                            },
+                        },
+                    },
+                },
+            },
         });
     } catch (error: any) {
         client.logger.error('Error while checking for filtered strings', {

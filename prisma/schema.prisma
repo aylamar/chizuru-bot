@@ -8,8 +8,8 @@ datasource db {
 }
 
 model Guild {
-  id                         Int             @id @unique @default(autoincrement())
-  guildId                    String          @unique
+  id                         String          @id @unique
+  ownerId                    String
   musicChannelId             String?
   streamPingRoleId           String?
   logBlacklistedChannels     String[]
@@ -21,14 +21,15 @@ model Guild {
   modules                    CommandModule[]
   starboards                 Starboard[]
   channels                   Channel[]
-  users                      User[]
-  created                    DateTime        @default(now())
-  updated                    DateTime        @updatedAt
+  guildUsers                 GuildUser[]
+
+  created DateTime @default(now())
+  updated DateTime @updatedAt
 }
 
 model Starboard {
   id                    Int                @id @unique @default(autoincrement())
-  guild                 Guild              @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+  guild                 Guild              @relation(fields: [guildId], references: [id], onDelete: Cascade)
   guildId               String
   channelId             String             @unique
   emote                 String
@@ -44,10 +45,9 @@ model Starboard {
 }
 
 model StarboardMessage {
-  id            Int       @id @unique @default(autoincrement())
+  id            String    @id @unique
   starboard     Starboard @relation(fields: [starboardId], references: [id], onDelete: Cascade)
   starboardId   Int
-  messageId     String    @unique
   userMessageId String
   emoteCount    Int
   deleted       Boolean   @default(false)
@@ -59,11 +59,9 @@ model StarboardMessage {
 }
 
 model Channel {
-  id        Int    @id @unique @default(autoincrement())
-  channelId String @unique
-  guild     Guild  @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
-  guildId   String
-
+  id                String         @id @unique
+  guild             Guild          @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  guildId           String
   followedStreamers Streamer[]
   messageStats      MessageStats[]
 
@@ -72,17 +70,30 @@ model Channel {
 }
 
 model User {
-  id           Int            @id @unique @default(autoincrement())
-  userId       String         @unique
-  guilds       Guild[]
-  messageStats MessageStats[]
+  id        String      @id @unique
+  guildUser GuildUser[]
 
   created DateTime @default(now())
   updated DateTime @default(now()) @updatedAt
 }
 
+model GuildUser {
+  id              String         @id @unique @default(cuid())
+  user            User           @relation(fields: [userId], references: [id])
+  userId          String         @unique
+  guild           Guild          @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  guildId         String
+  dashboardAccess Boolean        @default(false)
+  messageStats    MessageStats[]
+
+  created DateTime @default(now())
+  updated DateTime @default(now()) @updatedAt
+
+  @@unique([userId, guildId])
+}
+
 model Streamer {
-  id                Int            @id @default(autoincrement())
+  id                String         @id @unique @default(cuid())
   platformId        String
   platform          StreamPlatform @default(twitch)
   username          String
@@ -90,18 +101,20 @@ model Streamer {
   isLive            Boolean        @default(false)
   statusChangeTime  DateTime       @default(now())
   avatarUrl         String
-  created           DateTime       @default(now())
-  updated           DateTime       @default(now()) @updatedAt
   followingChannels Channel[]
+
+  created DateTime @default(now())
+  updated DateTime @default(now()) @updatedAt
 
   @@unique([platformId, platform])
 }
 
 model MessageStats {
-  id           Int     @id @unique @default(autoincrement())
-  user         User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  id           String    @id @unique @default(cuid())
+  guildUser    GuildUser @relation(fields: [userId, guildId], references: [userId, guildId], onDelete: Cascade)
   userId       String
-  channel      Channel @relation(fields: [channelId], references: [channelId], onDelete: Cascade)
+  guildId      String
+  channel      Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
   channelId    String
   messageCount Int
 
@@ -119,4 +132,8 @@ enum CommandModule {
 
 enum StreamPlatform {
   twitch
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
 }

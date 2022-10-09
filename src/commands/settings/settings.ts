@@ -171,36 +171,38 @@ export default new Command({
 
         switch (subCommand) {
             case 'list':
-                embed = handleList(interaction.guildId, client);
+                embed = handleList(interaction.guildId, interaction.guild.ownerId, client);
                 break;
             case 'log':
                 embed = handleLog(setting, enabled, channel, client);
                 break;
             case 'music-channel':
-                embed = handleMusicChannel(enabled, channel, interaction.guildId, client);
+                embed = handleMusicChannel(interaction.guildId, interaction.guild.ownerId, enabled, channel, client);
                 break;
             case 'stream-ping':
                 const role = interaction.options.getRole('role');
-                embed = handlePing(setting, enabled, role, interaction.guildId, client);
+                embed = handlePing(interaction.guildId, interaction.guild.ownerId, setting, enabled, role, client);
                 break;
             case 'string':
                 embed = handleString(
+                    interaction.guildId,
+                    interaction.guild.ownerId,
                     interaction.options.getString('string', true),
                     interaction.options.getBoolean('enabled', true),
-                    interaction.guildId,
                     client
                 );
                 break;
             case 'extension':
                 embed = handleExtension(
+                    interaction.guildId,
+                    interaction.guild.ownerId,
                     interaction.options.getString('extension', true),
                     interaction.options.getBoolean('enabled', true),
-                    interaction.guildId,
                     client
                 );
                 break;
             case 'update':
-                embed = handleUpdate(setting, enabled, interaction.guildId, client);
+                embed = handleUpdate(interaction.guildId, interaction.guild.ownerId, setting, enabled, client);
                 break;
             default:
                 embed = generateEmbed({
@@ -216,16 +218,16 @@ export default new Command({
     },
 });
 
-async function handleList(guildId: string, client: Bot): Promise<EmbedBuilder> {
+async function handleList(guildId: string, ownerId: string, client: Bot): Promise<EmbedBuilder> {
     let guild = await prisma.guild.findUnique({
-        where: { guildId },
+        where: { id: guildId },
         include: { starboards: true },
     });
     if (!guild) {
         await prisma.guild.upsert({
-            where: { guildId },
-            create: { guildId },
-            update: { guildId },
+            where: { id: guildId },
+            create: { id: guildId, ownerId: ownerId },
+            update: { id: guildId },
             include: { starboards: true },
         });
         return generateEmbed({
@@ -271,8 +273,8 @@ async function handleLog(
 
     try {
         await prisma.guild.upsert({
-            where: { guildId: channel.guildId },
-            create: { guildId: channel.guildId },
+            where: { id: channel.guildId },
+            create: { id: channel.guildId, ownerId: channel.guild.ownerId },
             update: { [setting]: updatedChannels },
         });
 
@@ -287,9 +289,10 @@ async function handleLog(
 }
 
 async function handleMusicChannel(
+    guildId: string,
+    ownerId: string,
     enabled: boolean | null,
     channel: GuildBasedChannel | null,
-    guildId: string,
     client: Bot
 ) {
     if (enabled === null || (!channel && enabled)) {
@@ -301,7 +304,7 @@ async function handleMusicChannel(
     }
 
     if (!enabled) {
-        await upsertStringSetting(guildId, 'musicChannelId', null);
+        await upsertStringSetting(guildId, ownerId, 'musicChannelId', null);
         return generateEmbed({
             title: 'Settings',
             msg: 'Music commands can now be used in any channel.',
@@ -316,7 +319,7 @@ async function handleMusicChannel(
             color: client.colors.error,
         });
     }
-    await upsertStringSetting(guildId, 'musicChannelId', channel.id);
+    await upsertStringSetting(guildId, ownerId, 'musicChannelId', channel.id);
 
     return generateEmbed({
         title: 'Settings',
@@ -326,10 +329,11 @@ async function handleMusicChannel(
 }
 
 async function handlePing(
+    guildId: string,
+    ownerId: string,
     setting: string | null,
     enabled: boolean | null,
     role: Role | null,
-    guildId: string,
     client: Bot
 ): Promise<EmbedBuilder> {
     if (enabled === undefined || (enabled === true && !role)) {
@@ -345,9 +349,9 @@ async function handlePing(
 
     try {
         await prisma.guild.upsert({
-            where: { guildId: guildId },
+            where: { id: guildId },
             update: { streamPingRoleId: roleId },
-            create: { guildId },
+            create: { id: guildId, ownerId: ownerId },
         });
     } catch (err: any) {
         return generateErrorEmbed(err, client.colors.error, client.logger);
@@ -361,9 +365,10 @@ async function handlePing(
 }
 
 async function handleUpdate(
+    guildId: string,
+    ownerId: string,
     setting: string | null,
     enabled: boolean | null,
-    guildId: string,
     client: Bot
 ): Promise<EmbedBuilder> {
     if (!setting || enabled === undefined) {
@@ -377,9 +382,9 @@ async function handleUpdate(
 
     try {
         await prisma.guild.upsert({
-            where: { guildId },
+            where: { id: guildId },
             update: { [setting]: enabled },
-            create: { guildId },
+            create: { id: guildId, ownerId: ownerId },
         });
         return generateEmbed({
             title: 'Settings',
@@ -391,21 +396,27 @@ async function handleUpdate(
     }
 }
 
-async function handleString(string: string, enabled: boolean, guildId: string, client: Bot): Promise<EmbedBuilder> {
-    const guild = await prisma.guild.findUnique({ where: { guildId } });
+async function handleString(
+    guildId: string,
+    ownerId: string,
+    str: string,
+    enabled: boolean,
+    client: Bot
+): Promise<EmbedBuilder> {
+    const guild = await prisma.guild.findUnique({ where: { id: guildId } });
     const currentFilters = guild?.filteredStrings || [];
 
-    const updatedFilters = await updateArray(currentFilters, string.toLowerCase(), enabled);
+    const updatedFilters = await updateArray(currentFilters, str.toLowerCase(), enabled);
 
     try {
         await prisma.guild.upsert({
-            where: { guildId },
+            where: { id: guildId },
             update: { filteredStrings: updatedFilters },
-            create: { guildId, filteredStrings: updatedFilters },
+            create: { id: guildId, ownerId: ownerId, filteredStrings: updatedFilters },
         });
         return generateEmbed({
             title: 'Settings',
-            msg: `The filter has been ${enabled ? 'enabled' : 'disabled'} for ${string}`,
+            msg: `The filter has been ${enabled ? 'enabled' : 'disabled'} for ${str}`,
             color: client.colors.success,
         });
     } catch (err: any) {
@@ -414,21 +425,23 @@ async function handleString(string: string, enabled: boolean, guildId: string, c
 }
 
 async function handleExtension(
+    guildId: string,
+    ownerId: string,
     extension: string,
     enabled: boolean,
-    guildId: string,
     client: Bot
 ): Promise<EmbedBuilder> {
-    const guild = await prisma.guild.findUnique({ where: { guildId } });
+    // @@todo handle no guild
+    const guild = await prisma.guild.findUnique({ where: { id: guildId } });
     const currentFilters = guild?.filteredExtensions || [];
 
     const updatedFilters = await updateArray(currentFilters, extension, enabled);
 
     try {
         await prisma.guild.upsert({
-            where: { guildId },
+            where: { id: guildId },
             update: { filteredExtensions: updatedFilters },
-            create: { guildId, filteredStrings: updatedFilters },
+            create: { id: guildId, ownerId: ownerId, filteredStrings: updatedFilters },
         });
         return generateEmbed({
             title: 'Settings',
@@ -551,7 +564,7 @@ export async function convertSettingToName(setting: string): Promise<string> {
 }
 
 export async function getCurrentChannels(setting: string, guildId: string): Promise<string[]> {
-    const guild = await prisma.guild.findUnique({ where: { guildId } });
+    const guild = await prisma.guild.findUnique({ where: { id: guildId } });
     if (!guild) return [];
 
     switch (setting) {
@@ -568,10 +581,10 @@ export async function getCurrentChannels(setting: string, guildId: string): Prom
     }
 }
 
-async function upsertStringSetting(guildId: string, setting: keyof Guild, value: string | null) {
+async function upsertStringSetting(guildId: string, ownerId: string, setting: keyof Guild, value: string | null) {
     return await prisma.guild.upsert({
-        where: { guildId: guildId },
-        create: { guildId: guildId },
+        where: { id: guildId },
+        create: { id: guildId, ownerId: ownerId },
         update: { [setting]: value },
     });
 }

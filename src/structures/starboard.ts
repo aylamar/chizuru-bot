@@ -79,11 +79,11 @@ export class Starboard {
             }
 
             try {
-                starboardMessage = await channel.messages.cache.get(dbMessage.messageId);
-                if (!starboardMessage) starboardMessage = await channel.messages.fetch(dbMessage.messageId);
+                starboardMessage = await channel.messages.cache.get(dbMessage.id);
+                if (!starboardMessage) starboardMessage = await channel.messages.fetch(dbMessage.id);
             } catch (err) {
                 this.logger.info(
-                    `Message Id ${dbMessage.messageId} in #${starboard.channelId} not found so it is likely deleted, flagging it as deleted in database`,
+                    `Message Id ${dbMessage.id} in #${starboard.channelId} not found so it is likely deleted, flagging it as deleted in database`,
                     { label: 'starboard' }
                 );
                 await this.deleteStarboardMessage(starboard.id, message.id);
@@ -130,7 +130,7 @@ export class Starboard {
             },
             update: { emoteCount: count },
             create: {
-                messageId: starboardMessageId,
+                id: starboardMessageId,
                 starboardId: starboardId,
                 userMessageId: userMessageId,
                 emoteCount: count,

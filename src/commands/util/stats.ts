@@ -74,8 +74,7 @@ async function handleGuildStats(
 
 async function handleUserStats(client: Bot, interaction: ChatInputCommandInteraction<'cached'>): Promise<EmbedBuilder> {
     const user = await prisma.user.findUnique({
-        where: { userId: interaction.user.id },
-        include: { guilds: true },
+        where: { id: interaction.user.id },
     });
     if (!user)
         return generateEmbed({
@@ -239,8 +238,8 @@ async function generateGuildStats(guild: Guild): Promise<Chizuru.Field> {
         _sum: { messageCount: true },
     });
 
-    const totalUsers = prisma.user.aggregate({
-        where: { guilds: { some: { guildId: guild.id } } },
+    const totalUsers = prisma.guildUser.aggregate({
+        where: { guildId: guild.id },
         _count: { _all: true },
     });
 

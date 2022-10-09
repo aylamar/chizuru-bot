@@ -54,7 +54,7 @@ export class Streams {
         let streamers: StreamerData[] = [];
         res.forEach(streamer => {
             let channels: FollowingChannels[] = streamer.followingChannels.map(channel => ({
-                channelId: channel.channelId,
+                channelId: channel.id,
                 streamPingRoleId: channel.guild.streamPingRoleId,
             }));
             streamers.push({
@@ -83,8 +83,8 @@ export class Streams {
             return;
         }
 
-        let liveStreamIds: number[] = [];
-        let offlineStreamIds: number[] = [];
+        let liveStreamIds: string[] = [];
+        let offlineStreamIds: string[] = [];
 
         const chunks = await this.generateChunks(streamers);
         for (const chunk of chunks) {
@@ -291,7 +291,7 @@ interface FollowingChannels {
 }
 
 interface StreamerData {
-    id: number;
+    id: string;
     platformId: string;
     platform: string;
     username: string;

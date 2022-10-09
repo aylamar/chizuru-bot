@@ -14,7 +14,7 @@ export default new Event({
         let guild: Guild | null;
         try {
             guild = await prisma.guild.findUnique({
-                where: { guildId: newState.guild.id },
+                where: { id: newState.guild.id },
             });
         } catch (err) {
             client.logger.error(err);

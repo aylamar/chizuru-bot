@@ -74,7 +74,7 @@ export default new Command({
 
         const subCommand = interaction.options.getSubcommand();
         let embed: Promise<EmbedBuilder>;
-        let defer: Promise<InteractionResponse<boolean>> | undefined;
+        let defer: Promise<InteractionResponse> | undefined;
 
         switch (subCommand) {
             case 'song':

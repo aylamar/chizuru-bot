@@ -28,7 +28,7 @@ export async function inMusicCommandChannel(
     channel: TextChannel | NewsChannel | ForumChannel
 ) {
     let guild = await prisma.guild.findUnique({
-        where: { guildId: interaction.guild.id },
+        where: { id: interaction.guild.id },
         select: { musicChannelId: true },
     });
 

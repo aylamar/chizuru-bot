@@ -9,9 +9,9 @@ export default new Event({
         if (!guild || !guild.id) return;
         try {
             await prisma.guild.upsert({
-                where: { guildId: guild.id },
-                create: { guildId: guild.id },
-                update: { guildId: guild.id },
+                where: { id: guild.id },
+                create: { id: guild.id, ownerId: guild.ownerId },
+                update: { id: guild.id },
             });
             client.logger.info(
                 `Joined ${guild.name} (${guild.id}), and successfully created a record in the database.`,

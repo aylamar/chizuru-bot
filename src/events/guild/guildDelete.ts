@@ -8,7 +8,7 @@ export default new Event({
     execute: async (client: Bot, guild: Guild) => {
         if (!guild || !guild.id) return;
         try {
-            await prisma.guild.delete({ where: { guildId: guild.id } });
+            await prisma.guild.delete({ where: { id: guild.id } });
             client.logger.error(
                 `Left ${guild.name} (${guild.id}), and successfully deleted the records in the database.`,
                 { label: 'event' }

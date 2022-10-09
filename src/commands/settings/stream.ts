@@ -116,7 +116,11 @@ export default new Command({
                 }
 
                 try {
-                    const connectQuery = generateConnectChannelQuery(channel.id, channel.guild.id);
+                    const connectQuery = generateConnectChannelQuery(
+                        channel.id,
+                        channel.guild.id,
+                        channel.guild.ownerId
+                    );
                     const streamerData = await client.twitch.getChannel(username);
                     client.logger.info(
                         `Adding streamer ${streamerData.displayName} to channel ${channel.id} on ${platform}`
@@ -198,7 +202,7 @@ export default new Command({
 
 async function getFollowedStreams(guildId: string) {
     return await prisma.guild.findUnique({
-        where: { guildId: guildId },
+        where: { id: guildId },
         include: {
             channels: {
                 include: {
@@ -235,7 +239,7 @@ async function generateFields(
             });
 
             // needed to get the channel name
-            const cachedChannel = client.channels.cache.get(channel.channelId) as GuildTextBasedChannel;
+            const cachedChannel = client.channels.cache.get(channel.id) as GuildTextBasedChannel;
 
             streamers.sort();
             fields.push({
@@ -247,15 +251,19 @@ async function generateFields(
     return fields;
 }
 
-async function generateConnectChannelQuery(channelId: string, guildId: string): Promise<ChannelConnectQuery> {
+async function generateConnectChannelQuery(
+    channelId: string,
+    guildId: string,
+    ownerId: string
+): Promise<ChannelConnectQuery> {
     return {
-        where: { channelId: channelId },
+        where: { id: channelId },
         create: {
-            channelId: channelId,
+            id: channelId,
             guild: {
                 connectOrCreate: {
-                    where: { guildId: guildId },
-                    create: { guildId: guildId },
+                    where: { id: guildId },
+                    create: { id: guildId, ownerId: ownerId },
                 },
             },
         },
@@ -270,7 +278,7 @@ async function disconnectStreamer(platformId: string, platform: StreamPlatform, 
                 platform: StreamPlatform.twitch,
             },
         },
-        data: { followingChannels: { disconnect: { channelId: channelId } } },
+        data: { followingChannels: { disconnect: { id: channelId } } },
     });
 }
 
@@ -289,20 +297,22 @@ async function upsertStreamer(streamerData: Chizuru.ChannelData, connectQuery: C
             displayName: streamerData.displayName,
             avatarUrl: streamerData.thumbnailUrl,
             isLive: streamerData.isLive,
-            followingChannels: { connectOrCreate: connectQuery },
+            followingChannels: {
+                connectOrCreate: connectQuery,
+            },
         },
         update: { followingChannels: { connectOrCreate: connectQuery } },
     });
 }
 
 interface ChannelConnectQuery {
-    where: { channelId: string };
+    where: { id: string };
     create: {
-        channelId: string;
+        id: string;
         guild: {
             connectOrCreate: {
-                where: { guildId: string };
-                create: { guildId: string };
+                where: { id: string };
+                create: { id: string; ownerId: string };
             };
         };
     };

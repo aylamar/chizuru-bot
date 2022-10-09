@@ -1,8 +1,8 @@
+import { CommandModule } from '@prisma/client';
 import { ApplicationCommandOptionType } from 'discord.js';
 import { Chizuru } from '../../interfaces';
 import { prisma } from '../../services';
 import { Command } from '../../structures/command';
-import { CommandModule } from '@prisma/client';
 import { deferReply, generateEmbed, replyEmbed } from '../../utils';
 
 export default new Command({
@@ -52,7 +52,7 @@ export default new Command({
         const moduleEnum = Chizuru.CommandModule[module];
 
         const dbGuild = await prisma.guild.findUnique({
-            where: { guildId: guildId },
+            where: { id: guildId },
         });
         if (!dbGuild)
             return await interaction.reply({
@@ -65,7 +65,7 @@ export default new Command({
         let commands = client.getCommandsByModule(commandModuleArray);
 
         await prisma.guild.update({
-            where: { guildId: guildId },
+            where: { id: guildId },
             data: { modules: moduleArray },
         });
 

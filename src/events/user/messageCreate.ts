@@ -11,14 +11,14 @@ export default new Event({
 
         await Promise.all([
             checkFilters(client, message),
-            upsertMessageStat(client, message.author.id, message.channel.id, message.guild.id),
+            upsertMessageStat(client, message.author.id, message.channel.id, message.guild.id, message.guild.ownerId),
         ]);
     },
 });
 
 async function checkFilters(client: Bot, message: Message<true>) {
     const guild = await prisma.guild.findUnique({
-        where: { guildId: message.guild.id },
+        where: { id: message.guild.id },
     });
     if (!guild) return;
 
@@ -39,7 +39,7 @@ async function checkExtensions(client: Bot, message: Message<true>, filteredExte
     });
 }
 
-async function upsertMessageStat(client: Bot, userId: string, channelId: string, guildId: string) {
+async function upsertMessageStat(client: Bot, userId: string, channelId: string, guildId: string, ownerId: string) {
     try {
         return await prisma.messageStats.upsert({
             where: {
@@ -49,15 +49,20 @@ async function upsertMessageStat(client: Bot, userId: string, channelId: string,
                 },
             },
             create: {
-                user: {
+                guildUser: {
                     connectOrCreate: {
-                        where: { userId: userId },
+                        where: { userId_guildId: { userId: userId, guildId: guildId } },
                         create: {
-                            userId: userId,
-                            guilds: {
+                            user: {
                                 connectOrCreate: {
-                                    where: { guildId: guildId },
-                                    create: { guildId: guildId },
+                                    where: { id: userId },
+                                    create: { id: userId },
+                                },
+                            },
+                            guild: {
+                                connectOrCreate: {
+                                    where: { id: guildId },
+                                    create: { id: guildId, ownerId: ownerId },
                                 },
                             },
                         },
@@ -65,13 +70,13 @@ async function upsertMessageStat(client: Bot, userId: string, channelId: string,
                 },
                 channel: {
                     connectOrCreate: {
-                        where: { channelId: channelId },
+                        where: { id: channelId },
                         create: {
-                            channelId: channelId,
+                            id: channelId,
                             guild: {
                                 connectOrCreate: {
-                                    where: { guildId: guildId },
-                                    create: { guildId: guildId },
+                                    where: { id: guildId },
+                                    create: { id: guildId, ownerId: ownerId },
                                 },
                             },
                         },
@@ -81,16 +86,6 @@ async function upsertMessageStat(client: Bot, userId: string, channelId: string,
             },
             update: {
                 messageCount: { increment: 1 },
-                user: {
-                    update: {
-                        guilds: {
-                            connectOrCreate: {
-                                where: { guildId: guildId },
-                                create: { guildId: guildId },
-                            },
-                        },
-                    },
-                },
             },
         });
     } catch (error: any) {

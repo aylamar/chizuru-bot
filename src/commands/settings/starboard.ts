@@ -240,12 +240,13 @@ async function handleBlacklist(
         const target = interaction.options.getUser('user', true);
         id = target.id;
     }
-    if (!id)
+    if (!id) {
         return generateEmbed({
             title: 'Starboard',
             msg: 'Please provide a valid channel or user.',
             color: client.colors.error,
         });
+    }
 
     let currentIds: string[];
     try {
@@ -289,14 +290,16 @@ async function handleBlacklist(
 
 /*
 
-    helper functions
+ helper functions
 
  */
 async function getStarboardIds(setting: string, channelId: string) {
     let guild = await prisma.starboard.findUnique({
         where: { channelId: channelId },
     });
-    if (!guild) throw new NoStarboardError('No starboard exists for this channel.');
+    if (!guild) {
+        throw new NoStarboardError('No starboard exists for this channel.');
+    }
 
     switch (setting) {
         case 'channel':

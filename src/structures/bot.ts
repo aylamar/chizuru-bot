@@ -1,4 +1,3 @@
-import { Player } from 'discord-music-player';
 import {
     ApplicationCommand,
     ApplicationCommandData,
@@ -15,7 +14,7 @@ import { Chizuru } from '../interfaces';
 import { getLogger } from '../services';
 import { getFiles } from '../utils';
 import { CommandArgs } from './command';
-import { Event, PlayerEvent } from './event';
+import { Event } from './event';
 import { Starboard } from './starboard';
 import { Streams } from './stream';
 import Twitch from './twitch';
@@ -24,7 +23,6 @@ export class Bot extends Client<true> {
     public logger: Logger;
     public colors: Chizuru.EmbedColors;
     commands: Collection<string, CommandArgs> = new Collection();
-    public player: Player;
     public twitch: Twitch;
     public starboard: Starboard;
     private streams: Streams;
@@ -48,7 +46,6 @@ export class Bot extends Client<true> {
 
         this.logger = getLogger();
         this.logger.info('Chizuru Bot is starting up...', { label: 'bot' });
-        this.player = new Player(this, { deafenOnJoin: true, volume: 125 });
         this.twitch = new Twitch(process.env.TWITCH_CLIENT_ID, process.env.TWITCH_SECRET, this.logger);
         this.streams = new Streams(this);
         this.starboard = new Starboard(this);
@@ -143,18 +140,13 @@ export class Bot extends Client<true> {
         let eventCount = 0;
         for (const file of events) {
             const eventImport: any = await import(file);
-            let event: Event | PlayerEvent;
-            if (file.includes('/events/player')) {
-                event = eventImport.default as PlayerEvent;
-                event.startListener(this);
-            } else {
-                event = eventImport.default as Event;
-                this.events.set(event.name, event);
-                event.startListener(this);
-            }
+            let event: Event;
+            event = eventImport.default as Event;
+            this.events.set(event.name, event);
+            event.startListener(this);
             eventCount++;
             this.logger.debug(
-                `Loaded event ${event.name} for ${file.includes('/events/player') ? 'player' : 'client'}`
+                `Loaded event ${event.name} for client`
             );
         }
         let result = process.hrtime.bigint();

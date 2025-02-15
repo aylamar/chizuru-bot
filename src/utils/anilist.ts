@@ -10,7 +10,12 @@ export async function generateAnilistEmbed(entry: AnimeEntry | MangaEntry, type:
     } else {
         title = `${entry.title.english}`;
     }
-    let date = new Date(entry.startDate.year, entry.startDate.month, entry.startDate.day).toString();
+
+    let date = null;
+
+    if (entry.startDate.year && entry.startDate.month && entry.startDate.day) {
+        date = new Date(entry.startDate.year, entry.startDate.month, entry.startDate.day).toString();
+    }
 
     let descRaw = entry.description.replace(/<br>/g, '').replace(/\n/g, ' ');
     let descArr = descRaw.split(' ');
@@ -27,7 +32,7 @@ export async function generateAnilistEmbed(entry: AnimeEntry | MangaEntry, type:
         msg: `**_${genre}_**\n${desc}`,
         image: `https://img.anili.st/media/${entry.id}`,
         color: color,
-        timestamp: date,
+        timestamp: date || undefined,
         footer: `${type}`,
         footerIcon: 'https://anilist.co/img/icons/android-chrome-512x512.png',
     });

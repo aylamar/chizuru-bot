@@ -1,5 +1,5 @@
 import { Guild } from '@prisma/client';
-import { AuditLogEvent, Events, Message } from 'discord.js';
+import { Events, Message } from 'discord.js';
 import { Chizuru } from '../../interfaces';
 import { prisma } from '../../services';
 import { Bot } from '../../structures/bot';

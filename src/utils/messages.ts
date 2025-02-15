@@ -4,7 +4,7 @@ import {
     PrismaClientRustPanicError,
     PrismaClientUnknownRequestError,
     PrismaClientValidationError,
-} from '@prisma/client/runtime';
+} from '@prisma/client/runtime/library';
 import {
     ActionRowBuilder,
     ButtonBuilder,
@@ -94,7 +94,7 @@ export async function sendEmbedToChannelArr(client: Bot, channels: string[], emb
     for (let channelId of channels) {
         let channel = client.channels.resolve(channelId) as TextChannel;
         try {
-            await sendEmbed(channel, await embed);
+            await sendEmbed(channel, embed);
         } catch (err) {
             client.logger.error(`${err}`, { label: 'messageUpdate' });
         }

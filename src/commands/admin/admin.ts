@@ -20,7 +20,9 @@ export default new Command({
     ],
 
     execute: async (client, interaction) => {
-        if (!interaction.inCachedGuild()) return false;
+        if (!interaction.inCachedGuild()) {
+            return false;
+        }
         const subcommand = interaction.options.getSubcommand();
         let embed: Promise<EmbedBuilder>;
 

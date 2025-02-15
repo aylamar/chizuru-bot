@@ -54,16 +54,46 @@ export default new Command({
                             type: ApplicationCommandOptionType.String,
                             required: true,
                             choices: [
-                                { name: 'gif', value: 'image/gif' },
-                                { name: 'gzip', value: 'application/gzip' },
-                                { name: 'jar', value: 'application/java-archive' },
-                                { name: 'jpg', value: 'image/jpeg' },
-                                { name: 'png', value: 'image/png' },
-                                { name: 'rar', value: 'application/vnd.rar' },
-                                { name: 'webm audio', value: 'audio/webm' },
-                                { name: 'webm video', value: 'video/webm' },
-                                { name: 'webp', value: 'image/webp' },
-                                { name: 'zip', value: 'application/zip' },
+                                {
+                                    name: 'gif',
+                                    value: 'image/gif',
+                                },
+                                {
+                                    name: 'gzip',
+                                    value: 'application/gzip',
+                                },
+                                {
+                                    name: 'jar',
+                                    value: 'application/java-archive',
+                                },
+                                {
+                                    name: 'jpg',
+                                    value: 'image/jpeg',
+                                },
+                                {
+                                    name: 'png',
+                                    value: 'image/png',
+                                },
+                                {
+                                    name: 'rar',
+                                    value: 'application/vnd.rar',
+                                },
+                                {
+                                    name: 'webm audio',
+                                    value: 'audio/webm',
+                                },
+                                {
+                                    name: 'webm video',
+                                    value: 'video/webm',
+                                },
+                                {
+                                    name: 'webp',
+                                    value: 'image/webp',
+                                },
+                                {
+                                    name: 'zip',
+                                    value: 'application/zip',
+                                },
                             ],
                         },
                         {
@@ -401,7 +431,10 @@ async function handleString(string: string, enabled: boolean, guildId: string, c
         await prisma.guild.upsert({
             where: { guildId },
             update: { filteredStrings: updatedFilters },
-            create: { guildId, filteredStrings: updatedFilters },
+            create: {
+                guildId,
+                filteredStrings: updatedFilters,
+            },
         });
         return generateEmbed({
             title: 'Settings',
@@ -428,7 +461,10 @@ async function handleExtension(
         await prisma.guild.upsert({
             where: { guildId },
             update: { filteredExtensions: updatedFilters },
-            create: { guildId, filteredStrings: updatedFilters },
+            create: {
+                guildId,
+                filteredStrings: updatedFilters,
+            },
         });
         return generateEmbed({
             title: 'Settings',
@@ -442,7 +478,7 @@ async function handleExtension(
 
 /*
 
-    helper functions
+ helper functions
 
  */
 async function generateSettingsFields(guild: Guild & { starboards: Starboard[] }): Promise<Chizuru.Field[]> {

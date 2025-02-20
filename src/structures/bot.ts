@@ -176,47 +176,51 @@ export class Bot extends Client<true> {
         data: ChatInputApplicationCommandData,
         guild: Guild
     ) {
-        const guildCommand = guildCommands.find(command => command.name === data.name);
-        if (!guildCommand) {
-            this.logger.debug(`Creating command /${data.name} in guild ${guild.name}`);
-            return await guild.commands.create(data);
-        }
+        // TODO update this, all commands are being detected as a change
+        return
+        // const guildCommand = guildCommands.find(command => command.name === data.name);
+        // if (!guildCommand) {
+        //     this.logger.debug(`Creating command /${data.name} in guild ${guild.name}`);
+        //     return await guild.commands.create(data);
+        // }
 
-        if (!data.description) return;
-        let tmpNewCommand = {
-            ...guildCommand,
-            name: data.name,
-            description: data.description,
-            options: data.options,
-            type: data.type,
-            dmPermission: null,
-        } as ApplicationCommand;
+        // if (!data.description) return;
+        // let tmpNewCommand = {
+        //     ...guildCommand,
+        //     name: data.name,
+        //     description: data.description,
+        //     options: data.options,
+        //     type: data.type,
+        //     dmPermission: null,
+        // } as ApplicationCommand;
 
-        if (guildCommand.equals(tmpNewCommand)) {
-            this.logger.debug(`Command /${data.name} is up to date in guild ${guild.name}`);
-            return;
-        } else {
-            this.logger.debug(`Updating command /${data.name} in guild ${guild.name}`);
-            return await guildCommand.edit(data);
-        }
+        // if (guildCommand.equals(tmpNewCommand)) {
+        //     this.logger.debug(`Command /${data.name} is up to date in guild ${guild.name}`);
+        //     return;
+        // } else {
+        //     this.logger.debug(`Updating command /${data.name} in guild ${guild.name}`);
+        //     return await guildCommand.edit(data);
+        // }
     }
 
     private async updateOrCreateGlobal(
         botCommands: Collection<string, ApplicationCommand<{ guild: GuildResolvable }>>,
         data: ApplicationCommandData
     ) {
-        const botCommand = botCommands.find(botCommand => botCommand.name === data.name);
-        if (!botCommand) {
-            this.logger.debug(`Creating command ${data.name}, it doesn't exist`);
-            return await this.application.commands.create(data);
-        }
+        // TODO update this, all commands are being detected as a change
+        return
+        // const botCommand = botCommands.find(botCommand => botCommand.name === data.name);
+        // if (!botCommand) {
+        //     this.logger.debug(`Creating command ${data.name}, it doesn't exist`);
+        //     return await this.application.commands.create(data);
+        // }
 
-        if (botCommand.equals(data)) {
-            this.logger.debug(`Command /${data.name} is up to date`);
-            return;
-        } else {
-            this.logger.debug(`Command /${data.name} is out of date, updating now`);
-            return await this.application.commands.edit(botCommand.id, data);
-        }
+        // if (botCommand.equals(data)) {
+        //     this.logger.debug(`Command /${data.name} is up to date`);
+        //     return;
+        // } else {
+        //     this.logger.debug(`Command /${data.name} is out of date, updating now`);
+        //     return await this.application.commands.edit(botCommand.id, data);
+        // }
     }
 }
